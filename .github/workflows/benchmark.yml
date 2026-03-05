@@ -8,6 +8,9 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: write
+
 jobs:
   benchmark:
     runs-on: self-hosted
@@ -30,9 +33,8 @@ jobs:
             ./scripts/benchmark.sh "$fw" || echo "WARN: $fw benchmark failed"
           done
 
-      - name: Update leaderboard
+      - name: Update site data
         run: |
-          # Merge all result JSONs into site data
           mkdir -p site/data
           echo '[' > site/data/results.json
           first=true
@@ -44,15 +46,9 @@ jobs:
           done
           echo ']' >> site/data/results.json
 
-      - name: Build and deploy site
+      - name: Commit results
         run: |
-          cd site
-          hugo --minify
-          # Deploy to gh-pages branch
-          cd public
-          git init
           git config user.name "HttpArena Bot"
           git config user.email "bot@httparena"
-          git add -A
-          git commit -m "Update leaderboard"
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:gh-pages
+          git add site/data/results.json
+          git diff --cached --quiet || git commit -m "Update benchmark results" && git push
