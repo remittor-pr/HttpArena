@@ -251,6 +251,19 @@ html.dark .lb-bar-cell { background: rgba(255, 255, 255, 0.04); }
 html.dark .lb-conn-tab { color: #64748b; border-color: #334155; }
 html.dark .lb-conn-tab:hover { color: #94a3b8; border-color: #475569; background: rgba(255, 255, 255, 0.03); }
 html.dark .lb-conn-tab.active { color: #a78bfa; border-color: #8b5cf6; background: rgba(139, 92, 246, 0.12); }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .lb-card { padding: 1rem; }
+  .lb-tabs { gap: 0.2rem; padding: 0.25rem; }
+  .lb-tab { padding: 0.5rem 0.4rem; font-size: 0.75rem; }
+  .lb-filters { flex-wrap: wrap; }
+  .lb-search-input { width: 100%; }
+  .lb { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .lb-row { min-width: 54rem; }
+  .lb-row.lb-row-reconn { min-width: 60rem; }
+  .lb-popup { padding: 1.5rem; max-width: 95vw; }
+}
 </style>
 
 {{ $profiles := slice
