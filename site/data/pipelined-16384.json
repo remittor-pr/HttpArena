@@ -1,46 +1,30 @@
 [
-{
-  "framework": "aspnet-minimal",
-  "language": "C#",
-  "rps": 7756297,
-  "avg_latency": "23.36ms",
-  "p99_latency": "49.70ms",
-  "cpu": "2264.6%",
-  "memory": "692.1MiB",
-  "connections": 16384,
-  "threads": 12,
-  "duration": "5s",
-  "pipeline": 16,
-  "reconnects": 0
-}
-,
-{
-  "framework": "go-fasthttp",
-  "language": "Go",
-  "rps": 1799718,
-  "avg_latency": "74.81ms",
-  "p99_latency": "110.00ms",
-  "cpu": "683.3%",
-  "memory": "193.7MiB",
-  "connections": 16384,
-  "threads": 12,
-  "duration": "5s",
-  "pipeline": 16,
-  "reconnects": 0
-}
-,
-{
-  "framework": "ringzero",
-  "language": "C",
-  "rps": 27128051,
-  "avg_latency": "9.42ms",
-  "p99_latency": "14.70ms",
-  "cpu": "1146.2%",
-  "memory": "1.0GiB",
-  "connections": 16384,
-  "threads": 12,
-  "duration": "5s",
-  "pipeline": 16,
-  "reconnects": 0
-}
+  {
+    "framework": "aspnet-minimal",
+    "language": "C#",
+    "rps": 7756297,
+    "avg_latency": "23.36ms",
+    "p99_latency": "49.70ms",
+    "cpu": "2264.6%",
+    "memory": "692.1MiB",
+    "connections": 16384,
+    "threads": 12,
+    "duration": "5s",
+    "pipeline": 16,
+    "reconnects": 0
+  },
+  {
+    "framework": "ringzero",
+    "language": "C",
+    "rps": 27128051,
+    "avg_latency": "9.42ms",
+    "p99_latency": "14.70ms",
+    "cpu": "1146.2%",
+    "memory": "1.0GiB",
+    "connections": 16384,
+    "threads": 12,
+    "duration": "5s",
+    "pipeline": 16,
+    "reconnects": 0
+  }
 ]

@@ -26,6 +26,13 @@ var compositeProfiles = {{ $profiles | jsonify | safeJS }};
 var compositeMeta = {{ site.Data.frameworks | jsonify | safeJS }};
 </script>
 
+<div class="composite-disclaimer" style="margin-top:1rem; padding:0.75rem 1.25rem; border-radius:0.5rem; background:rgba(234,179,8,0.08); border:1px solid rgba(234,179,8,0.3); color:#78350f; font-size:0.95rem; line-height:1.6;">
+  <span style="margin-right:0.4rem;">&#9888;&#65039;</span><strong>Note:</strong> Stripped frameworks are excluded from the composite ranking and normalization. Only realistic frameworks — those using standard, production-grade HTTP libraries — are scored here. Stripped entries can still be compared in individual test profiles.
+</div>
+<style>
+html.dark .composite-disclaimer { color: #fff !important; background: rgba(234,179,8,0.12) !important; border-color: rgba(234,179,8,0.4) !important; }
+</style>
+
 <div class="lb-card" style="margin-top:1rem;">
   <div class="lb-card-title">Composite Score</div>
   <div class="lb-desc">
@@ -34,16 +41,16 @@ var compositeMeta = {{ site.Data.frameworks | jsonify | safeJS }};
   </div>
 
   <div id="composite-table" class="lb" style="margin-top:1rem;">
-    <div class="lb-row lb-header" style="grid-template-columns: 2.5rem 1fr 4rem 4rem repeat({{ len $profiles }}, 7.5rem) 5.5rem 3rem;">
+    <div class="lb-row lb-header" style="grid-template-columns: 2.5rem 10rem 4rem 4rem 3.5rem 1fr repeat({{ len $profiles }}, 7.5rem);">
       <div title="Rank by composite score">#</div>
       <div>Framework</div>
       <div>Lang</div>
       <div>Type</div>
+      <div style="font-weight:700; padding-left:0.5rem;" title="Composite score: geometric mean of normalized profile scores">Score</div>
+      <div></div>
       {{ range $profiles }}
       <div style="text-align:right; font-size:0.7rem; line-height:1.2;{{ if eq .proto "h1" }} background:rgba(59,130,246,0.08); margin:-0.5rem -0.25rem; padding:0.5rem 0.25rem; border-radius:4px;{{ else if eq .proto "h2" }} background:rgba(234,179,8,0.12); margin:-0.5rem -0.25rem; padding:0.5rem 0.25rem; border-radius:4px;{{ end }}" title="{{ .label }} ({{ .sublabel }}) profile score (0-100)">{{ .label }}<br><span style="color:#94a3b8; font-size:0.6rem;">({{ .sublabel }})</span></div>
       {{ end }}
-      <div style="text-align:right; font-weight:700;" title="Composite score: geometric mean of powered profile scores">Score</div>
-      <div></div>
     </div>
   </div>
 </div>
@@ -62,8 +69,9 @@ profiles.forEach(function(p) { profileLabels[p.id] = p.label; profileProtos[p.id
 var profileCount = profileIds.length;
 
 // Step 1: For each profile, compute average RPS per framework across connection counts
+// Exclude stripped frameworks from normalization (max) and composite ranking
 var avgByProfile = {}; // profileId -> {framework: avgRps}
-var maxByProfile = {};  // profileId -> maxAvgRps
+var maxByProfile = {};  // profileId -> maxAvgRps (realistic only)
 profileIds.forEach(function(pid) { avgByProfile[pid] = {}; maxByProfile[pid] = 0; });
 
 // Accumulate sum and count per framework per profile
@@ -80,7 +88,10 @@ Object.keys(sums).forEach(function(key) {
   avgByProfile[pid][fw] = sums[key] / counts[key];
 });
 profileIds.forEach(function(pid) {
-  Object.values(avgByProfile[pid]).forEach(function(r) {
+  Object.keys(avgByProfile[pid]).forEach(function(fw) {
+    var fmeta = meta[fw] || {};
+    if ((fmeta.type || 'realistic') === 'stripped') return;
+    var r = avgByProfile[pid][fw];
     if (r > maxByProfile[pid]) maxByProfile[pid] = r;
   });
 });
@@ -96,6 +107,8 @@ entries.forEach(function(e) { if (e.language) fwLang[e.framework] = e.language; 
 
 var results = [];
 Object.keys(allFw).forEach(function(fw) {
+  var fmeta = meta[fw] || {};
+  if ((fmeta.type || 'realistic') === 'stripped') return;
   var scores = [];
   var participated = 0;
   profileIds.forEach(function(pid) {
@@ -131,7 +144,7 @@ results.forEach(function(r, idx) {
   row.dataset.name = r.framework;
   row.dataset.lang = r.language;
   row.dataset.type = ftype;
-  row.style.gridTemplateColumns = '2.5rem 1fr 4rem 4rem repeat(' + profileCount + ', 7.5rem) 5.5rem 3rem';
+  row.style.gridTemplateColumns = '2.5rem 10rem 4rem 4rem 3.5rem 1fr repeat(' + profileCount + ', 7.5rem)';
   row.style.cursor = 'pointer';
 
   var rank = idx < 3 ? medals[idx] : String(idx + 1);
@@ -158,9 +171,9 @@ results.forEach(function(r, idx) {
     '<div class="lb-name">' + r.framework + '</div>' +
     '<div class="lb-lang">' + r.language + '</div>' +
     '<div><span class="lb-pill lb-pill-' + ftype + '">' + ftype + '</span></div>' +
-    profileCells +
-    '<div class="lb-rps" style="font-weight:700;">' + r.composite.toFixed(1) + '</div>' +
-    '<div class="lb-bar-cell"><div class="lb-bar ' + barClass + '" style="width:' + pct.toFixed(1) + '%;"></div></div>';
+    '<div class="lb-rps" style="font-weight:700; text-align:left; padding-left:0.5rem;">' + r.composite.toFixed(1) + '</div>' +
+    '<div class="lb-bar-cell"><div class="lb-bar ' + barClass + '" style="width:' + pct.toFixed(1) + '%;"></div></div>' +
+    profileCells;
 
   row.addEventListener('click', function() {
     var profileDetails = '';
