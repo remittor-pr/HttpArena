@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'frameworks/**'
+      - 'scripts/validate.sh'
 
 jobs:
   detect:
@@ -12,6 +13,8 @@ jobs:
       frameworks: ${{ steps.find.outputs.frameworks }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - id: find
         run: |
           frameworks=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
