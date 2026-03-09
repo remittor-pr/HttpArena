@@ -10,5 +10,6 @@ HTTP/1.1 test profiles measure framework performance over plain TCP connections 
   {{< card link="json-processing" title="JSON Processing" subtitle="Loads a dataset, computes derived fields, and serializes a JSON response — testing real-world API workloads." icon="document-text" >}}
   {{< card link="upload" title="Upload (20 MB)" subtitle="Sends a 20 MB binary payload, server returns CRC32 checksum. Measures body ingestion throughput." icon="cloud-upload" >}}
   {{< card link="compression" title="Compression" subtitle="Serves a 1 MB JSON response with gzip compression. Only frameworks with built-in gzip support." icon="archive" >}}
+  {{< card link="caching" title="Caching (ETag 304)" subtitle="Conditional requests with If-None-Match. Server returns 304 Not Modified — testing ETag handling efficiency." icon="shield-check" >}}
   {{< card link="pipelined" title="Pipelined (16x)" subtitle="16 requests sent back-to-back per connection, testing raw I/O and pipeline batching." icon="fast-forward" >}}
 {{< /cards >}}

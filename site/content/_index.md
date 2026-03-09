@@ -29,3 +29,110 @@ layout: hextra-home
   {{< card link="docs/add-framework" title="Add a Framework" subtitle="Add your framework with a Dockerfile and open a PR. Three steps to join the arena." icon="plus-circle" >}}
 {{< /cards >}}
 
+<div style="height:3rem"></div>
+
+<style>
+.tests-section { width: 100%; }
+.tests-section h2 { text-align: left; font-size: 1.6rem; font-weight: 700; margin-bottom: 0.25rem; }
+.tests-section .tests-sub { text-align: left; color: #64748b; font-size: 0.95rem; margin-bottom: 2rem; }
+html.dark .tests-section .tests-sub { color: #94a3b8; }
+.tests-proto { margin-bottom: 2rem; }
+.tests-proto-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px; display: inline-block; margin-bottom: 0.75rem; }
+.tests-proto-h1 { background: rgba(59,130,246,0.1); color: #3b82f6; }
+.tests-proto-h2 { background: rgba(234,179,8,0.1); color: #ca8a04; }
+.tests-proto-h3 { background: rgba(34,197,94,0.1); color: #16a34a; }
+html.dark .tests-proto-h1 { background: rgba(59,130,246,0.15); color: #60a5fa; }
+html.dark .tests-proto-h2 { background: rgba(234,179,8,0.15); color: #fbbf24; }
+html.dark .tests-proto-h3 { background: rgba(34,197,94,0.15); color: #4ade80; }
+.tests-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.75rem; }
+.test-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem 1.1rem; transition: all 0.15s ease; text-decoration: none !important; display: block; }
+.test-card:hover { border-color: #94a3b8; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transform: translateY(-1px); }
+html.dark .test-card { border-color: #334155; }
+html.dark .test-card:hover { border-color: #475569; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.test-card-title { font-weight: 600; font-size: 0.9rem; color: #0f172a; margin-bottom: 0.3rem; }
+html.dark .test-card-title { color: #f1f5f9; }
+.test-card-desc { font-size: 0.78rem; color: #64748b; line-height: 1.4; }
+html.dark .test-card-desc { color: #94a3b8; }
+.test-card-endpoint { font-family: monospace; font-size: 0.7rem; color: #94a3b8; margin-top: 0.4rem; }
+html.dark .test-card-endpoint { color: #64748b; }
+</style>
+
+<div class="tests-section">
+<h2>11 Test Profiles Across HTTP/1.1, HTTP/2 and HTTP/3</h2>
+<p class="tests-sub">Every framework is tested under diverse, realistic workloads — from raw throughput to compression, caching, and file serving.</p>
+
+<div class="tests-proto">
+<span class="tests-proto-label tests-proto-h1">HTTP/1.1</span>
+<div class="tests-grid">
+  <a class="test-card" href="docs/tests/h1/baseline">
+    <div class="test-card-title">Baseline</div>
+    <div class="test-card-desc">Mixed GET/POST with keep-alive connections, query parsing, and chunked encoding.</div>
+    <div class="test-card-endpoint">GET/POST /baseline11</div>
+  </a>
+  <a class="test-card" href="docs/tests/h1/short-lived">
+    <div class="test-card-title">Short-lived Connection</div>
+    <div class="test-card-desc">Connections closed after 10 requests — measures TCP handshake overhead.</div>
+    <div class="test-card-endpoint">GET/POST /baseline11 (10 req/conn)</div>
+  </a>
+  <a class="test-card" href="docs/tests/h1/json-processing">
+    <div class="test-card-title">JSON Processing</div>
+    <div class="test-card-desc">Load dataset, compute derived fields, serialize ~10 KB JSON response.</div>
+    <div class="test-card-endpoint">GET /json</div>
+  </a>
+  <a class="test-card" href="docs/tests/h1/upload">
+    <div class="test-card-title">Upload (20 MB)</div>
+    <div class="test-card-desc">Ingest a 20 MB binary payload and return its CRC32 checksum.</div>
+    <div class="test-card-endpoint">POST /upload</div>
+  </a>
+  <a class="test-card" href="docs/tests/h1/compression">
+    <div class="test-card-title">Compression</div>
+    <div class="test-card-desc">Serve ~1 MB JSON with gzip compression. Bandwidth-adjusted scoring.</div>
+    <div class="test-card-endpoint">GET /compression (gzip)</div>
+  </a>
+  <a class="test-card" href="docs/tests/h1/caching">
+    <div class="test-card-title">Caching (ETag 304)</div>
+    <div class="test-card-desc">Conditional requests with If-None-Match — server returns 304 Not Modified.</div>
+    <div class="test-card-endpoint">GET /caching</div>
+  </a>
+  <a class="test-card" href="docs/tests/h1/pipelined">
+    <div class="test-card-title">Pipelined (16x)</div>
+    <div class="test-card-desc">16 requests sent back-to-back per connection. Tests pipeline batching.</div>
+    <div class="test-card-endpoint">GET /pipeline</div>
+  </a>
+</div>
+</div>
+
+<div class="tests-proto">
+<span class="tests-proto-label tests-proto-h2">HTTP/2</span>
+<div class="tests-grid">
+  <a class="test-card" href="docs/tests/h2/baseline-h2">
+    <div class="test-card-title">Baseline</div>
+    <div class="test-card-desc">Multiplexed HTTP/2 streams over TLS with 100 concurrent streams per connection.</div>
+    <div class="test-card-endpoint">GET /baseline2 (h2)</div>
+  </a>
+  <a class="test-card" href="docs/tests/h2/static-h2">
+    <div class="test-card-title">Static Files</div>
+    <div class="test-card-desc">Round-robin across 20 pre-loaded static files — CSS, JS, HTML, fonts, images.</div>
+    <div class="test-card-endpoint">GET /static/* (h2)</div>
+  </a>
+</div>
+</div>
+
+<div class="tests-proto">
+<span class="tests-proto-label tests-proto-h3">HTTP/3</span>
+<div class="tests-grid">
+  <a class="test-card" href="docs/tests/h3/baseline-h3">
+    <div class="test-card-title">Baseline</div>
+    <div class="test-card-desc">HTTP/3 over QUIC — measures framework performance with UDP-based transport.</div>
+    <div class="test-card-endpoint">GET /baseline2 (h3)</div>
+  </a>
+  <a class="test-card" href="docs/tests/h3/static-h3">
+    <div class="test-card-title">Static Files</div>
+    <div class="test-card-desc">Multi-URI static file serving over QUIC with parallel streams.</div>
+    <div class="test-card-endpoint">GET /static/* (h3)</div>
+  </a>
+</div>
+</div>
+
+</div>
+
