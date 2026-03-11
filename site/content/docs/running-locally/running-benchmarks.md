@@ -54,3 +54,16 @@ With `--save`, it additionally:
 8. Rebuilds site data files in `site/data/`
 
 For HTTP/1.1 profiles (`baseline`, `pipelined`, `limited-conn`, `json`, `upload`, `compression`, `noisy`), the load generator is **gcannon**. For HTTP/2 profiles (`baseline-h2`, `static-h2`), the load generator is **h2load**. For HTTP/3 profiles (`baseline-h3`, `static-h3`), the load generator is **oha**.
+
+## Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `THREADS` | `64` | Number of threads for **gcannon** (HTTP/1.1 load generator) |
+| `H2THREADS` | `128` | Number of threads for **h2load** (HTTP/2 load generator) |
+
+Example — run with custom thread counts:
+
+```bash
+THREADS=8 H2THREADS=128 ./scripts/benchmark.sh aspnet-minimal
+```

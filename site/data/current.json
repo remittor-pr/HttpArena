@@ -1,13 +1,13 @@
 {
-  "date": "2026-03-10",
+  "date": "2026-03-11",
   "cpu": "AMD Ryzen Threadripper PRO 3995WX 64-Cores",
   "cores": "128",
   "ram": "251Gi",
   "os": "Ubuntu 24.04.4 LTS",
   "kernel": "6.17.0-14-generic",
   "docker": "29.3.0",
-  "commit": "4763dfe",
-  "governor": "powersave",
+  "commit": "03ec7a8",
+  "governor": "performance",
   "docker_runtime": "runc",
   "threads_per_core": "2",
   "tcp": {

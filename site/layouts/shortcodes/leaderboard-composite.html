@@ -6,8 +6,8 @@
   (dict "id" "upload" "label" "Upload" "sublabel" "HTTP/1.1" "proto" "h1" "conns" (slice 64 256 512) "scored" true)
   (dict "id" "compression" "label" "Compression" "sublabel" "HTTP/1.1" "proto" "h1" "conns" (slice 4096 16384) "scored" true)
   (dict "id" "noisy" "label" "Noisy" "sublabel" "HTTP/1.1" "proto" "h1" "conns" (slice 512 4096 16384) "scored" false)
-  (dict "id" "baseline-h2" "label" "Baseline" "sublabel" "HTTP/2" "proto" "h2" "conns" (slice 64 256 1024) "scored" true)
-  (dict "id" "static-h2" "label" "Static" "sublabel" "HTTP/2" "proto" "h2" "conns" (slice 64 256 1024) "scored" true)
+  (dict "id" "baseline-h2" "label" "Baseline" "sublabel" "HTTP/2" "proto" "h2" "conns" (slice 256 1024) "scored" true)
+  (dict "id" "static-h2" "label" "Static" "sublabel" "HTTP/2" "proto" "h2" "conns" (slice 256 1024) "scored" true)
   (dict "id" "baseline-h3" "label" "Baseline" "sublabel" "HTTP/3" "proto" "h3" "conns" (slice 256 512) "scored" true)
   (dict "id" "static-h3" "label" "Static" "sublabel" "HTTP/3" "proto" "h3" "conns" (slice 256 512) "scored" true)
 }}
@@ -425,15 +425,17 @@ function renderComposite() {
         var pid = activeIds[i];
         var rps = avgByProfile[pid][r.framework];
         if (s === 0) {
+          var protoTag = profileProtos[pid] === 'h3' ? ' (H3)' : profileProtos[pid] === 'h2' ? ' (H2)' : ' (H1)';
           profileDetails +=
             '<div>' +
-              '<div class="lb-popup-stat-label">' + profileLabels[pid] + '</div>' +
+              '<div class="lb-popup-stat-label">' + profileLabels[pid] + protoTag + '</div>' +
               '<div class="lb-popup-stat-value" style="color:#94a3b8;">— <span style="font-size:0.7rem;">(not participating)</span></div>' +
             '</div>';
         } else {
+          var protoTag = profileProtos[pid] === 'h3' ? ' (H3)' : profileProtos[pid] === 'h2' ? ' (H2)' : ' (H1)';
           profileDetails +=
             '<div>' +
-              '<div class="lb-popup-stat-label">' + profileLabels[pid] + '</div>' +
+              '<div class="lb-popup-stat-label">' + profileLabels[pid] + protoTag + '</div>' +
               '<div class="lb-popup-stat-value">' + s.toFixed(1) + ' <span style="font-size:0.7rem; color:#94a3b8;">(' + Number(rps).toLocaleString() + ' req/s)</span></div>' +
             '</div>';
         }

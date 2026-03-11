@@ -10,7 +10,8 @@ H2LOAD="${H2LOAD:-h2load}"
 OHA="${OHA:-$HOME/.cargo/bin/oha}"
 HARD_NOFILE=$(ulimit -Hn)
 ulimit -n "$HARD_NOFILE"
-THREADS="${THREADS:-12}"
+THREADS="${THREADS:-64}"
+H2THREADS="${H2THREADS:-128}"
 DURATION=5s
 RUNS=3
 PORT=8080
@@ -30,8 +31,8 @@ declare -A PROFILES=(
     [upload]="1|0||64,256,512|upload"
     [compression]="1|0||4096,16384|compression"
     [noisy]="1|0||512,4096,16384|noisy"
-    [baseline-h2]="1|0||64,256,1024|h2"
-    [static-h2]="1|0||64,256,1024|static-h2"
+    [baseline-h2]="1|0||256,1024|h2"
+    [static-h2]="1|0||256,1024|static-h2"
     [baseline-h3]="32|0||256,512|h3"
     [static-h3]="32|0||256,512|static-h3"
 )
@@ -208,11 +209,31 @@ cleanup() {
     docker stop -t 5 "$CONTAINER_NAME" 2>/dev/null || true
     docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
 }
-trap cleanup EXIT
+
+# Save original CPU governor
+ORIG_GOVERNOR=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo "")
+
+restore_settings() {
+    docker stop -t 5 "$CONTAINER_NAME" 2>/dev/null || true
+    docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+    if [ -n "$ORIG_GOVERNOR" ]; then
+        echo "[restore] Restoring CPU governor to $ORIG_GOVERNOR..."
+        for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+            sudo sh -c "echo $ORIG_GOVERNOR > $g" 2>/dev/null || true
+        done
+    fi
+}
+trap restore_settings EXIT
 
 # Clean slate: stop containers, restart Docker, drop caches
 docker ps -q --filter "name=httparena-" | xargs -r docker stop -t 5 2>/dev/null || true
 docker ps -aq --filter "name=httparena-" | xargs -r docker rm -f 2>/dev/null || true
+
+echo "[tune] Setting CPU governor to performance..."
+for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+    sudo sh -c "echo performance > $g" 2>/dev/null || true
+done
+
 echo "[clean] Restarting Docker daemon..."
 sudo systemctl restart docker
 sleep 3
@@ -327,12 +348,12 @@ for profile in "${profiles_to_run[@]}"; do
         USE_H2LOAD=true
         gc_args=("$H2LOAD"
             -i "$REQUESTS_DIR/static-h2-uris.txt"
-            -c "$CONNS" -m 100 -t "$THREADS" -D "$DURATION")
+            -c "$CONNS" -m 100 -t "$H2THREADS" -D "$DURATION")
     elif [ "$endpoint" = "h2" ]; then
         USE_H2LOAD=true
         gc_args=("$H2LOAD"
             "https://localhost:$H2PORT/baseline2?a=1&b=1"
-            -c "$CONNS" -m 100 -t "$THREADS" -D "$DURATION")
+            -c "$CONNS" -m 100 -t "$H2THREADS" -D "$DURATION")
     elif [ "$endpoint" = "pipeline" ]; then
         gc_args=("http://localhost:$PORT/pipeline"
             -c "$CONNS" -t "$THREADS" -d "$DURATION" -p "$pipeline")

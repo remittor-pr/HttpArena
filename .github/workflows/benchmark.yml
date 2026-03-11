@@ -1,6 +1,10 @@
 name: Benchmark
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'frameworks/**'
   workflow_dispatch:
     inputs:
       framework:
@@ -11,44 +15,47 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: benchmark
+  cancel-in-progress: false
+
 jobs:
   benchmark:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      - name: Determine frameworks
-        id: frameworks
+      - name: Detect modified frameworks
+        id: detect
         run: |
           if [ -n "${{ inputs.framework }}" ]; then
             echo "list=${{ inputs.framework }}" >> "$GITHUB_OUTPUT"
           else
-            echo "list=$(ls -d frameworks/*/ | xargs -n1 basename | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+            list=$(git diff --name-only HEAD~1 HEAD \
+              | grep '^frameworks/' \
+              | cut -d'/' -f2 \
+              | sort -u \
+              | tr '\n' ' ')
+            echo "list=$list" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run benchmarks
+        if: steps.detect.outputs.list != ''
         run: |
-          for fw in ${{ steps.frameworks.outputs.list }}; do
+          for fw in ${{ steps.detect.outputs.list }}; do
             echo ">>> Benchmarking: $fw"
-            ./scripts/benchmark.sh "$fw" || echo "WARN: $fw benchmark failed"
+            ./scripts/benchmark.sh --save "$fw" || echo "WARN: $fw benchmark failed"
           done
 
-      - name: Update site data
-        run: |
-          mkdir -p site/data
-          echo '[' > site/data/results.json
-          first=true
-          for f in results/*.json; do
-            [ -f "$f" ] || continue
-            $first || echo ',' >> site/data/results.json
-            cat "$f" >> site/data/results.json
-            first=false
-          done
-          echo ']' >> site/data/results.json
-
-      - name: Commit results
+      - name: Commit and push results
+        if: steps.detect.outputs.list != ''
         run: |
           git config user.name "HttpArena Bot"
           git config user.email "bot@httparena"
-          git add site/data/results.json
-          git diff --cached --quiet || git commit -m "Update benchmark results" && git push
+          git add results/ site/data/ site/static/logs/
+          if ! git diff --cached --quiet; then
+            git commit -m "benchmark: update results for ${{ steps.detect.outputs.list }}"
+            git push
+          fi
