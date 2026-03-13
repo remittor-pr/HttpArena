@@ -1212,7 +1212,7 @@ function fmtK(n) {
 var mixedColors = {baseline:'#3b82f6', json:'#8b5cf6', db:'#f59e0b', upload:'#10b981', compression:'#ef4444'};
 var mixedLabels = {baseline:'Baseline', json:'JSON', db:'DB', upload:'Upload', compression:'Gzip'};
 var mixedKeys = ['baseline','json','db','upload','compression'];
-var mixedWeights = {baseline:0.1, json:1, db:15, upload:15, compression:8};
+var mixedWeights = {baseline:0.15, json:1, db:10, upload:10, compression:7};
 
 var mixedGrid = '2.5rem 10rem 5.5rem 4.5rem 4.5rem 3.5rem 6rem 5rem 3.5rem 5rem 4.5rem 5.5rem 5rem 5rem 4rem';
 
@@ -1275,7 +1275,7 @@ function applyMixedPanel(panel) {
       barHeader.className = 'lb-mix-header';
       barHeader.style.textAlign = 'right';
       barHeader.style.fontWeight = '600';
-      barHeader.title = 'Weighted score: baseline\u00d70.1 + json\u00d71 + db\u00d715 + upload\u00d715 + gzip\u00d78, normalized to 100';
+      barHeader.title = 'Weighted score: baseline\u00d70.15 + json\u00d71 + db\u00d710 + upload\u00d710 + gzip\u00d77, normalized to 100';
       barHeader.textContent = 'Score';
       /* Insert mix legend header after Score */
       var mixHeader = document.createElement('div');
@@ -1366,7 +1366,7 @@ function applyMixedScores() {
         barHeader.className = 'lb-mix-header';
         barHeader.style.textAlign = 'right';
         barHeader.style.fontWeight = '600';
-        barHeader.title = 'Weighted score: baseline\u00d70.1 + json\u00d71 + db\u00d715 + upload\u00d715 + gzip\u00d78, normalized to 100';
+        barHeader.title = 'Weighted score: baseline\u00d70.15 + json\u00d71 + db\u00d710 + upload\u00d710 + gzip\u00d77, normalized to 100';
         barHeader.textContent = 'Score';
         var mixHeader = document.createElement('div');
         mixHeader.innerHTML = '<div style="font-size:0.65rem;font-weight:600;margin-bottom:1px;">Request Mix</div>' +

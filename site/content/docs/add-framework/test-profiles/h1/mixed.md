@@ -39,17 +39,17 @@ Raw requests per second is not a fair metric for mixed workloads because differe
 The mixed score weights each request by its computational cost:
 
 ```
-weighted = baseline × 0.1 + json × 1 + db × 15 + upload × 15 + compression × 8
+weighted = baseline × 0.15 + json × 1 + db × 10 + upload × 10 + compression × 7
 score    = (weighted / max(weighted)) × 100
 ```
 
 | Request type | Weight | Rationale |
 |-------------|--------|-----------|
-| Baseline | 0.1 | Trivial — parse query params, add integers, return 2 bytes |
+| Baseline | 0.15 | Trivial — parse query params, add integers, return 2 bytes |
 | JSON | 1 | Moderate — iterate 50 items, compute fields, serialize ~10 KB |
-| DB | 15 | Heavy — SQLite range query, parse tags, build JSON response |
-| Upload | 15 | Heavy — receive 1 MB body, return byte count, memory management |
-| Compression | 8 | Heavy — gzip-compress ~1 MB response on the fly |
+| DB | 10 | Heavy — SQLite range query, parse tags, build JSON response |
+| Upload | 10 | Heavy — receive 1 MB body, return byte count, memory management |
+| Compression | 7 | Heavy — gzip-compress ~1 MB response on the fly |
 
 The framework with the highest weighted total scores **100**, others scale proportionally.
 

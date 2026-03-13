@@ -66,15 +66,46 @@ html.dark .composite-disclaimer { color: #fff !important; background: rgba(234,1
   html.dark .composite-type-filter[data-type="engine"].active { color:#fbbf24; border-color:#f59e0b; background:rgba(245,158,11,0.12); }
   </style>
 
-  <div class="lb-filters composite-profiles-wrap" style="margin:0.5rem 0 0 0; padding:0.75rem 1rem; background:rgba(0,0,0,0.04); border-radius:8px; border:1px solid rgba(0,0,0,0.08);">
-    <span class="lb-filters-label">Tests</span>
-    <span class="lb-filters-hint">(Toggle)</span>
-    <div class="composite-profile-filter active" data-profile="all">All</div>
-    {{ range $profiles }}
-    <div class="composite-profile-filter cp-{{ .proto }} active" data-profile="{{ .id }}">{{ .label }} <span style="font-size:0.65rem; color:#94a3b8;">({{ .sublabel }})</span></div>
-    {{ end }}
+  <div class="composite-profiles-wrap" style="margin:0.5rem 0 0 0; padding:0.75rem 1rem; background:rgba(0,0,0,0.04); border-radius:8px; border:1px solid rgba(0,0,0,0.08); display:flex; flex-direction:column; gap:0.5rem;">
+    <div class="lb-filters" style="margin:0; padding:0;">
+      <span class="lb-filters-label">Tests</span>
+      <span class="lb-filters-hint">(Toggle)</span>
+      <div class="composite-profile-filter active" data-profile="all">All</div>
+    </div>
+    <div class="lb-filters" style="margin:0; padding:0;">
+      <span class="composite-proto-label composite-proto-toggle active" data-proto="h1">HTTP/1.1</span>
+      {{ range $profiles }}{{ if eq .proto "h1" }}
+      <div class="composite-profile-filter cp-{{ .proto }} active" data-profile="{{ .id }}">{{ .label }}</div>
+      {{ end }}{{ end }}
+    </div>
+    <div class="lb-filters" style="margin:0; padding:0;">
+      <span class="composite-proto-label composite-proto-toggle active" data-proto="h2">HTTP/2</span>
+      {{ range $profiles }}{{ if eq .proto "h2" }}
+      <div class="composite-profile-filter cp-{{ .proto }} active" data-profile="{{ .id }}">{{ .label }}</div>
+      {{ end }}{{ end }}
+    </div>
+    <div class="lb-filters" style="margin:0; padding:0;">
+      <span class="composite-proto-label composite-proto-toggle active" data-proto="h3">HTTP/3</span>
+      {{ range $profiles }}{{ if eq .proto "h3" }}
+      <div class="composite-profile-filter cp-{{ .proto }} active" data-profile="{{ .id }}">{{ .label }}</div>
+      {{ end }}{{ end }}
+    </div>
   </div>
   <style>
+  .composite-proto-label { font-size:0.7rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; align-self:center; }
+  .composite-proto-toggle { cursor:pointer; user-select:none; padding:0.25rem 0.6rem; border-radius:5px; border:1.5px solid #e2e8f0; color:#94a3b8; background:transparent; transition:all 0.15s ease; }
+  .composite-proto-toggle:hover { transform:translateY(-1px); box-shadow:0 2px 4px rgba(0,0,0,0.08); color:#475569; border-color:#cbd5e1; }
+  .composite-proto-toggle.active[data-proto="h1"] { color:#3b82f6; border-color:#3b82f6; background:rgba(59,130,246,0.06); }
+  .composite-proto-toggle.active[data-proto="h2"] { color:#d97706; border-color:#d97706; background:rgba(217,119,6,0.06); }
+  .composite-proto-toggle.active[data-proto="h3"] { color:#16a34a; border-color:#16a34a; background:rgba(22,163,74,0.06); }
+  .composite-proto-toggle.active[data-proto="h1"]:hover { background:rgba(59,130,246,0.12); }
+  .composite-proto-toggle.active[data-proto="h2"]:hover { background:rgba(217,119,6,0.12); }
+  .composite-proto-toggle.active[data-proto="h3"]:hover { background:rgba(22,163,74,0.12); }
+  html.dark .composite-proto-toggle { color:#64748b; border-color:#334155; }
+  html.dark .composite-proto-toggle:hover { color:#94a3b8; border-color:#475569; }
+  html.dark .composite-proto-toggle.active[data-proto="h1"] { color:#60a5fa; border-color:#3b82f6; background:rgba(59,130,246,0.12); }
+  html.dark .composite-proto-toggle.active[data-proto="h2"] { color:#fbbf24; border-color:#d97706; background:rgba(217,119,6,0.12); }
+  html.dark .composite-proto-toggle.active[data-proto="h3"] { color:#4ade80; border-color:#16a34a; background:rgba(22,163,74,0.12); }
   .composite-profile-filter { padding:0.3rem 0.75rem; font-size:0.8rem; font-weight:500; color:#94a3b8; cursor:pointer; border-radius:6px; border:1.5px solid #e2e8f0; background:transparent; transition:all 0.15s ease; user-select:none; }
   .composite-profile-filter:hover { color:#475569; border-color:#cbd5e1; transform:translateY(-1px); box-shadow:0 2px 4px rgba(0,0,0,0.08); }
   .composite-profile-filter[data-profile="all"].active { color:#8b5cf6; border-color:#8b5cf6; background:rgba(139,92,246,0.06); font-weight:600; }
@@ -297,7 +328,7 @@ function renderComposite() {
   });
 
   // For mixed: compute weighted scores and re-normalize
-  var mixedWeights = {baseline:0.1, json:1, db:15, upload:15, compression:8};
+  var mixedWeights = {baseline:0.15, json:1, db:10, upload:10, compression:7};
   if (activeIds.indexOf('mixed') >= 0) {
     var maxWeighted = 0;
     Object.keys(avgTplMixed).forEach(function(fw) {
@@ -539,6 +570,17 @@ function renderComposite() {
 // Initial render
 renderComposite();
 
+// Sync proto toggle active state based on child profile filters
+function syncProtoToggles() {
+  document.querySelectorAll('.composite-proto-toggle').forEach(function(pt) {
+    var proto = pt.dataset.proto;
+    var groupFilters = document.querySelectorAll('.composite-profile-filter.cp-' + proto);
+    var anyActive = Array.prototype.some.call(groupFilters, function(f) { return f.classList.contains('active'); });
+    if (anyActive) pt.classList.add('active');
+    else pt.classList.remove('active');
+  });
+}
+
 // Profile filter click handlers
 document.querySelectorAll('.composite-profile-filter').forEach(function(btn) {
   btn.addEventListener('click', function() {
@@ -556,6 +598,29 @@ document.querySelectorAll('.composite-profile-filter').forEach(function(btn) {
         allFilters.forEach(function(f) { f.classList.add('active'); });
       }
     }
+    syncProtoToggles();
+    renderComposite();
+  });
+});
+
+// Protocol group toggle handlers
+document.querySelectorAll('.composite-proto-toggle').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var proto = btn.dataset.proto;
+    var groupFilters = document.querySelectorAll('.composite-profile-filter.cp-' + proto);
+    var allActive = Array.prototype.every.call(groupFilters, function(f) { return f.classList.contains('active'); });
+    groupFilters.forEach(function(f) {
+      if (allActive) f.classList.remove('active');
+      else f.classList.add('active');
+    });
+    var allBtn = document.querySelector('.composite-profile-filter[data-profile="all"]');
+    allBtn.classList.remove('active');
+    var total = document.querySelectorAll('.composite-profile-filter[data-profile]:not([data-profile="all"])').length;
+    var active = document.querySelectorAll('.composite-profile-filter[data-profile]:not([data-profile="all"]).active').length;
+    if (active === 0 || active === total) {
+      document.querySelectorAll('.composite-profile-filter').forEach(function(f) { f.classList.add('active'); });
+    }
+    syncProtoToggles();
     renderComposite();
   });
 });

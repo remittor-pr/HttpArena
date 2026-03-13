@@ -34,18 +34,34 @@ Frameworks that don't participate in a scored profile receive 0 for that profile
 
 Not all profiles count toward the composite score. Profiles marked as **scored** contribute to the composite. Reference-only profiles (marked with **\***) are displayed for comparison but do not affect the ranking.
 
-| Profile | Protocol | Scored | Workload |
-|---|---|---|---|
-| Baseline | HTTP/1.1 | Yes | Mixed GET/POST with query parsing |
-| Pipelined | HTTP/1.1 | No (*) | 16 requests batched per connection |
-| Short-lived | HTTP/1.1 | Yes | Connections closed after 10 requests |
-| JSON | HTTP/1.1 | Yes | Dataset processing and serialization |
-| Baseline | HTTP/2 | Yes | Query parsing over TLS with multiplexed streams |
-| Static | HTTP/2 | Yes | 20 static files served over TLS with multiplexed streams |
-| Baseline | HTTP/3 | Yes | Query parsing over QUIC (UDP) with TLS 1.3 |
-| Static | HTTP/3 | Yes | 20 static files served over QUIC (UDP) with TLS 1.3 |
+### HTTP/1.1
 
-Pipelined is reference-only because not all frameworks support HTTP pipelining.
+| Profile | Scored | Workload |
+|---|---|---|
+| Baseline | Yes | Mixed GET/POST with query parsing |
+| Short-lived | Yes | Connections closed after 10 requests |
+| JSON | Yes | Dataset processing and serialization |
+| Upload | Yes | 20 MB body ingestion, return byte count |
+| Compression | Yes | ~1 MB gzip-compressed JSON response |
+| Mixed | Yes | Weighted mix of baseline, JSON, DB, upload, compression |
+| Pipelined | No (*) | 16 requests batched per connection |
+| Noisy | No (*) | Valid requests interleaved with malformed noise |
+
+### HTTP/2
+
+| Profile | Scored | Workload |
+|---|---|---|
+| Baseline | Yes | Query parsing over TLS with multiplexed streams |
+| Static | Yes | 20 static files served over TLS with multiplexed streams |
+
+### HTTP/3
+
+| Profile | Scored | Workload |
+|---|---|---|
+| Baseline | Yes | Query parsing over QUIC (UDP) with TLS 1.3 |
+| Static | Yes | 20 static files served over QUIC (UDP) with TLS 1.3 |
+
+Pipelined and Noisy are reference-only because not all frameworks support HTTP pipelining, and noisy traffic handling varies too widely to be fairly scored.
 
 ## Resource efficiency factors
 
