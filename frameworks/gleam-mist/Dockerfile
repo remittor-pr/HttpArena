@@ -1,4 +1,4 @@
-FROM ghcr.io/gleam-lang/gleam:v1.8.0-erlang-alpine AS build
+FROM ghcr.io/gleam-lang/gleam:v1.14.0-erlang-alpine AS build
 RUN apk add --no-cache gcc musl-dev sqlite-dev
 WORKDIR /app
 COPY gleam.toml .
