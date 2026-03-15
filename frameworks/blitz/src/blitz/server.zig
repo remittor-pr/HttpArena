@@ -300,7 +300,22 @@ fn workerThread(router: *Router, config: Config, is_primary: bool) void {
                 var compress_buf: [COMPRESS_BUF_SIZE]u8 = undefined;
                 var off: usize = 0;
                 while (off < st.read_len) {
-                    const result = parser.parse(st.read_buf[off..st.read_len]) orelse break;
+                    const result = parser.parse(st.read_buf[off..st.read_len]) orelse {
+                        // Check if we have complete headers but parse still failed
+                        // (e.g. unknown HTTP method) — send 400 Bad Request
+                        const remaining = st.read_buf[off..st.read_len];
+                        if (std.mem.indexOf(u8, remaining, "\r\n\r\n")) |hdr_end| {
+                            // Complete headers present but unparseable — bad request
+                            var bad_res = Response{};
+                            bad_res.status = .bad_request;
+                            bad_res.body = "Bad Request";
+                            bad_res.writeTo(&st.write_list);
+                            off += hdr_end + 4; // skip past this request
+                            should_close = true;
+                            continue;
+                        }
+                        break; // incomplete data — wait for more
+                    };
                     var req = result.request;
                     var res = Response{};
 
