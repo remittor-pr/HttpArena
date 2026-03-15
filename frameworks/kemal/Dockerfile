@@ -7,7 +7,7 @@ WORKDIR /app
 RUN apk add --no-cache sqlite-dev sqlite-static
 
 # Copy dependency file first for caching
-COPY shard.yml shard.yml
+COPY shard.yml shard.lock ./
 RUN shards install --production
 
 # Copy source and build
