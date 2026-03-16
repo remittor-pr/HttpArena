@@ -10,7 +10,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="zerg" Version="0.5.24" />
+    <PackageReference Include="zerg" Version="0.5.25" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.3" />
   </ItemGroup>
 </Project>
