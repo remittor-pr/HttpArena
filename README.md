@@ -8,6 +8,18 @@ HTTP framework benchmark platform.
 
 ---
 
+## PR Commands
+
+Tag **@BennyFranciscus** on your PR for help with implementation or benchmark questions.
+
+| Command | Action |
+|---------|--------|
+| `/validate` | Run the 18-point validation suite |
+| `/benchmark` | Run all benchmark profiles |
+| `/benchmark baseline` | Run a specific profile |
+
+---
+
 ## Test Profiles
 
 | Category | Profiles | Description |
@@ -37,16 +49,6 @@ cd HttpArena
 4. Open a PR — validation runs automatically
 
 See any existing entry in `frameworks/` for reference.
-
-## PR Commands
-
-| Command | Action |
-|---------|--------|
-| `/validate` | Run the 18-point validation suite |
-| `/benchmark` | Run all benchmark profiles |
-| `/benchmark baseline` | Run a specific profile |
-
-Tag **@BennyFranciscus** on your PR for help with implementation or benchmark questions.
 
 ## Hardware
 
