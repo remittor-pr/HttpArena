@@ -287,8 +287,11 @@ fn workerThread(router: *Router, config: Config, is_primary: bool) void {
             if (ev.events & linux.EPOLL.IN != 0) {
                 var should_close = false;
 
-                while (st.read_len < BUF_SIZE) {
-                    const n_read = posix.read(fd, st.read_buf[st.read_len..]) catch {
+                // Read into active buffer (static or dynamic)
+                while (true) {
+                    const rem_buf = st.readBufRemaining() orelse break;
+                    if (rem_buf.len == 0) break;
+                    const n_read = posix.read(fd, rem_buf) catch {
                         should_close = true;
                         break;
                     };
@@ -296,24 +299,41 @@ fn workerThread(router: *Router, config: Config, is_primary: bool) void {
                         should_close = true;
                         break;
                     }
-                    st.read_len += n_read;
+                    st.advanceRead(n_read);
+                    // If still in static buffer and full, stop — check promotion below
+                    if (st.dyn_buf == null and st.read_len >= BUF_SIZE) break;
                 }
 
                 // Parse and handle pipelined requests
                 var compress_buf: [COMPRESS_BUF_SIZE]u8 = undefined;
                 const logging = log_config.enabled;
                 var off: usize = 0;
-                while (off < st.read_len) {
-                    const result = parser.parse(st.read_buf[off..st.read_len]) orelse {
+                const cur_len = st.activeReadLen();
+                const cur_data = st.readSlice();
+                while (off < cur_len) {
+                    const result = parser.parse(cur_data[off..cur_len]) orelse {
                         // Distinguish incomplete data from bad request:
                         // If we can see complete headers (\r\n\r\n) but parse failed,
-                        // it's a malformed request (bad method, bad URI, etc.) → 400.
-                        const remaining = st.read_buf[off..st.read_len];
+                        // check if it needs dynamic buffer promotion for large bodies.
+                        const remaining = cur_data[off..cur_len];
                         if (mem.indexOf(u8, remaining, "\r\n\r\n")) |hdr_end| {
-                            // Headers complete but unparseable — send 400 Bad Request
+                            // Headers complete — check if large body needs promotion
+                            const cl = detectContentLength(remaining[0..hdr_end]);
+                            if (cl != null and cl.? > BUF_SIZE and st.dyn_buf == null) {
+                                // Promote to dynamic buffer for large body
+                                const total_needed = hdr_end + 4 + cl.?;
+                                if (st.promoteToDynamic(alloc, total_needed)) {
+                                    break; // Will read more in next epoll cycle
+                                }
+                            }
+                            // If dynamic buffer active but body still incomplete, wait
+                            if (st.dyn_buf != null) {
+                                break;
+                            }
+                            // Genuinely bad request — send 400
                             const bad_resp = "HTTP/1.1 400 Bad Request\r\nServer: blitz\r\nContent-Length: 11\r\nConnection: close\r\n\r\nBad Request";
                             st.write_list.appendSlice(bad_resp) catch {};
-                            off += hdr_end + 4; // skip past the bad request
+                            off += hdr_end + 4;
                             should_close = true;
                             break;
                         }
@@ -348,9 +368,19 @@ fn workerThread(router: *Router, config: Config, is_primary: bool) void {
                 }
 
                 if (off > 0) {
-                    const rem = st.read_len - off;
-                    if (rem > 0) std.mem.copyForwards(u8, st.read_buf[0..rem], st.read_buf[off..st.read_len]);
-                    st.read_len = rem;
+                    if (st.dyn_buf != null) {
+                        // Done with large body — revert to static buffer
+                        const rem = st.dyn_len - off;
+                        if (rem > 0 and rem <= BUF_SIZE) {
+                            @memcpy(st.read_buf[0..rem], st.dyn_buf.?[off..st.dyn_len]);
+                        }
+                        st.revertToStatic();
+                        st.read_len = if (rem <= BUF_SIZE) rem else 0;
+                    } else {
+                        const rem = st.read_len - off;
+                        if (rem > 0) std.mem.copyForwards(u8, st.read_buf[0..rem], st.read_buf[off..st.read_len]);
+                        st.read_len = rem;
+                    }
                     st.touch();
                 }
 
@@ -517,4 +547,27 @@ fn timerfdSetInterval(fd: i32, seconds: i64) void {
 fn setSockOptInt(fd: i32, level: i32, optname: u32, val: c_int) void {
     const v = mem.toBytes(val);
     posix.setsockopt(fd, level, optname, &v) catch {};
+}
+
+/// Scan raw header bytes for a Content-Length value.
+/// Returns the parsed value or null if not found.
+fn detectContentLength(headers: []const u8) ?usize {
+    var pos: usize = 0;
+    while (pos < headers.len) {
+        const line_end = mem.indexOf(u8, headers[pos..], "\r\n") orelse headers.len - pos;
+        const line = headers[pos .. pos + line_end];
+        if (line.len > 16) { // "Content-Length: " = 16 chars
+            const colon = mem.indexOfScalar(u8, line, ':') orelse {
+                pos += line_end + 2;
+                continue;
+            };
+            const name = line[0..colon];
+            if (name.len == 14 and types.asciiEqlIgnoreCase(name, "Content-Length")) {
+                const value = mem.trimLeft(u8, line[colon + 1 ..], " ");
+                return std.fmt.parseInt(usize, value, 10) catch null;
+            }
+        }
+        pos += line_end + 2;
+    }
+    return null;
 }
