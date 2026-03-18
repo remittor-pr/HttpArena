@@ -63,6 +63,12 @@ if has_test "static-h2" || has_test "static-h3"; then
     docker_args+=(-v "$DATA_DIR/static:/data/static:ro")
 fi
 
+# Allow io_uring syscalls for frameworks that need them (blocked by default seccomp)
+ENGINE=$(python3 -c "import json; print(json.load(open('$META_FILE')).get('engine',''))" 2>/dev/null || true)
+if [ "$ENGINE" = "io_uring" ]; then
+    docker_args+=(--security-opt seccomp=unconfined)
+fi
+
 docker run "${docker_args[@]}" "$IMAGE_NAME"
 
 # Wait for server to start
