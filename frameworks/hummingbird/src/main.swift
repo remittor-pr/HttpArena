@@ -209,7 +209,7 @@ let state = AppState(
 let router = Router()
 
 // Add response compression (only activates when client sends accept-encoding)
-router.middlewares.add(ResponseCompressionMiddleware(minimumResponseSizeToCompress: 512))
+router.middlewares.add(ResponseCompressionMiddleware(minimumResponseSizeToCompress: 512, zlibCompressionLevel: .fastestCompression))
 
 // Server header middleware
 struct ServerHeaderMiddleware<Context: RequestContext>: RouterMiddleware {
