@@ -626,10 +626,6 @@ document.querySelectorAll('.lb-tab').forEach(function(tab) {
   tab.addEventListener('click', function() {
     document.querySelectorAll('.lb-panel').forEach(function(p) { p.classList.remove('active'); });
     document.querySelector('[data-panel="' + tab.dataset.tab + '"]').classList.add('active');
-    /* Reset type filter to Framework on tab change */
-    document.querySelectorAll('.lb-type-filter').forEach(function(f) {
-      f.classList.toggle('active', f.dataset.type === 'framework');
-    });
     applyFilters();
   });
 });

@@ -102,6 +102,10 @@ html.dark .http-ver[data-ver="ws"].active { color: #22d3ee; background: rgba(8,1
           if (typeBtn) typeBtn.click();
         }
       }
+      if (ver === 'composite') {
+        var compositeBtn = document.querySelector('.composite-type-filter[data-type="framework"]');
+        if (compositeBtn) compositeBtn.click();
+      }
     });
   });
 })();
