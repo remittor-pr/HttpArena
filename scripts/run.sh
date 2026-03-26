@@ -74,6 +74,15 @@ if has_test "compression"; then
     docker_args+=(-v "$DATA_DIR/dataset-large.json:/data/dataset-large.json:ro")
 fi
 
+if has_test "db"; then
+    DB_FILE="$DATA_DIR/benchmark.db"
+    if [ ! -f "$DB_FILE" ]; then
+        echo "[db] benchmark.db not found, generating..."
+        python3 "$SCRIPT_DIR/generate-db.py" "$DATA_DIR/dataset.json" "$DB_FILE"
+    fi
+    docker_args+=(-v "$DB_FILE:/data/benchmark.db:ro")
+fi
+
 if has_test "static-h2" || has_test "static-h3"; then
     docker_args+=(-v "$DATA_DIR/static:/data/static:ro")
 fi
