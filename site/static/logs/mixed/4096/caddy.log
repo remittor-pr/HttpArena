@@ -1,16 +1,16 @@
-{"level":"info","ts":1773414022.2105927,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
-{"level":"info","ts":1773414022.212042,"msg":"adapted config to JSON","adapter":"caddyfile"}
-{"level":"warn","ts":1773414022.2125347,"logger":"admin","msg":"admin endpoint disabled"}
-{"level":"info","ts":1773414022.215476,"logger":"tls.cache.maintenance","msg":"started background certificate maintenance","cache":"0xc000bd6e80"}
-{"level":"warn","ts":1773414022.2219598,"logger":"tls","msg":"stapling OCSP","error":"no OCSP stapling for [localhost]: no OCSP server specified in certificate"}
-{"level":"info","ts":1773414022.2220073,"logger":"http.auto_https","msg":"automatic HTTPS is completely disabled for server","server_name":"srv0"}
-{"level":"info","ts":1773414022.2220125,"logger":"http.auto_https","msg":"automatic HTTPS is completely disabled for server","server_name":"srv1"}
-{"level":"info","ts":1773414022.2954617,"logger":"http","msg":"enabling HTTP/3 listener","addr":":8443"}
-{"level":"info","ts":1773414022.2969155,"logger":"http.log","msg":"server running","name":"srv1","protocols":["h1","h2","h3"]}
-{"level":"warn","ts":1773414022.2969553,"logger":"http","msg":"HTTP/2 skipped because it requires TLS","network":"tcp","addr":":8080"}
-{"level":"warn","ts":1773414022.296958,"logger":"http","msg":"HTTP/3 skipped because it requires TLS","network":"tcp","addr":":8080"}
-{"level":"info","ts":1773414022.29696,"logger":"http.log","msg":"server running","name":"srv0","protocols":["h1","h2","h3"]}
-{"level":"info","ts":1773414022.297341,"msg":"autosaved config (load with --resume flag)","file":"/root/.config/caddy/autosave.json"}
-{"level":"info","ts":1773414022.2973576,"msg":"serving initial configuration"}
-{"level":"info","ts":1773414022.3001578,"logger":"tls","msg":"cleaning storage unit","storage":"FileStorage:/root/.local/share/caddy"}
-{"level":"info","ts":1773414022.3032234,"logger":"tls","msg":"finished cleaning storage units"}
+{"level":"info","ts":1774486289.414387,"msg":"using config from file","file":"/etc/caddy/Caddyfile"}
+{"level":"info","ts":1774486289.417153,"msg":"adapted config to JSON","adapter":"caddyfile"}
+{"level":"warn","ts":1774486289.4177928,"logger":"admin","msg":"admin endpoint disabled"}
+{"level":"info","ts":1774486289.4192722,"logger":"tls.cache.maintenance","msg":"started background certificate maintenance","cache":"0xc000b33000"}
+{"level":"warn","ts":1774486289.4206154,"logger":"tls","msg":"stapling OCSP","error":"no OCSP stapling for [localhost]: no OCSP server specified in certificate"}
+{"level":"info","ts":1774486289.4206536,"logger":"http.auto_https","msg":"automatic HTTPS is completely disabled for server","server_name":"srv0"}
+{"level":"info","ts":1774486289.4206586,"logger":"http.auto_https","msg":"automatic HTTPS is completely disabled for server","server_name":"srv1"}
+{"level":"warn","ts":1774486289.494657,"logger":"http","msg":"HTTP/2 skipped because it requires TLS","network":"tcp","addr":":8080"}
+{"level":"warn","ts":1774486289.4947014,"logger":"http","msg":"HTTP/3 skipped because it requires TLS","network":"tcp","addr":":8080"}
+{"level":"info","ts":1774486289.4947038,"logger":"http.log","msg":"server running","name":"srv0","protocols":["h1","h2","h3"]}
+{"level":"info","ts":1774486289.4947703,"logger":"http","msg":"enabling HTTP/3 listener","addr":":8443"}
+{"level":"info","ts":1774486289.4960635,"logger":"http.log","msg":"server running","name":"srv1","protocols":["h1","h2","h3"]}
+{"level":"info","ts":1774486289.4964979,"msg":"autosaved config (load with --resume flag)","file":"/root/.config/caddy/autosave.json"}
+{"level":"info","ts":1774486289.496504,"msg":"serving initial configuration"}
+{"level":"info","ts":1774486289.5005612,"logger":"tls","msg":"cleaning storage unit","storage":"FileStorage:/root/.local/share/caddy"}
+{"level":"info","ts":1774486289.502796,"logger":"tls","msg":"finished cleaning storage units"}

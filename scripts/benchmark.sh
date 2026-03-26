@@ -485,7 +485,7 @@ for profile in "${profiles_to_run[@]}"; do
     elif [ "$endpoint" = "mixed" ]; then
         gc_args=("http://localhost:$PORT"
             --raw "$REQUESTS_DIR/get.raw,$REQUESTS_DIR/get.raw,$REQUESTS_DIR/get.raw,$REQUESTS_DIR/post_cl.raw,$REQUESTS_DIR/post_cl.raw,$REQUESTS_DIR/json-get.raw,$REQUESTS_DIR/db-get.raw,$REQUESTS_DIR/upload-small.raw,$REQUESTS_DIR/json-gzip.raw,$REQUESTS_DIR/json-gzip.raw"
-            -c "$CONNS" -t "$THREADS" -d "$DURATION" -p "$pipeline")
+            -c "$CONNS" -t "$THREADS" -d 15s -p "$pipeline")
     elif [ "$endpoint" = "noisy" ]; then
         gc_args=("http://localhost:$PORT"
             --raw "$REQUESTS_DIR/get.raw,$REQUESTS_DIR/post_cl.raw,$REQUESTS_DIR/noise-badpath.raw,$REQUESTS_DIR/noise-badcl.raw,$REQUESTS_DIR/noise-binary.raw"

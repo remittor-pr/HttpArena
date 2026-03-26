@@ -650,7 +650,7 @@
     "status_5xx": 0
   },
   {
-    "framework": "ntex",
+    "framework": "ntex-iouring",
     "language": "Rust",
     "rps": 17961248,
     "avg_latency": "455us",

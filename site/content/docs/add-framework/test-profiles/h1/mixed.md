@@ -88,6 +88,6 @@ The leaderboard displays a **stacked bar** for each framework showing the actual
 | Connections | 4,096, 16,384 |
 | Pipeline | 1 |
 | Requests per connection | 5 (then reconnect with next template) |
-| Duration | 5s |
+| Duration | 15s |
 | Runs | 3 (best taken) |
 | Templates | 10 (3 baseline GET, 2 baseline POST, 1 JSON, 1 DB, 1 upload, 2 compression) |

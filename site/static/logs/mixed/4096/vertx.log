@@ -1,1665 +1,1953 @@
 Deployed 128 instances
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
-
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
-SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
-
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
-SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
-
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
-SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
-
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
-SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:10 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:12 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:29 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:30 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:18 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-java.net.SocketException: Connection reset
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
-io.vertx.core.http.HttpClosedException: Connection was closed
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+io.vertx.core.http.HttpClosedException: Connection was closed
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
+
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
+SEVERE: Unhandled exception in router
+java.net.SocketException: Connection reset
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
-Mar 25, 2026 3:21:25 PM io.vertx.ext.web.RoutingContext
+Mar 26, 2026 2:23:47 AM io.vertx.ext.web.RoutingContext
 SEVERE: Unhandled exception in router
 io.vertx.core.http.HttpClosedException: Connection was closed
 
