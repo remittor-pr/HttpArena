@@ -68,6 +68,15 @@ if has_test "compression"; then
     docker_args+=(-v "$DATA_DIR/dataset-large.json:/data/dataset-large.json:ro")
 fi
 
+if has_test "mixed"; then
+    DB_FILE="$DATA_DIR/benchmark.db"
+    if [ ! -f "$DB_FILE" ]; then
+        echo "[db] benchmark.db not found, generating..."
+        python3 "$SCRIPT_DIR/generate-db.py" "$DATA_DIR/dataset.json" "$DB_FILE"
+    fi
+    docker_args+=(-v "$DB_FILE:/data/benchmark.db:ro")
+fi
+
 if has_test "static-h2" || has_test "static-h3"; then
     docker_args+=(-v "$DATA_DIR/static:/data/static:ro")
 fi
@@ -367,6 +376,49 @@ if has_test "noisy"; then
     B4=$((RANDOM % 900 + 100))
     check "GET /baseline11?a=$A4&b=$B4 (post-noise)" "$((A4 + B4))" \
         "http://localhost:$PORT/baseline11?a=$A4&b=$B4"
+fi
+
+# ───── DB (GET /db — SQLite, tested when framework has mixed test) ─────
+
+if has_test "mixed"; then
+    echo "[test] db endpoint (mixed test prerequisite)"
+    response=$(curl -s "http://localhost:$PORT/db?min=10&max=50")
+    db_result=$(echo "$response" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+count = d.get('count', 0)
+items = d.get('items', [])
+has_rating = all('rating' in item and 'score' in item['rating'] for item in items) if items else False
+has_tags = all(isinstance(item.get('tags'), list) for item in items) if items else False
+has_active_bool = all(isinstance(item.get('active'), bool) for item in items) if items else False
+print(f'{count} {has_rating} {has_tags} {has_active_bool}')
+" 2>/dev/null || echo "0 False False False")
+    db_count=$(echo "$db_result" | cut -d' ' -f1)
+    db_rating=$(echo "$db_result" | cut -d' ' -f2)
+    db_tags=$(echo "$db_result" | cut -d' ' -f3)
+    db_active=$(echo "$db_result" | cut -d' ' -f4)
+
+    if [ "$db_count" -gt 0 ] && [ "$db_count" -le 50 ] && [ "$db_rating" = "True" ] && [ "$db_tags" = "True" ] && [ "$db_active" = "True" ]; then
+        echo "  PASS [GET /db?min=10&max=50] ($db_count items, correct structure)"
+        PASS=$((PASS + 1))
+    else
+        echo "  FAIL [GET /db?min=10&max=50]: count=$db_count, rating=$db_rating, tags=$db_tags, active=$db_active"
+        FAIL=$((FAIL + 1))
+    fi
+
+    check_header "GET /db Content-Type" "Content-Type" "application/json" \
+        "http://localhost:$PORT/db?min=10&max=50"
+
+    # Anti-cheat: empty range should return 0 items
+    response_empty=$(curl -s "http://localhost:$PORT/db?min=9999&max=9999")
+    db_empty=$(echo "$response_empty" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count','-1'))" 2>/dev/null || echo "-1")
+    if [ "$db_empty" = "0" ]; then
+        echo "  PASS [GET /db empty range] (count=0)"
+        PASS=$((PASS + 1))
+    else
+        echo "  FAIL [GET /db empty range]: expected count=0, got $db_empty"
+        FAIL=$((FAIL + 1))
+    fi
 fi
 
 # ───── Baseline H2 (GET /baseline2 over HTTP/2 + TLS) ─────
