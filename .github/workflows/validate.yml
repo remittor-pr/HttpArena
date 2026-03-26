@@ -12,7 +12,7 @@ jobs:
     outputs:
       frameworks: ${{ steps.find.outputs.frameworks }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - id: find
@@ -33,6 +33,6 @@ jobs:
       matrix:
         framework: ${{ fromJson(needs.detect.outputs.frameworks) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Validate ${{ matrix.framework }}
         run: ./scripts/validate.sh "${{ matrix.framework }}"
