@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
-require 'json'
 require 'zlib'
-require 'stringio'
-require 'sqlite3'
 
 class BenchmarkController < ActionController::API
   # Pre-load datasets at class level (shared across workers via preload)
