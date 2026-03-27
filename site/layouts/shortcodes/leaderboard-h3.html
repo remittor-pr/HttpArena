@@ -79,7 +79,8 @@ html.dark .h3-disclaimer { color: #fff !important; background: rgba(234,179,8,0.
 
   <div class="lb-filters" style="margin:0 0 0.5rem 0;">
     <span class="lb-filters-label">Type</span>
-    <div class="lb-type-filter lb-type-framework active" data-type="framework">Framework</div>
+    <div class="lb-type-filter lb-type-all active" data-type="all">All</div>
+    <div class="lb-type-filter lb-type-framework" data-type="framework">Framework</div>
     <div class="lb-type-filter lb-type-engine" data-type="engine">Engine</div>
   </div>
   <div class="lb-filters" style="margin:0 0 0 0;">
@@ -281,8 +282,9 @@ function applyFilters() {
   var allBtn = w.querySelector('.lb-lang-filter[data-lang="all"]');
   var allLangs = filters.length === 0 || (allBtn && allBtn.classList.contains('active'));
 
-  var showEngine = w.querySelector('.lb-type-filter[data-type="engine"]').classList.contains('active');
-  var showFramework = w.querySelector('.lb-type-filter[data-type="framework"]').classList.contains('active');
+  var showAll = w.querySelector('.lb-type-filter[data-type="all"]').classList.contains('active');
+  var showEngine = showAll || w.querySelector('.lb-type-filter[data-type="engine"]').classList.contains('active');
+  var showFramework = showAll || w.querySelector('.lb-type-filter[data-type="framework"]').classList.contains('active');
 
   var searchVal = w.querySelector('.lb-search-input').value.toLowerCase().trim();
   var terms = searchVal ? searchVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
