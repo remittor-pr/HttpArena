@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 
 	"compress/flate"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/reuseport"
 	_ "modernc.org/sqlite"
@@ -54,6 +56,7 @@ type ProcessResponse struct {
 var dataset []DatasetItem
 var jsonLargeResponse []byte
 var db *sql.DB
+var pgPool *pgxpool.Pool
 
 func loadDataset() {
 	path := os.Getenv("DATASET_PATH")
@@ -156,6 +159,79 @@ func loadDB() {
 	db = d
 }
 
+func loadPgPool() {
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		return
+	}
+	config, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		return
+	}
+	config.MaxConns = int32(runtime.NumCPU() * 4)
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	if err != nil {
+		return
+	}
+	pgPool = pool
+}
+
+func asyncDbHandler(ctx *fasthttp.RequestCtx) {
+	if pgPool == nil {
+		ctx.Response.Header.Set("Server", "go-fasthttp")
+		ctx.SetContentType("application/json")
+		ctx.SetBodyString(`{"items":[],"count":0}`)
+		return
+	}
+	minPrice := 10.0
+	maxPrice := 50.0
+	if v := ctx.QueryArgs().Peek("min"); len(v) > 0 {
+		if f, err := strconv.ParseFloat(string(v), 64); err == nil {
+			minPrice = f
+		}
+	}
+	if v := ctx.QueryArgs().Peek("max"); len(v) > 0 {
+		if f, err := strconv.ParseFloat(string(v), 64); err == nil {
+			maxPrice = f
+		}
+	}
+	rows, err := pgPool.Query(context.Background(), "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50", minPrice, maxPrice)
+	if err != nil {
+		ctx.Response.Header.Set("Server", "go-fasthttp")
+		ctx.SetContentType("application/json")
+		ctx.SetBodyString(`{"items":[],"count":0}`)
+		return
+	}
+	defer rows.Close()
+	var items []map[string]interface{}
+	for rows.Next() {
+		var id, quantity, ratingCount int
+		var name, category string
+		var price, ratingScore float64
+		var active bool
+		var tags []byte
+		if err := rows.Scan(&id, &name, &category, &price, &quantity, &active, &tags, &ratingScore, &ratingCount); err != nil {
+			continue
+		}
+		var tagsArr []interface{}
+		json.Unmarshal(tags, &tagsArr)
+		items = append(items, map[string]interface{}{
+			"id": id, "name": name, "category": category,
+			"price": price, "quantity": quantity, "active": active,
+			"tags": tagsArr,
+			"rating": map[string]interface{}{"score": ratingScore, "count": ratingCount},
+		})
+	}
+	if items == nil {
+		items = []map[string]interface{}{}
+	}
+	resp := map[string]interface{}{"items": items, "count": len(items)}
+	ctx.Response.Header.Set("Server", "go-fasthttp")
+	ctx.SetContentType("application/json")
+	body, _ := json.Marshal(resp)
+	ctx.SetBody(body)
+}
+
 func uploadHandler(ctx *fasthttp.RequestCtx) {
 	body := ctx.PostBody()
 	ctx.Response.Header.Set("Server", "go-fasthttp")
@@ -218,6 +294,7 @@ func main() {
 	loadDataset()
 	loadDatasetLarge()
 	loadDB()
+	loadPgPool()
 
 	compressedHandler = fasthttp.CompressHandlerLevel(func(ctx *fasthttp.RequestCtx) {
 		ctx.Response.Header.Set("Server", "go-fasthttp")
@@ -237,6 +314,8 @@ func main() {
 			uploadHandler(ctx)
 		case "/db":
 			dbHandler(ctx)
+		case "/async-db":
+			asyncDbHandler(ctx)
 		default:
 			baseline11Handler(ctx)
 		}

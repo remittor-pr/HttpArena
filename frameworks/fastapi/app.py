@@ -3,11 +3,38 @@ import json
 import os
 import sqlite3
 import threading
+from contextlib import asynccontextmanager
 
+import asyncpg
 import orjson
 from fastapi import FastAPI, Request, Response
 
-app = FastAPI()
+# ── Postgres (async) ─────────────────────────────────────────────────
+pg_pool: asyncpg.Pool | None = None
+PG_QUERY = (
+    "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count "
+    "FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50"
+)
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    global pg_pool
+    db_url = os.environ.get("DATABASE_URL")
+    if db_url:
+        try:
+            # asyncpg needs postgresql:// not postgres://
+            if db_url.startswith("postgres://"):
+                db_url = "postgresql://" + db_url[len("postgres://"):]
+            pg_pool = await asyncpg.create_pool(dsn=db_url, min_size=1, max_size=3)
+        except Exception:
+            pg_pool = None
+    yield
+    if pg_pool is not None:
+        await pg_pool.close()
+
+
+app = FastAPI(lifespan=lifespan)
 
 # ── Dataset ──────────────────────────────────────────────────────────
 dataset_items = None
@@ -148,6 +175,34 @@ async def db_endpoint(request: Request):
         )
     body = orjson.dumps({"items": items, "count": len(items)})
     return _json_resp(body)
+
+
+@app.get("/async-db")
+async def async_db_endpoint(request: Request):
+    if pg_pool is None:
+        return _json_resp(b'{"items":[],"count":0}')
+    min_val = float(request.query_params.get("min", 10))
+    max_val = float(request.query_params.get("max", 50))
+    try:
+        rows = await pg_pool.fetch(PG_QUERY, min_val, max_val)
+        items = []
+        for r in rows:
+            items.append(
+                {
+                    "id": r["id"],
+                    "name": r["name"],
+                    "category": r["category"],
+                    "price": r["price"],
+                    "quantity": r["quantity"],
+                    "active": r["active"],
+                    "tags": r["tags"],
+                    "rating": {"score": r["rating_score"], "count": r["rating_count"]},
+                }
+            )
+        body = orjson.dumps({"items": items, "count": len(items)})
+        return _json_resp(body)
+    except Exception:
+        return _json_resp(b'{"items":[],"count":0}')
 
 
 @app.post("/upload")

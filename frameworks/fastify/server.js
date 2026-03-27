@@ -10,6 +10,7 @@ const SERVER_NAME = 'fastify';
 let datasetItems;
 let largeJsonBuf;
 let dbStmt;
+let pgPool;
 const staticFiles = {};
 const MIME_TYPES = {
     '.css': 'text/css', '.js': 'application/javascript', '.html': 'text/html',
@@ -56,6 +57,15 @@ function loadDatabase() {
     } catch (e) {}
 }
 
+function loadPgPool() {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) return;
+    try {
+        const { Pool } = require('pg');
+        pgPool = new Pool({ connectionString: dbUrl, max: 4 });
+    } catch (e) {}
+}
+
 function sumQuery(query) {
     let sum = 0;
     if (query) {
@@ -72,6 +82,7 @@ function startWorker() {
     loadLargeDataset();
     loadStaticFiles();
     loadDatabase();
+    loadPgPool();
 
     const Fastify = require('fastify');
     const app = Fastify({ logger: false, bodyLimit: 50 * 1024 * 1024 });
@@ -164,6 +175,37 @@ function startWorker() {
             .header('content-type', 'application/json')
             .header('content-length', Buffer.byteLength(body))
             .send(body);
+    });
+
+    // --- /async-db ---
+    app.get('/async-db', async (req, reply) => {
+        if (!pgPool) {
+            reply.header('server', SERVER_NAME).type('application/json').send('{"items":[],"count":0}');
+            return;
+        }
+        let min = 10, max = 50;
+        if (req.query.min) min = parseFloat(req.query.min) || 10;
+        if (req.query.max) max = parseFloat(req.query.max) || 50;
+        try {
+            const result = await pgPool.query(
+                'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50',
+                [min, max]
+            );
+            const items = result.rows.map(r => ({
+                id: r.id, name: r.name, category: r.category,
+                price: r.price, quantity: r.quantity, active: r.active,
+                tags: r.tags,
+                rating: { score: r.rating_score, count: r.rating_count }
+            }));
+            const body = JSON.stringify({ items, count: items.length });
+            reply
+                .header('server', SERVER_NAME)
+                .header('content-type', 'application/json')
+                .header('content-length', Buffer.byteLength(body))
+                .send(body);
+        } catch (e) {
+            reply.header('server', SERVER_NAME).type('application/json').send('{"items":[],"count":0}');
+        }
     });
 
     // --- /upload ---

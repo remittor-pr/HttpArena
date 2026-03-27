@@ -15,6 +15,7 @@ defmodule HttparenaPhoenix.Router do
     get "/json", BenchController, :json
     get "/compression", BenchController, :compression
     get "/db", BenchController, :db
+    get "/async-db", BenchController, :async_db
     post "/upload", BenchController, :upload
     get "/static/:filename", BenchController, :static_file
   end

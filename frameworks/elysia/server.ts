@@ -32,6 +32,18 @@ for (let attempt = 0; attempt < 3 && !dbStmt; attempt++) {
   }
 }
 
+// PostgreSQL pool for async-db
+let pgPool: any = null;
+{
+  const dbUrl = process.env.DATABASE_URL;
+  if (dbUrl) {
+    try {
+      const { Pool } = require("pg");
+      pgPool = new Pool({ connectionString: dbUrl, max: 4 });
+    } catch (_) {}
+  }
+}
+
 // Pre-load static files
 const staticFiles: Record<string, { buf: Buffer; ct: string }> = {};
 try {
@@ -130,6 +142,47 @@ function addRoutes(app: Elysia) {
         });
       } catch (e: any) {
         return new Response(e.message || "db error", { status: 500 });
+      }
+    })
+
+    .get("/async-db", async ({ request }) => {
+      if (!pgPool) {
+        return new Response('{"items":[],"count":0}', {
+          headers: { "content-type": "application/json" },
+        });
+      }
+      let min = 10, max = 50;
+      const url = request.url;
+      const qIdx = url.indexOf("?");
+      if (qIdx !== -1) {
+        const qs = url.slice(qIdx + 1);
+        for (const pair of qs.split("&")) {
+          const eq = pair.indexOf("=");
+          if (eq === -1) continue;
+          const k = pair.slice(0, eq), v = pair.slice(eq + 1);
+          if (k === "min") min = parseFloat(v) || 10;
+          else if (k === "max") max = parseFloat(v) || 50;
+        }
+      }
+      try {
+        const result = await pgPool.query(
+          "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50",
+          [min, max]
+        );
+        const items = result.rows.map((r: any) => ({
+          id: r.id, name: r.name, category: r.category,
+          price: r.price, quantity: r.quantity, active: r.active,
+          tags: r.tags,
+          rating: { score: r.rating_score, count: r.rating_count },
+        }));
+        const body = JSON.stringify({ items, count: items.length });
+        return new Response(body, {
+          headers: { "content-type": "application/json", "content-length": String(Buffer.byteLength(body)) },
+        });
+      } catch (e) {
+        return new Response('{"items":[],"count":0}', {
+          headers: { "content-type": "application/json" },
+        });
       }
     })
 

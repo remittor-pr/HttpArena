@@ -9,6 +9,7 @@ const SERVER_NAME = 'hono';
 let datasetItems;
 let largeJsonBuf;
 let dbStmt;
+let pgPool;
 const staticFiles = {};
 const MIME_TYPES = {
     '.css': 'text/css', '.js': 'application/javascript', '.html': 'text/html',
@@ -55,6 +56,15 @@ function loadDatabase() {
     } catch (e) {}
 }
 
+function loadPgPool() {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) return;
+    try {
+        const { Pool } = require('pg');
+        pgPool = new Pool({ connectionString: dbUrl, max: 4 });
+    } catch (e) {}
+}
+
 function sumQuery(query) {
     let sum = 0;
     for (const key in query) {
@@ -86,6 +96,7 @@ function startWorker() {
     loadLargeDataset();
     loadStaticFiles();
     loadDatabase();
+    loadPgPool();
 
     const { Hono } = require('hono');
     const { serve } = require('@hono/node-server');
@@ -179,6 +190,40 @@ function startWorker() {
         c.header('content-type', 'application/json');
         c.header('content-length', String(Buffer.byteLength(body)));
         return c.body(body);
+    });
+
+    // --- /async-db ---
+    app.get('/async-db', async (c) => {
+        if (!pgPool) {
+            c.header('server', SERVER_NAME);
+            c.header('content-type', 'application/json');
+            return c.body('{"items":[],"count":0}');
+        }
+        const query = parseQueryString(c.req.raw.url);
+        let min = 10, max = 50;
+        if (query.min) min = parseFloat(query.min) || 10;
+        if (query.max) max = parseFloat(query.max) || 50;
+        try {
+            const result = await pgPool.query(
+                'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50',
+                [min, max]
+            );
+            const items = result.rows.map(r => ({
+                id: r.id, name: r.name, category: r.category,
+                price: r.price, quantity: r.quantity, active: r.active,
+                tags: r.tags,
+                rating: { score: r.rating_score, count: r.rating_count }
+            }));
+            const body = JSON.stringify({ items, count: items.length });
+            c.header('server', SERVER_NAME);
+            c.header('content-type', 'application/json');
+            c.header('content-length', String(Buffer.byteLength(body)));
+            return c.body(body);
+        } catch (e) {
+            c.header('server', SERVER_NAME);
+            c.header('content-type', 'application/json');
+            return c.body('{"items":[],"count":0}');
+        }
     });
 
     // --- /upload ---

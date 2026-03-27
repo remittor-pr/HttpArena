@@ -10,10 +10,13 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.*
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.net.URI
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.zip.GZIPOutputStream
@@ -79,6 +82,7 @@ object AppData {
     var largeJsonCache: ByteArray = ByteArray(0)
     val staticFiles: MutableMap<String, Pair<ByteArray, String>> = mutableMapOf()
     var db: Connection? = null
+    var pgPool: HikariDataSource? = null
 
     private val mimeTypes = mapOf(
         ".css" to "text/css",
@@ -122,6 +126,28 @@ object AppData {
         if (dbFile.exists()) {
             db = DriverManager.getConnection("jdbc:sqlite:file:/data/benchmark.db?mode=ro&immutable=1")
             db!!.createStatement().execute("PRAGMA mmap_size=268435456")
+        }
+
+        // PostgreSQL connection pool
+        val dbUrl = System.getenv("DATABASE_URL")
+        if (!dbUrl.isNullOrEmpty()) {
+            try {
+                val uri = URI(dbUrl.replace("postgres://", "postgresql://"))
+                val host = uri.host
+                val port = if (uri.port > 0) uri.port else 5432
+                val database = uri.path.removePrefix("/")
+                val userInfo = uri.userInfo.split(":")
+                val config = HikariConfig()
+                config.driverClassName = "org.postgresql.Driver"
+                config.jdbcUrl = "jdbc:postgresql://$host:$port/$database"
+                config.username = userInfo[0]
+                config.password = if (userInfo.size > 1) userInfo[1] else ""
+                config.maximumPoolSize = 64
+                config.minimumIdle = 16
+                pgPool = HikariDataSource(config)
+            } catch (e: Exception) {
+                System.err.println("PG pool init failed: $e")
+            }
         }
     }
 
@@ -246,6 +272,49 @@ fun main() {
                 val resp = DbResponse(items = items, count = items.size)
                 val body = AppData.json.encodeToString(DbResponse.serializer(), resp).toByteArray()
                 call.respondBytes(body, ContentType.Application.Json)
+            }
+
+            get("/async-db") {
+                val pool = AppData.pgPool
+                if (pool == null) {
+                    call.respondBytes("{\"items\":[],\"count\":0}".toByteArray(), ContentType.Application.Json)
+                    return@get
+                }
+                val min = call.parameters["min"]?.toDoubleOrNull() ?: 10.0
+                val max = call.parameters["max"]?.toDoubleOrNull() ?: 50.0
+                try {
+                    val items = mutableListOf<DbItem>()
+                    pool.connection.use { conn ->
+                        val stmt = conn.prepareStatement(
+                            "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50"
+                        )
+                        stmt.setDouble(1, min)
+                        stmt.setDouble(2, max)
+                        val rs = stmt.executeQuery()
+                        while (rs.next()) {
+                            val tags = AppData.json.decodeFromString<List<String>>(rs.getString(7))
+                            items.add(
+                                DbItem(
+                                    id = rs.getInt(1),
+                                    name = rs.getString(2),
+                                    category = rs.getString(3),
+                                    price = rs.getDouble(4),
+                                    quantity = rs.getInt(5),
+                                    active = rs.getBoolean(6),
+                                    tags = tags,
+                                    rating = RatingInfo(score = rs.getDouble(8), count = rs.getInt(9))
+                                )
+                            )
+                        }
+                        rs.close()
+                        stmt.close()
+                    }
+                    val resp = DbResponse(items = items, count = items.size)
+                    val body = AppData.json.encodeToString(DbResponse.serializer(), resp).toByteArray()
+                    call.respondBytes(body, ContentType.Application.Json)
+                } catch (_: Exception) {
+                    call.respondBytes("{\"items\":[],\"count\":0}".toByteArray(), ContentType.Application.Json)
+                }
             }
 
             post("/upload") {

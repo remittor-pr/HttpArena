@@ -1,6 +1,8 @@
 import Foundation
 import Vapor
 import CZlib
+import PostgresNIO
+import Logging
 
 #if canImport(CSQLite)
 import CSQLite
@@ -214,6 +216,60 @@ func gzipCompress(_ data: [UInt8], level: Int32 = 1) -> [UInt8] {
     return Array(output.prefix(compressedSize))
 }
 
+// MARK: - PostgreSQL
+
+func parseDatabaseURL(_ urlStr: String) -> PostgresClient.Configuration? {
+    guard let url = URL(string: urlStr),
+          let host = url.host,
+          let port = url.port,
+          let user = url.user,
+          let password = url.password else { return nil }
+    let database = String(url.path.dropFirst())
+    return PostgresClient.Configuration(
+        host: host,
+        port: port,
+        username: user,
+        password: password,
+        database: database,
+        tls: .disable
+    )
+}
+
+func queryPgDb(pgClient: PostgresClient, minPrice: Double, maxPrice: Double) async -> [UInt8] {
+    do {
+        // Cast tags to text so PostgresNIO decodes it as String
+        let rows = try await pgClient.query(
+            "SELECT id, name, category, price, quantity, active, tags::text, rating_score, rating_count FROM items WHERE price BETWEEN \(minPrice) AND \(maxPrice) LIMIT 50",
+            logger: Logger(label: "pg")
+        )
+
+        var items: [[String: Any]] = []
+        for try await (id, name, category, price, quantity, active, tagsStr, ratingScore, ratingCount) in rows.decode((Int32, String, String, Double, Int32, Bool, String, Double, Int32).self, context: .default) {
+            let tags = (try? JSONSerialization.jsonObject(with: Data(tagsStr.utf8))) ?? []
+
+            let item: [String: Any] = [
+                "id": Int(id),
+                "name": name,
+                "category": category,
+                "price": price,
+                "quantity": Int(quantity),
+                "active": active,
+                "tags": tags,
+                "rating": ["score": ratingScore, "count": Int(ratingCount)] as [String: Any],
+            ]
+            items.append(item)
+        }
+
+        let response: [String: Any] = ["items": items, "count": items.count]
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: response) else {
+            return [UInt8](#"{"items":[],"count":0}"#.utf8)
+        }
+        return [UInt8](jsonData)
+    } catch {
+        return [UInt8](#"{"items":[],"count":0}"#.utf8)
+    }
+}
+
 // MARK: - Main
 
 let datasetPath = ProcessInfo.processInfo.environment["DATASET_PATH"] ?? "/data/dataset.json"
@@ -232,6 +288,17 @@ let state = AppState(
     dbPath: dbPath,
     dbAvailable: dbAvailable
 )
+
+// PostgreSQL client setup
+let pgConfig: PostgresClient.Configuration? = {
+    guard let dbUrl = ProcessInfo.processInfo.environment["DATABASE_URL"] else { return nil }
+    return parseDatabaseURL(dbUrl)
+}()
+
+nonisolated(unsafe) var pgClient: PostgresClient? = nil
+if let config = pgConfig {
+    pgClient = PostgresClient(configuration: config, backgroundLogger: Logger(label: "pg"))
+}
 
 // Configure Vapor
 var env = try Environment.detect()
@@ -339,6 +406,22 @@ app.get("db") { req -> Response in
     return Response(status: .ok, headers: headers, body: .init(data: Data(result)))
 }
 
+// GET /async-db
+app.get("async-db") { req -> Response in
+    var headers = HTTPHeaders()
+    headers.add(name: .contentType, value: "application/json")
+    headers.add(name: "server", value: "vapor")
+
+    guard let client = pgClient else {
+        return Response(status: .ok, headers: headers, body: .init(string: #"{"items":[],"count":0}"#))
+    }
+    let query = req.url.query ?? ""
+    let minPrice = parseQueryParam(query, key: "min") ?? 10.0
+    let maxPrice = parseQueryParam(query, key: "max") ?? 50.0
+    let result = await queryPgDb(pgClient: client, minPrice: minPrice, maxPrice: maxPrice)
+    return Response(status: .ok, headers: headers, body: .init(data: Data(result)))
+}
+
 // GET /static/:filename
 app.get("static", ":filename") { req -> Response in
     let filename = req.parameters.get("filename") ?? ""
@@ -349,6 +432,11 @@ app.get("static", ":filename") { req -> Response in
     headers.add(name: .contentType, value: file.contentType)
     headers.add(name: "server", value: "vapor")
     return Response(status: .ok, headers: headers, body: .init(data: Data(file.data)))
+}
+
+// Run PostgresClient in background if configured
+if let client = pgClient {
+    Task { await client.run() }
 }
 
 try app.run()

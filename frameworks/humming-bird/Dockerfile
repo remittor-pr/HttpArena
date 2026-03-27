@@ -1,5 +1,5 @@
 FROM swift:6.2-jammy AS build
-RUN apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev libssl-dev && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY Package.swift .
 COPY Sources ./Sources

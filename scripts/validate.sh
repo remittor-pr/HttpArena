@@ -97,7 +97,8 @@ if has_test "async-db"; then
         -e POSTGRES_PASSWORD=bench \
         -e POSTGRES_DB=benchmark \
         -v "$DATA_DIR/pgdb-seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro" \
-        postgres:17-alpine
+        postgres:17-alpine \
+        -c max_connections=500
     for i in $(seq 1 30); do
         if docker exec "$PG_CONTAINER" pg_isready -U bench -d benchmark >/dev/null 2>&1; then
             echo "[postgres] Ready"

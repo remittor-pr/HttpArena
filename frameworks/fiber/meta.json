@@ -13,6 +13,7 @@
     "json",
     "compression",
     "upload",
-    "mixed"
+    "mixed",
+    "async-db"
   ]
 }

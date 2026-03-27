@@ -1,3 +1,4 @@
+use deadpool_postgres::{Manager, ManagerConfig, Pool, RecyclingMethod};
 use salvo::conn::rustls::{Keycert, RustlsConfig};
 use salvo::compression::Compression;
 use salvo::http::header::{self, HeaderValue};
@@ -10,6 +11,7 @@ use std::collections::HashMap;
 use std::sync::OnceLock;
 
 static STATE: OnceLock<AppState> = OnceLock::new();
+static PG_POOL: OnceLock<Option<Pool>> = OnceLock::new();
 static SERVER_HDR: HeaderValue = HeaderValue::from_static("salvo");
 
 struct AppState {
@@ -302,6 +304,79 @@ async fn db_endpoint(req: &mut Request, res: &mut Response) {
 }
 
 #[handler]
+async fn pgdb_endpoint(req: &mut Request, res: &mut Response) {
+    let pool = match PG_POOL.get().and_then(|p| p.as_ref()) {
+        Some(p) => p,
+        None => {
+            res.headers_mut().insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/json"),
+            );
+            res.render(r#"{"items":[],"count":0}"#);
+            return;
+        }
+    };
+    let min_price: f64 = req.query("min").unwrap_or(10.0);
+    let max_price: f64 = req.query("max").unwrap_or(50.0);
+    let client = match pool.get().await {
+        Ok(c) => c,
+        Err(_) => {
+            res.headers_mut().insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/json"),
+            );
+            res.render(r#"{"items":[],"count":0}"#);
+            return;
+        }
+    };
+    let stmt = match client.prepare_cached(
+        "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50"
+    ).await {
+        Ok(s) => s,
+        Err(_) => {
+            res.headers_mut().insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/json"),
+            );
+            res.render(r#"{"items":[],"count":0}"#);
+            return;
+        }
+    };
+    let rows = match client.query(&stmt, &[&min_price, &max_price]).await {
+        Ok(r) => r,
+        Err(_) => {
+            res.headers_mut().insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/json"),
+            );
+            res.render(r#"{"items":[],"count":0}"#);
+            return;
+        }
+    };
+    let items: Vec<serde_json::Value> = rows.iter().map(|row| {
+        serde_json::json!({
+            "id": row.get::<_, i32>(0) as i64,
+            "name": row.get::<_, &str>(1),
+            "category": row.get::<_, &str>(2),
+            "price": row.get::<_, f64>(3),
+            "quantity": row.get::<_, i32>(4) as i64,
+            "active": row.get::<_, bool>(5),
+            "tags": row.get::<_, serde_json::Value>(6),
+            "rating": {
+                "score": row.get::<_, f64>(7),
+                "count": row.get::<_, i32>(8) as i64,
+            }
+        })
+    }).collect();
+    let result = serde_json::json!({"items": items, "count": items.len()});
+    res.headers_mut().insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/json"),
+    );
+    res.render(result.to_string());
+}
+
+#[handler]
 async fn static_file(req: &mut Request, res: &mut Response) {
     let state = STATE.get().unwrap();
     let filename: String = req.param("filename").unwrap_or_default();
@@ -341,6 +416,15 @@ async fn main() {
         })
         .ok();
 
+    let pg_pool: Option<Pool> = std::env::var("DATABASE_URL").ok().and_then(|url| {
+        let pg_config: tokio_postgres::Config = url.parse().ok()?;
+        let mgr = Manager::from_config(pg_config, deadpool_postgres::tokio_postgres::NoTls,
+            ManagerConfig { recycling_method: RecyclingMethod::Fast });
+        let pool_size = (num_cpus::get() * 4).max(64);
+        Pool::builder(mgr).max_size(pool_size).build().ok()
+    });
+    PG_POOL.set(pg_pool).ok();
+
     let router = Router::new()
         .hoop(add_server_header)
         .push(Router::with_path("pipeline").get(pipeline))
@@ -352,6 +436,7 @@ async fn main() {
         .push(Router::with_path("baseline2").get(baseline2))
         .push(Router::with_path("json").get(json_endpoint))
         .push(Router::with_path("db").get(db_endpoint))
+        .push(Router::with_path("async-db").get(pgdb_endpoint))
         .push(
             Router::with_path("compression")
                 .hoop(Compression::new().enable_gzip(salvo::compression::CompressionLevel::Fastest))

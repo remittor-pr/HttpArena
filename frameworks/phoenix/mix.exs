@@ -23,7 +23,8 @@ defmodule HttparenaPhoenix.MixProject do
       {:phoenix, "~> 1.7"},
       {:plug_cowboy, "~> 2.7"},
       {:jason, "~> 1.4"},
-      {:exqlite, "~> 0.27"}
+      {:exqlite, "~> 0.27"},
+      {:postgrex, "~> 0.19"}
     ]
   end
 end

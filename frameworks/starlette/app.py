@@ -4,6 +4,7 @@ import os
 import sqlite3
 import threading
 
+import asyncpg
 import orjson
 from starlette.applications import Starlette
 from starlette.requests import Request
@@ -50,6 +51,33 @@ def _get_db() -> sqlite3.Connection:
         conn.row_factory = sqlite3.Row
         _local.conn = conn
     return conn
+
+
+# ── Postgres (async) ─────────────────────────────────────────────────
+pg_pool: asyncpg.Pool | None = None
+PG_QUERY = (
+    "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count "
+    "FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50"
+)
+
+
+async def _init_pg_pool():
+    global pg_pool
+    db_url = os.environ.get("DATABASE_URL")
+    if db_url:
+        try:
+            if db_url.startswith("postgres://"):
+                db_url = "postgresql://" + db_url[len("postgres://"):]
+            pg_pool = await asyncpg.create_pool(dsn=db_url, min_size=1, max_size=3)
+        except Exception:
+            pg_pool = None
+
+
+async def _close_pg_pool():
+    global pg_pool
+    if pg_pool is not None:
+        await pg_pool.close()
+        pg_pool = None
 
 
 # ── Helpers ──────────────────────────────────────────────────────────
@@ -148,6 +176,33 @@ async def db_endpoint(request: Request) -> Response:
     return _json_resp(body)
 
 
+async def async_db_endpoint(request: Request) -> Response:
+    if pg_pool is None:
+        return _json_resp(b'{"items":[],"count":0}')
+    min_val = float(request.query_params.get("min", 10))
+    max_val = float(request.query_params.get("max", 50))
+    try:
+        rows = await pg_pool.fetch(PG_QUERY, min_val, max_val)
+        items = []
+        for r in rows:
+            items.append(
+                {
+                    "id": r["id"],
+                    "name": r["name"],
+                    "category": r["category"],
+                    "price": r["price"],
+                    "quantity": r["quantity"],
+                    "active": r["active"],
+                    "tags": r["tags"],
+                    "rating": {"score": r["rating_score"], "count": r["rating_count"]},
+                }
+            )
+        body = orjson.dumps({"items": items, "count": len(items)})
+        return _json_resp(body)
+    except Exception:
+        return _json_resp(b'{"items":[],"count":0}')
+
+
 async def upload_endpoint(request: Request) -> Response:
     data = await request.body()
     return _text(str(len(data)))
@@ -161,7 +216,12 @@ routes = [
     Route("/json", json_endpoint, methods=["GET"]),
     Route("/compression", compression_endpoint, methods=["GET"]),
     Route("/db", db_endpoint, methods=["GET"]),
+    Route("/async-db", async_db_endpoint, methods=["GET"]),
     Route("/upload", upload_endpoint, methods=["POST"]),
 ]
 
-app = Starlette(routes=routes)
+app = Starlette(
+    routes=routes,
+    on_startup=[_init_pg_pool],
+    on_shutdown=[_close_pg_pool],
+)

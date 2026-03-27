@@ -3,6 +3,8 @@ import os
 import gzip
 import sqlite3
 import threading
+import psycopg_pool
+import psycopg.rows
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.views.decorators.http import require_http_methods, require_GET
 
@@ -41,6 +43,24 @@ def get_db():
         _local.conn.execute('PRAGMA mmap_size=268435456')
         _local.conn.row_factory = sqlite3.Row
     return _local.conn
+
+# Postgres (sync via psycopg)
+pg_pool = None
+PG_QUERY = (
+    'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count '
+    'FROM items WHERE price BETWEEN %s AND %s LIMIT 50'
+)
+_pg_url = os.environ.get('DATABASE_URL')
+if _pg_url:
+    try:
+        pg_pool = psycopg_pool.ConnectionPool(
+            conninfo=_pg_url,
+            min_size=2,
+            max_size=4,
+            kwargs={'row_factory': psycopg.rows.dict_row},
+        )
+    except Exception:
+        pg_pool = None
 
 
 @require_GET
@@ -137,6 +157,35 @@ def db_endpoint(request):
     resp = HttpResponse(body, content_type='application/json')
     resp['Server'] = 'django'
     return resp
+
+
+@require_GET
+def async_db_endpoint(request):
+    if pg_pool is None:
+        resp = HttpResponse(b'{"items":[],"count":0}', content_type='application/json')
+        resp['Server'] = 'django'
+        return resp
+    min_val = float(request.GET.get('min', 10))
+    max_val = float(request.GET.get('max', 50))
+    try:
+        with pg_pool.connection() as conn:
+            rows = conn.execute(PG_QUERY, (min_val, max_val)).fetchall()
+        items = []
+        for r in rows:
+            items.append({
+                'id': r['id'], 'name': r['name'], 'category': r['category'],
+                'price': r['price'], 'quantity': r['quantity'], 'active': r['active'],
+                'tags': r['tags'],
+                'rating': {'score': r['rating_score'], 'count': r['rating_count']}
+            })
+        body = json.dumps({'items': items, 'count': len(items)})
+        resp = HttpResponse(body, content_type='application/json')
+        resp['Server'] = 'django'
+        return resp
+    except Exception:
+        resp = HttpResponse(b'{"items":[],"count":0}', content_type='application/json')
+        resp['Server'] = 'django'
+        return resp
 
 
 @require_http_methods(["POST"])

@@ -29,6 +29,18 @@ try {
     dbStmt = db.prepare("SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50");
 } catch { /* db not available */ }
 
+// PostgreSQL pool for async-db
+let pgPool: any = null;
+{
+    const dbUrl = Deno.env.get("DATABASE_URL");
+    if (dbUrl) {
+        try {
+            const pg = await import("npm:pg");
+            pgPool = new pg.Pool({ connectionString: dbUrl, max: 4 });
+        } catch { /* pg not available */ }
+    }
+}
+
 const PLAIN = { "content-type": "text/plain", "server": "deno" };
 const JSON_HDR = { "content-type": "application/json", "server": "deno" };
 
@@ -119,6 +131,30 @@ export default {
             }));
             const body = JSON.stringify({ items, count: items.length });
             return new Response(body, { headers: JSON_HDR });
+        }
+
+        if (path === "/async-db") {
+            if (!pgPool) {
+                return new Response('{"items":[],"count":0}', { headers: JSON_HDR });
+            }
+            const min = parseQueryParam(url, queryStart, "min", 10);
+            const max = parseQueryParam(url, queryStart, "max", 50);
+            try {
+                const result = await pgPool.query(
+                    "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50",
+                    [min, max]
+                );
+                const items = result.rows.map((r: any) => ({
+                    id: r.id, name: r.name, category: r.category,
+                    price: r.price, quantity: r.quantity, active: r.active,
+                    tags: r.tags,
+                    rating: { score: r.rating_score, count: r.rating_count },
+                }));
+                const body = JSON.stringify({ items, count: items.length });
+                return new Response(body, { headers: JSON_HDR });
+            } catch {
+                return new Response('{"items":[],"count":0}', { headers: JSON_HDR });
+            }
         }
 
         if (path === "/upload" && req.method === "POST") {

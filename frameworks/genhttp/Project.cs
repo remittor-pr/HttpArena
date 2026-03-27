@@ -68,7 +68,8 @@ public static class Project
     
     private static LayoutBuilder AddDatabase(this LayoutBuilder app)
     {
-        return app.AddService<Database>("db", mode: ExecutionMode.Auto);
+        return app.AddService<Database>("db", mode: ExecutionMode.Auto)
+                  .AddService<AsyncDatabase>("async-db", mode: ExecutionMode.Auto);
     }
     
     private static LayoutBuilder AddCompression(this LayoutBuilder app)

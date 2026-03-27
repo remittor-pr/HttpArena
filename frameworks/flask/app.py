@@ -4,6 +4,8 @@ import gzip
 import sqlite3
 import zlib
 from flask import Flask, request, make_response
+import psycopg_pool
+import psycopg.rows
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
@@ -45,6 +47,24 @@ def get_db():
         local.conn.execute('PRAGMA mmap_size=268435456')
         local.conn.row_factory = sqlite3.Row
     return local.conn
+
+# Postgres (sync via psycopg)
+pg_pool = None
+PG_QUERY = (
+    'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count '
+    'FROM items WHERE price BETWEEN %s AND %s LIMIT 50'
+)
+_pg_url = os.environ.get('DATABASE_URL')
+if _pg_url:
+    try:
+        pg_pool = psycopg_pool.ConnectionPool(
+            conninfo=_pg_url,
+            min_size=2,
+            max_size=4,
+            kwargs={'row_factory': psycopg.rows.dict_row},
+        )
+    except Exception:
+        pg_pool = None
 
 
 @app.route('/pipeline')
@@ -139,6 +159,38 @@ def db_endpoint():
     resp.content_type = 'application/json'
     resp.headers['Server'] = 'flask'
     return resp
+
+
+@app.route('/async-db')
+def async_db_endpoint():
+    if pg_pool is None:
+        resp = make_response('{"items":[],"count":0}')
+        resp.content_type = 'application/json'
+        resp.headers['Server'] = 'flask'
+        return resp
+    min_val = request.args.get('min', 10, type=float)
+    max_val = request.args.get('max', 50, type=float)
+    try:
+        with pg_pool.connection() as conn:
+            rows = conn.execute(PG_QUERY, (min_val, max_val)).fetchall()
+        items = []
+        for r in rows:
+            items.append({
+                'id': r['id'], 'name': r['name'], 'category': r['category'],
+                'price': r['price'], 'quantity': r['quantity'], 'active': r['active'],
+                'tags': r['tags'],
+                'rating': {'score': r['rating_score'], 'count': r['rating_count']}
+            })
+        body = json.dumps({'items': items, 'count': len(items)})
+        resp = make_response(body)
+        resp.content_type = 'application/json'
+        resp.headers['Server'] = 'flask'
+        return resp
+    except Exception:
+        resp = make_response('{"items":[],"count":0}')
+        resp.content_type = 'application/json'
+        resp.headers['Server'] = 'flask'
+        return resp
 
 
 @app.route('/upload', methods=['POST'])

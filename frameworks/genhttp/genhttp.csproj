@@ -12,5 +12,6 @@
     <PackageReference Include="GenHTTP.Modules.Layouting" Version="10.5.0" />
     <PackageReference Include="GenHTTP.Modules.Webservices" Version="10.5.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.3" />
+    <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
 </Project>

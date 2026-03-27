@@ -1,5 +1,5 @@
 FROM ghcr.io/gleam-lang/gleam:v1.14.0-erlang-alpine AS build
-RUN apk add --no-cache gcc musl-dev sqlite-dev
+RUN apk add --no-cache gcc musl-dev sqlite-dev postgresql-dev
 WORKDIR /app
 COPY gleam.toml .
 RUN gleam deps download
@@ -7,7 +7,7 @@ COPY src ./src
 RUN gleam export erlang-shipment
 
 FROM erlang:28-alpine
-RUN apk add --no-cache sqlite-libs
+RUN apk add --no-cache sqlite-libs libpq
 WORKDIR /app
 COPY --from=build /app/build/erlang-shipment /app
 EXPOSE 8080

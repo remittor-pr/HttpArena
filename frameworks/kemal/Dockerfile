@@ -3,7 +3,7 @@ FROM crystallang/crystal:1.14-alpine AS builder
 
 WORKDIR /app
 
-# Install SQLite dev headers and gcc for reuseport shim
+# Install SQLite dev headers, libpq, and gcc for reuseport shim
 RUN apk add --no-cache sqlite-dev sqlite-static gcc musl-dev
 
 # Build SO_REUSEPORT shim
@@ -11,8 +11,8 @@ COPY reuseport.c /tmp/reuseport.c
 RUN gcc -shared -fPIC -o /tmp/libreuseport.so /tmp/reuseport.c -ldl
 
 # Install dependencies
-COPY shard.yml shard.lock ./
-RUN shards install --production
+COPY shard.yml ./
+RUN shards install
 
 # Copy source and build
 COPY src/ src/

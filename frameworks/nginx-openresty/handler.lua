@@ -12,12 +12,32 @@ local static_files = {}
 local sqlite = nil
 local db_stmt_ptr = nil
 
+-- PostgreSQL connection config (parsed from DATABASE_URL)
+local pg_config = nil
+
 function _M.init()
     local mime = {
         css = "text/css", js = "application/javascript", html = "text/html",
         woff2 = "font/woff2", svg = "image/svg+xml", webp = "image/webp",
         json = "application/json",
     }
+
+    -- Parse DATABASE_URL for PostgreSQL
+    local db_url = os.getenv("DATABASE_URL")
+    if db_url then
+        -- Format: postgres://user:pass@host:port/database
+        local user, pass, host, port, database = db_url:match("postgres://([^:]+):([^@]+)@([^:]+):(%d+)/(.+)")
+        if user and host then
+            if host == "localhost" then host = "127.0.0.1" end
+            pg_config = {
+                host = host,
+                port = tonumber(port),
+                user = user,
+                password = pass,
+                database = database,
+            }
+        end
+    end
 
     -- Load raw dataset for per-request processing
     local f = io.open(os.getenv("DATASET_PATH") or "/data/dataset.json", "r")
@@ -227,6 +247,59 @@ function _M.db()
     end
     sqlite.sqlite3_reset(db_stmt_ptr)
     ngx.header["Content-Type"] = "application/json"
+    ngx.print(cjson.encode({ items = items, count = #items }))
+end
+
+function _M.async_db()
+    ngx.header["Content-Type"] = "application/json"
+
+    if not pg_config then
+        ngx.print('{"items":[],"count":0}')
+        return
+    end
+
+    local pgmoon = require("pgmoon")
+    local pg = pgmoon.new(pg_config)
+
+    local ok, err = pg:connect()
+    if not ok then
+        ngx.print('{"items":[],"count":0}')
+        return
+    end
+
+    local args = ngx.req.get_uri_args()
+    local min_price = tonumber(args.min) or 10.0
+    local max_price = tonumber(args.max) or 50.0
+
+    local res, query_err = pg:query("SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN " .. pg:escape_literal(tostring(min_price)) .. " AND " .. pg:escape_literal(tostring(max_price)) .. " LIMIT 50")
+
+    pg:keepalive()
+
+    if not res then
+        ngx.print('{"items":[],"count":0}')
+        return
+    end
+
+    local items = {}
+    for i, row in ipairs(res) do
+        local tags
+        if type(row.tags) == "string" then
+            tags = cjson.decode(row.tags)
+        else
+            tags = row.tags or {}
+        end
+        items[i] = {
+            id = tonumber(row.id),
+            name = row.name,
+            category = row.category,
+            price = tonumber(row.price),
+            quantity = tonumber(row.quantity),
+            active = row.active == "t" or row.active == true,
+            tags = tags,
+            rating = { score = tonumber(row.rating_score), count = tonumber(row.rating_count) },
+        }
+    end
+
     ngx.print(cjson.encode({ items = items, count = #items }))
 end
 

@@ -18,6 +18,9 @@ let largeJsonBuf;
 // SQLite prepared statement (per-worker process)
 let dbStmt;
 
+// PostgreSQL pool (per-worker process)
+let pgPool;
+
 // Pre-loaded static files
 const staticFiles = {};
 const MIME_TYPES = {
@@ -61,6 +64,15 @@ function loadDatabase() {
         const db = new Database('/data/benchmark.db', { readonly: true });
         db.pragma('mmap_size=268435456');
         dbStmt = db.prepare('SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50');
+    } catch (e) {}
+}
+
+function loadPgPool() {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) return;
+    try {
+        const { Pool } = require('pg');
+        pgPool = new Pool({ connectionString: dbUrl, max: 4 });
     } catch (e) {}
 }
 
@@ -154,6 +166,44 @@ const server = http.createServer((req, res) => {
             });
             res.end(body);
         }
+    } else if (path === '/async-db') {
+        if (!pgPool) {
+            res.writeHead(200, { 'content-type': 'application/json', ...SERVER_HEADERS });
+            res.end('{"items":[],"count":0}');
+        } else {
+            let min = 10, max = 50;
+            if (q !== -1) {
+                const qs = url.slice(q + 1);
+                for (const pair of qs.split('&')) {
+                    const eq = pair.indexOf('=');
+                    if (eq === -1) continue;
+                    const k = pair.slice(0, eq), v = pair.slice(eq + 1);
+                    if (k === 'min') min = parseFloat(v) || 10;
+                    else if (k === 'max') max = parseFloat(v) || 50;
+                }
+            }
+            pgPool.query(
+                'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50',
+                [min, max]
+            ).then(result => {
+                const items = result.rows.map(r => ({
+                    id: r.id, name: r.name, category: r.category,
+                    price: r.price, quantity: r.quantity, active: r.active,
+                    tags: r.tags,
+                    rating: { score: r.rating_score, count: r.rating_count }
+                }));
+                const body = JSON.stringify({ items, count: items.length });
+                res.writeHead(200, {
+                    'content-type': 'application/json',
+                    'content-length': Buffer.byteLength(body),
+                    ...SERVER_HEADERS
+                });
+                res.end(body);
+            }).catch(() => {
+                res.writeHead(200, { 'content-type': 'application/json', ...SERVER_HEADERS });
+                res.end('{"items":[],"count":0}');
+            });
+        }
     } else if (path === '/baseline2') {
         const body = String(sumQuery(url));
         res.writeHead(200, { 'content-type': 'text/plain', ...SERVER_HEADERS });
@@ -231,6 +281,7 @@ if (cluster.isPrimary) {
     loadLargeDataset();
     loadStaticFiles();
     loadDatabase();
+    loadPgPool();
     server.listen(8080);
     startH2();
 }

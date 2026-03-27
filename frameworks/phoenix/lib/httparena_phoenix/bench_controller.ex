@@ -132,6 +132,56 @@ defmodule HttparenaPhoenix.BenchController do
     end
   end
 
+  @pg_query "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50"
+
+  def async_db(conn, params) do
+    pg_available = :persistent_term.get(:pg_available)
+
+    unless pg_available do
+      conn
+      |> put_resp_header("server", "phoenix")
+      |> put_resp_header("content-type", "application/json")
+      |> send_resp(200, ~s({"items":[],"count":0}))
+    else
+      min_val = parse_float(params["min"], 10.0)
+      max_val = parse_float(params["max"], 50.0)
+
+      case Postgrex.query(:pg_pool, @pg_query, [min_val, max_val]) do
+        {:ok, %Postgrex.Result{columns: _cols, rows: rows}} ->
+          items = Enum.map(rows, fn [id, name, category, price, quantity, active, tags, rating_score, rating_count] ->
+            parsed_tags = case tags do
+              t when is_list(t) -> t
+              _ -> []
+            end
+
+            %{
+              "id" => id,
+              "name" => name,
+              "category" => category,
+              "price" => price,
+              "quantity" => quantity,
+              "active" => active,
+              "tags" => parsed_tags,
+              "rating" => %{"score" => rating_score, "count" => rating_count}
+            }
+          end)
+
+          body = Jason.encode!(%{"items" => items, "count" => length(items)})
+
+          conn
+          |> put_resp_header("server", "phoenix")
+          |> put_resp_header("content-type", "application/json")
+          |> send_resp(200, body)
+
+        _ ->
+          conn
+          |> put_resp_header("server", "phoenix")
+          |> put_resp_header("content-type", "application/json")
+          |> send_resp(200, ~s({"items":[],"count":0}))
+      end
+    end
+  end
+
   def static_file(conn, %{"filename" => filename}) do
     static_files = :persistent_term.get(:static_files)
 

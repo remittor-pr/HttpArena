@@ -10,7 +10,7 @@ import gleam/http/response.{type Response}
 import gleam/int
 import gleam/json
 import gleam/list
-import gleam/option.{None, Some}
+import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import logging
@@ -22,12 +22,36 @@ import sqlight
 // Types
 // ---------------------------------------------------------------------------
 
+pub type PgPool
+
+pub type PgValue
+
+@external(erlang, "bench_pgo", "connect")
+fn pg_connect(
+  host: String,
+  port: Int,
+  database: String,
+  user: String,
+  password: String,
+) -> PgPool
+
+@external(erlang, "bench_pgo", "query")
+fn pg_query(
+  pool: PgPool,
+  sql: String,
+  params: List(PgValue),
+) -> Result(#(Int, List(decode.Dynamic)), Nil)
+
+@external(erlang, "bench_pgo", "coerce")
+fn pg_float(a: Float) -> PgValue
+
 pub type Context {
   Context(
     dataset: List(DatasetItem),
     json_large_cache: BitArray,
     static_files: List(#(String, StaticFile)),
     db_available: Bool,
+    pg_conn: Option(PgPool),
   )
 }
 
@@ -272,6 +296,7 @@ fn handle_request(
     ["compression"] -> handle_compression(req, ctx)
     ["upload"] -> handle_upload(req)
     ["db"] -> handle_db(req, ctx)
+    ["async-db"] -> handle_async_db(req, ctx)
     ["static", filename] -> handle_static(req, ctx, filename)
     _ -> not_found()
   }
@@ -500,6 +525,105 @@ fn handle_db(
   }
 }
 
+fn handle_async_db(
+  req: Request(Connection),
+  ctx: Context,
+) -> Response(ResponseData) {
+  case req.method {
+    Get -> {
+      case ctx.pg_conn {
+        None ->
+          json_response(<<"{\"items\":[],\"count\":0}":utf8>>)
+        Some(conn) -> {
+          let min_price = get_query_float(req.query, "min", 10.0)
+          let max_price = get_query_float(req.query, "max", 50.0)
+
+          let row_decoder = {
+            use id <- decode.field(0, decode.int)
+            use name <- decode.field(1, decode.string)
+            use category <- decode.field(2, decode.string)
+            use price <- decode.field(3, decode.float)
+            use quantity <- decode.field(4, decode.int)
+            use active <- decode.field(5, decode.bool)
+            use tags <- decode.field(6, decode.list(decode.string))
+            use rating_score <- decode.field(7, decode.float)
+            use rating_count <- decode.field(8, decode.int)
+            decode.success(#(
+              id,
+              name,
+              category,
+              price,
+              quantity,
+              active,
+              tags,
+              rating_score,
+              rating_count,
+            ))
+          }
+
+          let result =
+            pg_query(
+              conn,
+              "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50",
+              [pg_float(min_price), pg_float(max_price)],
+            )
+
+          case result {
+            Ok(#(_count, rows)) -> {
+              let decoded_rows =
+                list.filter_map(rows, fn(row) {
+                  case decode.run(row, row_decoder) {
+                    Ok(val) -> Ok(val)
+                    Error(_) -> Error(Nil)
+                  }
+                })
+              let items =
+                list.map(decoded_rows, fn(row) {
+                  let #(
+                    id,
+                    name,
+                    category,
+                    price,
+                    quantity,
+                    active,
+                    tags,
+                    rating_score,
+                    rating_count,
+                  ) = row
+                  json.object([
+                    #("id", json.int(id)),
+                    #("name", json.string(name)),
+                    #("category", json.string(category)),
+                    #("price", json.float(price)),
+                    #("quantity", json.int(quantity)),
+                    #("active", json.bool(active)),
+                    #("tags", json.array(tags, json.string)),
+                    #(
+                      "rating",
+                      json.object([
+                        #("score", json.float(rating_score)),
+                        #("count", json.int(rating_count)),
+                      ]),
+                    ),
+                  ])
+                })
+              let resp =
+                json.object([
+                  #("items", json.preprocessed_array(items)),
+                  #("count", json.int(list.length(decoded_rows))),
+                ])
+              json_response(<<json.to_string(resp):utf8>>)
+            }
+            Error(_) ->
+              json_response(<<"{\"items\":[],\"count\":0}":utf8>>)
+          }
+        }
+      }
+    }
+    _ -> not_found()
+  }
+}
+
 fn handle_static(
   req: Request(Connection),
   ctx: Context,
@@ -534,6 +658,32 @@ fn bit_array_to_string(data: BitArray) -> String {
   }
 }
 
+import gleam/uri
+
+fn parse_pg_url(
+  url: String,
+) -> Result(#(String, Int, String, String, String), Nil) {
+  case uri.parse(url) {
+    Ok(u) -> {
+      case u.host, u.port, u.userinfo {
+        Some(host), Some(port), Some(userinfo) -> {
+          let database = case string.split(u.path, "/") {
+            ["", db] -> db
+            _ -> ""
+          }
+          case string.split(userinfo, ":") {
+            [user, password] -> Ok(#(host, port, database, user, password))
+            [user] -> Ok(#(host, port, database, user, ""))
+            _ -> Error(Nil)
+          }
+        }
+        _, _, _ -> Error(Nil)
+      }
+    }
+    Error(_) -> Error(Nil)
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -558,12 +708,24 @@ pub fn main() {
     _ -> False
   }
 
+  let pg_conn = case envoy.get("DATABASE_URL") {
+    Ok(url) -> {
+      case parse_pg_url(url) {
+        Ok(#(host, port, database, user, password)) ->
+          Some(pg_connect(host, port, database, user, password))
+        Error(_) -> None
+      }
+    }
+    Error(_) -> None
+  }
+
   let ctx =
     Context(
       dataset:,
       json_large_cache:,
       static_files:,
       db_available:,
+      pg_conn:,
     )
 
   let assert Ok(_) =

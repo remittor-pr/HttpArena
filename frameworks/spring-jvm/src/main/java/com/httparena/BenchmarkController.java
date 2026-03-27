@@ -6,9 +6,13 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -28,7 +32,9 @@ public class BenchmarkController {
     private boolean dbAvailable = false;
     private final Map<String, byte[]> staticFiles = new ConcurrentHashMap<>();
     private static final String DB_QUERY = "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50";
+    private static final String PG_QUERY = "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50";
     private static final ThreadLocal<Connection> tlConn = new ThreadLocal<>();
+    private HikariDataSource pgPool;
     private static final Map<String, String> MIME_TYPES = Map.of(
         ".css", "text/css", ".js", "application/javascript", ".html", "text/html",
         ".woff2", "font/woff2", ".svg", "image/svg+xml", ".webp", "image/webp", ".json", "application/json"
@@ -56,6 +62,25 @@ public class BenchmarkController {
             largeJsonResponse = mapper.writeValueAsBytes(Map.of("items", largeItems, "count", largeItems.size()));
         }
         dbAvailable = new File("/data/benchmark.db").exists();
+        // Initialize PostgreSQL connection pool from DATABASE_URL
+        String dbUrl = System.getenv("DATABASE_URL");
+        if (dbUrl != null && !dbUrl.isEmpty()) {
+            try {
+                URI uri = new URI(dbUrl.replace("postgres://", "postgresql://"));
+                String host = uri.getHost();
+                int port = uri.getPort() > 0 ? uri.getPort() : 5432;
+                String database = uri.getPath().substring(1);
+                String[] userInfo = uri.getUserInfo().split(":");
+                HikariConfig config = new HikariConfig();
+                config.setDriverClassName("org.postgresql.Driver");
+                config.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/" + database);
+                config.setUsername(userInfo[0]);
+                config.setPassword(userInfo.length > 1 ? userInfo[1] : "");
+                config.setMaximumPoolSize(64);
+                config.setMinimumIdle(16);
+                pgPool = new HikariDataSource(config);
+            } catch (Exception ignored) {}
+        }
         File staticDir = new File("/data/static");
         if (staticDir.isDirectory()) {
             File[] files = staticDir.listFiles();
@@ -179,6 +204,37 @@ public class BenchmarkController {
             }
         }
         return conn;
+    }
+
+    @GetMapping(value = "/async-db", produces = MediaType.APPLICATION_JSON_VALUE)
+    public byte[] asyncDb(@RequestParam(defaultValue = "10") double min, @RequestParam(defaultValue = "50") double max) throws IOException {
+        if (pgPool == null) {
+            return "{\"items\":[],\"count\":0}".getBytes();
+        }
+        try (Connection conn = pgPool.getConnection()) {
+            PreparedStatement stmt = conn.prepareStatement(PG_QUERY);
+            stmt.setDouble(1, min);
+            stmt.setDouble(2, max);
+            ResultSet rs = stmt.executeQuery();
+            List<Map<String, Object>> items = new ArrayList<>();
+            while (rs.next()) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("id", rs.getLong("id"));
+                item.put("name", rs.getString("name"));
+                item.put("category", rs.getString("category"));
+                item.put("price", rs.getDouble("price"));
+                item.put("quantity", rs.getInt("quantity"));
+                item.put("active", rs.getBoolean("active"));
+                item.put("tags", mapper.readValue(rs.getString("tags"), new TypeReference<List<String>>() {}));
+                item.put("rating", Map.of("score", rs.getDouble("rating_score"), "count", rs.getInt("rating_count")));
+                items.add(item);
+            }
+            rs.close();
+            stmt.close();
+            return mapper.writeValueAsBytes(Map.of("items", items, "count", items.size()));
+        } catch (SQLException e) {
+            return "{\"items\":[],\"count\":0}".getBytes();
+        }
     }
 
     @GetMapping("/static/{filename}")

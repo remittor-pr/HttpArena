@@ -13,6 +13,7 @@
     "json",
     "upload",
     "compression",
+    "async-db",
     "noisy",
     "mixed",
     "baseline-h2",

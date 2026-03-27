@@ -3,6 +3,7 @@ package main
 import (
 	"compress/flate"
 	"compress/gzip"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "modernc.org/sqlite"
 )
 
@@ -55,6 +57,7 @@ type ProcessResponse struct {
 var dataset []DatasetItem
 var jsonLargeResponse []byte
 var db *sql.DB
+var pgPool *pgxpool.Pool
 
 type StaticFile struct {
 	Data        []byte
@@ -105,6 +108,23 @@ func loadDB() {
 	db = d
 }
 
+func loadPgPool() {
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		return
+	}
+	config, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		return
+	}
+	config.MaxConns = int32(runtime.NumCPU() * 4)
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	if err != nil {
+		return
+	}
+	pgPool = pool
+}
+
 func loadStaticFiles() {
 	staticFiles = make(map[string]StaticFile)
 	entries, err := os.ReadDir("/data/static")
@@ -145,6 +165,7 @@ func main() {
 	loadDataset()
 	loadDatasetLarge()
 	loadDB()
+	loadPgPool()
 	loadStaticFiles()
 
 	gin.SetMode(gin.ReleaseMode)
@@ -263,6 +284,59 @@ func main() {
 				"tags": tagsArr,
 				"rating": map[string]interface{}{"score": ratingScore, "count": ratingCount},
 			})
+		}
+		c.Header("Server", "gin")
+		c.Header("Content-Type", "application/json")
+		data, _ := json.Marshal(gin.H{"items": items, "count": len(items)})
+		c.Data(http.StatusOK, "application/json", data)
+	})
+
+	r.GET("/async-db", func(c *gin.Context) {
+		if pgPool == nil {
+			c.Header("Server", "gin")
+			c.Data(http.StatusOK, "application/json", []byte(`{"items":[],"count":0}`))
+			return
+		}
+		minPrice := 10.0
+		maxPrice := 50.0
+		if v := c.Query("min"); v != "" {
+			if f, err := strconv.ParseFloat(v, 64); err == nil {
+				minPrice = f
+			}
+		}
+		if v := c.Query("max"); v != "" {
+			if f, err := strconv.ParseFloat(v, 64); err == nil {
+				maxPrice = f
+			}
+		}
+		rows, err := pgPool.Query(c.Request.Context(), "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50", minPrice, maxPrice)
+		if err != nil {
+			c.Header("Server", "gin")
+			c.Data(http.StatusOK, "application/json", []byte(`{"items":[],"count":0}`))
+			return
+		}
+		defer rows.Close()
+		var items []map[string]interface{}
+		for rows.Next() {
+			var id, quantity, ratingCount int
+			var name, category string
+			var price, ratingScore float64
+			var active bool
+			var tags []byte
+			if err := rows.Scan(&id, &name, &category, &price, &quantity, &active, &tags, &ratingScore, &ratingCount); err != nil {
+				continue
+			}
+			var tagsArr []interface{}
+			json.Unmarshal(tags, &tagsArr)
+			items = append(items, map[string]interface{}{
+				"id": id, "name": name, "category": category,
+				"price": price, "quantity": quantity, "active": active,
+				"tags": tagsArr,
+				"rating": map[string]interface{}{"score": ratingScore, "count": ratingCount},
+			})
+		}
+		if items == nil {
+			items = []map[string]interface{}{}
 		}
 		c.Header("Server", "gin")
 		c.Header("Content-Type", "application/json")

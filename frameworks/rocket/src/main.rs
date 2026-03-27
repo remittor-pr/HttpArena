@@ -1,3 +1,4 @@
+use deadpool_postgres::{Manager, ManagerConfig, Pool, RecyclingMethod};
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use rocket::data::{Data, ToByteUnit};
@@ -369,6 +370,56 @@ fn db_endpoint(state: &State<Arc<AppState>>, raw: RawQuery) -> ServerResponse {
     ServerResponse::json_bytes(serde_json::to_vec(&result).unwrap_or_default())
 }
 
+#[get("/async-db")]
+async fn pgdb_endpoint(raw: RawQuery, pg_pool: &State<Option<Pool>>) -> ServerResponse {
+    let pool = match pg_pool.as_ref() {
+        Some(p) => p,
+        None => {
+            return ServerResponse::json_bytes(br#"{"items":[],"count":0}"#.to_vec());
+        }
+    };
+    let query = raw.0.as_deref().unwrap_or("");
+    let min: f64 = parse_query_param(query, "min").unwrap_or(10.0);
+    let max: f64 = parse_query_param(query, "max").unwrap_or(50.0);
+    let client = match pool.get().await {
+        Ok(c) => c,
+        Err(_) => {
+            return ServerResponse::json_bytes(br#"{"items":[],"count":0}"#.to_vec());
+        }
+    };
+    let stmt = match client.prepare_cached(
+        "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50"
+    ).await {
+        Ok(s) => s,
+        Err(_) => {
+            return ServerResponse::json_bytes(br#"{"items":[],"count":0}"#.to_vec());
+        }
+    };
+    let rows = match client.query(&stmt, &[&min, &max]).await {
+        Ok(r) => r,
+        Err(_) => {
+            return ServerResponse::json_bytes(br#"{"items":[],"count":0}"#.to_vec());
+        }
+    };
+    let items: Vec<serde_json::Value> = rows.iter().map(|row| {
+        serde_json::json!({
+            "id": row.get::<_, i32>(0) as i64,
+            "name": row.get::<_, &str>(1),
+            "category": row.get::<_, &str>(2),
+            "price": row.get::<_, f64>(3),
+            "quantity": row.get::<_, i32>(4) as i64,
+            "active": row.get::<_, bool>(5),
+            "tags": row.get::<_, serde_json::Value>(6),
+            "rating": {
+                "score": row.get::<_, f64>(7),
+                "count": row.get::<_, i32>(8) as i64,
+            }
+        })
+    }).collect();
+    let result = serde_json::json!({"items": items, "count": items.len()});
+    ServerResponse::json_bytes(serde_json::to_vec(&result).unwrap_or_default())
+}
+
 #[post("/upload", data = "<body>")]
 async fn upload(body: Data<'_>) -> ServerResponse {
     match body.open(25.mebibytes()).into_bytes().await {
@@ -413,10 +464,12 @@ fn method_not_allowed(_req: &Request<'_>) -> ServerResponse {
 
 fn build_rocket(
     state: Arc<AppState>,
+    pg_pool: Option<Pool>,
     figment: rocket::figment::Figment,
 ) -> rocket::Rocket<rocket::Build> {
     rocket::custom(figment)
         .manage(state)
+        .manage(pg_pool)
         .mount(
             "/",
             routes![
@@ -427,6 +480,7 @@ fn build_rocket(
                 json_endpoint,
                 compression_endpoint,
                 db_endpoint,
+                pgdb_endpoint,
                 upload,
                 static_file,
             ],
@@ -471,6 +525,14 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
         db_counter: AtomicUsize::new(0),
     });
 
+    let pg_pool: Option<Pool> = std::env::var("DATABASE_URL").ok().and_then(|url| {
+        let pg_config: tokio_postgres::Config = url.parse().ok()?;
+        let mgr = Manager::from_config(pg_config, deadpool_postgres::tokio_postgres::NoTls,
+            ManagerConfig { recycling_method: RecyclingMethod::Fast });
+        let pool_size = (num_cpus::get() * 4).max(64);
+        Pool::builder(mgr).max_size(pool_size).build().ok()
+    });
+
     let cert_path = std::env::var("TLS_CERT").unwrap_or_else(|_| "/certs/server.crt".to_string());
     let key_path = std::env::var("TLS_KEY").unwrap_or_else(|_| "/certs/server.key".to_string());
     let has_tls =
@@ -497,8 +559,8 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
             .merge(("tls.certs", &cert_path))
             .merge(("tls.key", &key_path));
 
-        let tls_rocket = build_rocket(state.clone(), tls_figment);
-        let http_rocket = build_rocket(state.clone(), http_figment);
+        let tls_rocket = build_rocket(state.clone(), pg_pool.clone(), tls_figment);
+        let http_rocket = build_rocket(state.clone(), pg_pool.clone(), http_figment);
 
         // Launch both concurrently
         let tls_handle = tokio::spawn(async move {
@@ -510,7 +572,7 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
 
         let _ = tokio::try_join!(tls_handle, http_handle);
     } else {
-        let http_rocket = build_rocket(state.clone(), http_figment);
+        let http_rocket = build_rocket(state.clone(), pg_pool.clone(), http_figment);
         let _ = http_rocket.launch().await;
     }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"compress/flate"
 	"compress/gzip"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	_ "modernc.org/sqlite"
 )
@@ -56,6 +58,7 @@ type ProcessResponse struct {
 var dataset []DatasetItem
 var jsonLargeResponse []byte
 var db *sql.DB
+var pgPool *pgxpool.Pool
 
 type StaticFile struct {
 	Data        []byte
@@ -106,6 +109,23 @@ func loadDB() {
 	db = d
 }
 
+func loadPgPool() {
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		return
+	}
+	config, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		return
+	}
+	config.MaxConns = int32(runtime.NumCPU() * 4)
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	if err != nil {
+		return
+	}
+	pgPool = pool
+}
+
 func loadStaticFiles() {
 	staticFiles = make(map[string]StaticFile)
 	entries, err := os.ReadDir("/data/static")
@@ -146,6 +166,7 @@ func main() {
 	loadDataset()
 	loadDatasetLarge()
 	loadDB()
+	loadPgPool()
 	loadStaticFiles()
 
 	e := echo.New()
@@ -262,6 +283,56 @@ func main() {
 				"tags": tagsArr,
 				"rating": map[string]interface{}{"score": ratingScore, "count": ratingCount},
 			})
+		}
+		c.Response().Header().Set("Server", "echo")
+		data, _ := json.Marshal(map[string]interface{}{"items": items, "count": len(items)})
+		return c.Blob(http.StatusOK, "application/json", data)
+	})
+
+	e.GET("/async-db", func(c echo.Context) error {
+		if pgPool == nil {
+			c.Response().Header().Set("Server", "echo")
+			return c.Blob(http.StatusOK, "application/json", []byte(`{"items":[],"count":0}`))
+		}
+		minPrice := 10.0
+		maxPrice := 50.0
+		if v := c.QueryParam("min"); v != "" {
+			if f, err := strconv.ParseFloat(v, 64); err == nil {
+				minPrice = f
+			}
+		}
+		if v := c.QueryParam("max"); v != "" {
+			if f, err := strconv.ParseFloat(v, 64); err == nil {
+				maxPrice = f
+			}
+		}
+		rows, err := pgPool.Query(c.Request().Context(), "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50", minPrice, maxPrice)
+		if err != nil {
+			c.Response().Header().Set("Server", "echo")
+			return c.Blob(http.StatusOK, "application/json", []byte(`{"items":[],"count":0}`))
+		}
+		defer rows.Close()
+		var items []map[string]interface{}
+		for rows.Next() {
+			var id, quantity, ratingCount int
+			var name, category string
+			var price, ratingScore float64
+			var active bool
+			var tags []byte
+			if err := rows.Scan(&id, &name, &category, &price, &quantity, &active, &tags, &ratingScore, &ratingCount); err != nil {
+				continue
+			}
+			var tagsArr []interface{}
+			json.Unmarshal(tags, &tagsArr)
+			items = append(items, map[string]interface{}{
+				"id": id, "name": name, "category": category,
+				"price": price, "quantity": quantity, "active": active,
+				"tags": tagsArr,
+				"rating": map[string]interface{}{"score": ratingScore, "count": ratingCount},
+			})
+		}
+		if items == nil {
+			items = []map[string]interface{}{}
 		}
 		c.Response().Header().Set("Server", "echo")
 		data, _ := json.Marshal(map[string]interface{}{"items": items, "count": len(items)})

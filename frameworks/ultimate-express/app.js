@@ -43,6 +43,16 @@ if (cluster.isPrimary) {
         dbStmt = db.prepare('SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50');
     } catch (e) {}
 
+    // PostgreSQL
+    let pgPool;
+    const dbUrl = process.env.DATABASE_URL;
+    if (dbUrl) {
+        try {
+            const { Pool } = require('pg');
+            pgPool = new Pool({ connectionString: dbUrl, max: 4 });
+        } catch (e) {}
+    }
+
     function sumQuery(query) {
         let sum = 0;
         for (const k in query) {
@@ -96,6 +106,30 @@ if (cluster.isPrimary) {
         }));
         const body = JSON.stringify({ items, count: items.length });
         res.set(SERVER_HDR).type('application/json').send(body);
+    });
+
+    app.get('/async-db', async (req, res) => {
+        if (!pgPool) {
+            return res.set(SERVER_HDR).type('application/json').send('{"items":[],"count":0}');
+        }
+        const min = parseFloat(req.query.min) || 10;
+        const max = parseFloat(req.query.max) || 50;
+        try {
+            const result = await pgPool.query(
+                'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50',
+                [min, max]
+            );
+            const items = result.rows.map(r => ({
+                id: r.id, name: r.name, category: r.category,
+                price: r.price, quantity: r.quantity, active: r.active,
+                tags: r.tags,
+                rating: { score: r.rating_score, count: r.rating_count }
+            }));
+            const body = JSON.stringify({ items, count: items.length });
+            res.set(SERVER_HDR).type('application/json').send(body);
+        } catch (e) {
+            res.set(SERVER_HDR).type('application/json').send('{"items":[],"count":0}');
+        }
     });
 
     app.post('/upload', (req, res) => {

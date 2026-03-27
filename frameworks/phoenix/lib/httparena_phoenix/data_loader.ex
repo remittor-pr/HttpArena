@@ -15,10 +15,47 @@ defmodule HttparenaPhoenix.DataLoader do
 
     db_available = File.exists?("/data/benchmark.db")
 
+    pg_available = init_pg_pool()
+
     :persistent_term.put(:dataset, dataset)
     :persistent_term.put(:json_large_cache, json_large_cache)
     :persistent_term.put(:static_files, static_files)
     :persistent_term.put(:db_available, db_available)
+    :persistent_term.put(:pg_available, pg_available)
+  end
+
+  defp init_pg_pool do
+    case System.get_env("DATABASE_URL") do
+      nil -> false
+      "" -> false
+      url ->
+        case parse_pg_url(url) do
+          {:ok, opts} ->
+            case Postgrex.start_link(opts ++ [name: :pg_pool, pool_size: 64]) do
+              {:ok, _pid} -> true
+              _ -> false
+            end
+          _ -> false
+        end
+    end
+  end
+
+  defp parse_pg_url(url) do
+    uri = URI.parse(url)
+    case uri do
+      %URI{host: host, port: port, userinfo: userinfo, path: path}
+      when is_binary(host) and is_integer(port) and is_binary(userinfo) ->
+        [username, password] = String.split(userinfo, ":", parts: 2)
+        database = String.trim_leading(path || "", "/")
+        {:ok, [
+          hostname: host,
+          port: port,
+          username: username,
+          password: password,
+          database: database
+        ]}
+      _ -> :error
+    end
   end
 
   defp load_json(path) do

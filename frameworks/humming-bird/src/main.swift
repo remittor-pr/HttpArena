@@ -3,6 +3,7 @@ import Hummingbird
 import HummingbirdCompression
 import NIOCore
 import NIOFoundationCompat
+import PostgresNIO
 
 #if canImport(CSQLite)
 import CSQLite
@@ -200,6 +201,46 @@ func queryDb(dbPath: String, minPrice: Double, maxPrice: Double) -> [UInt8] {
     return [UInt8](jsonData)
 }
 
+// MARK: - Postgres
+
+func parseDatabaseURL(_ url: String) -> PostgresClient.Configuration? {
+    guard let u = URL(string: url.replacingOccurrences(of: "postgres://", with: "postgresql://")) else { return nil }
+    let user = u.user ?? "bench"
+    let password = u.password ?? "bench"
+    let host = u.host ?? "localhost"
+    let port = u.port ?? 5432
+    let database = String(u.path.dropFirst())
+    var config = PostgresClient.Configuration(
+        host: host, port: port, username: user, password: password, database: database,
+        tls: .disable
+    )
+    return config
+}
+
+func queryPgDb(client: PostgresClient, minPrice: Double, maxPrice: Double) async -> [UInt8] {
+    do {
+        let rows = try await client.query(
+            "SELECT id, name, category, price, quantity, active, tags::text, rating_score, rating_count FROM items WHERE price BETWEEN \(minPrice) AND \(maxPrice) LIMIT 50"
+        )
+        var items: [[String: Any]] = []
+        for try await row in rows {
+            let (id, name, category, price, quantity, active, tagsStr, ratingScore, ratingCount) =
+                try row.decode((Int, String, String, Double, Int, Bool, String, Double, Int).self, context: .default)
+            let tags = (try? JSONSerialization.jsonObject(with: Data(tagsStr.utf8))) ?? []
+            items.append([
+                "id": id, "name": name, "category": category,
+                "price": price, "quantity": quantity, "active": active,
+                "tags": tags, "rating": ["score": ratingScore, "count": ratingCount] as [String: Any]
+            ])
+        }
+        let response: [String: Any] = ["items": items, "count": items.count]
+        if let jsonData = try? JSONSerialization.data(withJSONObject: response) {
+            return [UInt8](jsonData)
+        }
+    } catch {}
+    return [UInt8](#"{"items":[],"count":0}"#.utf8)
+}
+
 // MARK: - Main
 
 let datasetPath = ProcessInfo.processInfo.environment["DATASET_PATH"] ?? "/data/dataset.json"
@@ -218,6 +259,12 @@ let state = AppState(
     dbPath: dbPath,
     dbAvailable: dbAvailable
 )
+
+let pgConfig = ProcessInfo.processInfo.environment["DATABASE_URL"].flatMap(parseDatabaseURL)
+nonisolated(unsafe) var pgClient: PostgresClient? = nil
+if let cfg = pgConfig {
+    pgClient = PostgresClient(configuration: cfg)
+}
 
 let router = Router()
 
@@ -325,6 +372,26 @@ router.get("db") { request, _ -> Response in
     )
 }
 
+// GET /async-db
+router.get("async-db") { request, _ -> Response in
+    guard let client = pgClient else {
+        return Response(
+            status: .ok,
+            headers: [.contentType: "application/json"],
+            body: .init(byteBuffer: ByteBuffer(string: #"{"items":[],"count":0}"#))
+        )
+    }
+    let query = request.uri.query ?? ""
+    let minPrice = parseQueryParam(query, key: "min") ?? 10.0
+    let maxPrice = parseQueryParam(query, key: "max") ?? 50.0
+    let result = await queryPgDb(client: client, minPrice: minPrice, maxPrice: maxPrice)
+    return Response(
+        status: .ok,
+        headers: [.contentType: "application/json"],
+        body: .init(byteBuffer: ByteBuffer(bytes: result))
+    )
+}
+
 // GET /static/{filename}
 router.get("static/{filename}") { _, context -> Response in
     let filename = context.parameters.get("filename") ?? ""
@@ -344,4 +411,12 @@ let app = Application(
     configuration: .init(address: .hostname("0.0.0.0", port: 8080), serverName: "hummingbird")
 )
 
-try await app.runService()
+if let client = pgClient {
+    try await withThrowingTaskGroup(of: Void.self) { group in
+        group.addTask { try await client.run() }
+        group.addTask { try await app.runService() }
+        try await group.next()
+    }
+} else {
+    try await app.runService()
+}

@@ -6,6 +6,7 @@ let package = Package(
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.100.0"),
+        .package(url: "https://github.com/vapor/postgres-nio.git", from: "1.21.0"),
     ],
     targets: [
         .systemLibrary(
@@ -29,6 +30,7 @@ let package = Package(
                 "CSQLite",
                 "CZlib",
                 .product(name: "Vapor", package: "vapor"),
+                .product(name: "PostgresNIO", package: "postgres-nio"),
             ],
             path: "src"
         ),
