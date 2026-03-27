@@ -38,10 +38,10 @@ var app = builder.Build();
 
 app.UseResponseCompression();
 
-app.Use(async (ctx, next) =>
+app.Use((ctx, next) =>
 {
     ctx.Response.Headers["Server"] = "aspnet-minimal";
-    await next();
+    return next();
 });
 
 AppData.Load();
