@@ -450,26 +450,6 @@
     "status_5xx": 0
   },
   {
-    "framework": "hummingbird",
-    "language": "Swift",
-    "rps": 317259,
-    "avg_latency": "846us",
-    "p99_latency": "4.40ms",
-    "cpu": "9649.7%",
-    "memory": "79.5MiB",
-    "connections": 512,
-    "threads": 64,
-    "duration": "5s",
-    "pipeline": 1,
-    "bandwidth": "46.41MB/s",
-    "input_bw": "32.07MB/s",
-    "reconnects": 75,
-    "status_2xx": 1586295,
-    "status_3xx": 0,
-    "status_4xx": 569785,
-    "status_5xx": 0
-  },
-  {
     "framework": "hyper",
     "language": "Rust",
     "rps": 1860089,
@@ -879,6 +859,26 @@
     "status_2xx": 3258777,
     "status_3xx": 0,
     "status_4xx": 1161320,
+    "status_5xx": 0
+  },
+  {
+    "framework": "hummingbird",
+    "language": "Swift",
+    "rps": 312520,
+    "avg_latency": "875us",
+    "p99_latency": "4.79ms",
+    "cpu": "9889.8%",
+    "memory": "82.3MiB",
+    "connections": 512,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "48.00MB/s",
+    "input_bw": "31.59MB/s",
+    "reconnects": 49,
+    "status_2xx": 1562604,
+    "status_3xx": 0,
+    "status_4xx": 562975,
     "status_5xx": 0
   },
   {
