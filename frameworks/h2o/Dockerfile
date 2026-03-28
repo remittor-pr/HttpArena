@@ -1,7 +1,7 @@
 FROM buildpack-deps:bookworm AS build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    cmake clang libssl-dev libyajl-dev zlib1g-dev libuv1-dev libbrotli-dev libsqlite3-dev
+    cmake clang libssl-dev zlib1g-dev libuv1-dev libbrotli-dev
 
 # Build h2o from source
 ARG H2O_VERSION=ccea64b17ade832753db933658047ede9f31a380
@@ -30,7 +30,7 @@ RUN cmake \
 
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libyajl2 libssl3 libbrotli1 libsqlite3-0 && \
+    libssl3 libbrotli1 && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=build /usr/local/lib/libh2o-evloop.so* /usr/local/lib/
 COPY --from=build /app/build/h2o-app /server

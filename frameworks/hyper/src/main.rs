@@ -13,14 +13,13 @@ use hyper::server::conn::{http1, http2};
 use hyper::service::service_fn;
 use hyper_util::rt::{TokioIo, TokioExecutor};
 use rustls::ServerConfig;
-use serde::{Deserialize, Serialize};
+
 use socket2::{Domain, SockAddr, Socket};
 use tokio::net::TcpListener;
 use tokio::runtime;
 use tokio_rustls::TlsAcceptor;
 
 static SERVER_HEADER: HeaderValue = HeaderValue::from_static("hyper");
-static APPLICATION_JSON: HeaderValue = HeaderValue::from_static("application/json");
 static TEXT_PLAIN: HeaderValue = HeaderValue::from_static("text/plain");
 static OK_BODY: &[u8] = b"ok";
 
@@ -51,57 +50,6 @@ fn load_static_files() -> HashMap<String, StaticFile> {
     files
 }
 
-#[derive(Deserialize, Clone)]
-struct Rating {
-    score: f64,
-    count: i64,
-}
-
-#[derive(Deserialize, Clone)]
-struct DatasetItem {
-    id: i64,
-    name: String,
-    category: String,
-    price: f64,
-    quantity: i64,
-    active: bool,
-    tags: Vec<String>,
-    rating: Rating,
-}
-
-#[derive(Serialize)]
-struct RatingOut {
-    score: f64,
-    count: i64,
-}
-
-#[derive(Serialize)]
-struct ProcessedItem {
-    id: i64,
-    name: String,
-    category: String,
-    price: f64,
-    quantity: i64,
-    active: bool,
-    tags: Vec<String>,
-    rating: RatingOut,
-    total: f64,
-}
-
-#[derive(Serialize)]
-struct JsonResponse {
-    items: Vec<ProcessedItem>,
-    count: usize,
-}
-
-fn load_dataset() -> Vec<DatasetItem> {
-    let path = std::env::var("DATASET_PATH").unwrap_or_else(|_| "/data/dataset.json".to_string());
-    match std::fs::read_to_string(&path) {
-        Ok(data) => serde_json::from_str(&data).unwrap_or_default(),
-        Err(_) => Vec::new(),
-    }
-}
-
 fn parse_query_params(query: Option<&str>) -> i64 {
     let mut sum: i64 = 0;
     if let Some(q) = query {
@@ -114,14 +62,6 @@ fn parse_query_params(query: Option<&str>) -> i64 {
         }
     }
     sum
-}
-
-async fn upload_handler(req: Request<Incoming>) -> Result<Response<BoxBody<Bytes, Infallible>>, http::Error> {
-    let body_bytes = req.collect().await.map(|b| b.to_bytes()).unwrap_or_default();
-    Response::builder()
-        .header(SERVER, SERVER_HEADER.clone())
-        .header(CONTENT_TYPE, TEXT_PLAIN.clone())
-        .body(Full::from(body_bytes.len().to_string()).boxed())
 }
 
 fn pipeline_response() -> Result<Response<BoxBody<Bytes, Infallible>>, http::Error> {
@@ -156,35 +96,6 @@ async fn baseline_post(
         .header(SERVER, SERVER_HEADER.clone())
         .header(CONTENT_TYPE, TEXT_PLAIN.clone())
         .body(Full::from(body).boxed())
-}
-
-fn json_response(dataset: &[DatasetItem]) -> Result<Response<BoxBody<Bytes, Infallible>>, http::Error> {
-    let items: Vec<ProcessedItem> = dataset
-        .iter()
-        .map(|d| ProcessedItem {
-            id: d.id,
-            name: d.name.clone(),
-            category: d.category.clone(),
-            price: d.price,
-            quantity: d.quantity,
-            active: d.active,
-            tags: d.tags.clone(),
-            rating: RatingOut {
-                score: d.rating.score,
-                count: d.rating.count,
-            },
-            total: (d.price * d.quantity as f64 * 100.0).round() / 100.0,
-        })
-        .collect();
-    let resp = JsonResponse {
-        count: items.len(),
-        items,
-    };
-    let content = serde_json::to_vec(&resp).unwrap_or_default();
-    Response::builder()
-        .header(SERVER, SERVER_HEADER.clone())
-        .header(CONTENT_TYPE, APPLICATION_JSON.clone())
-        .body(Full::from(content).boxed())
 }
 
 fn not_found() -> Result<Response<BoxBody<Bytes, Infallible>>, http::Error> {
@@ -225,12 +136,10 @@ fn load_tls_config() -> Option<Arc<ServerConfig>> {
 
 fn main() -> io::Result<()> {
     let threads = num_cpus::get();
-    let dataset = Arc::new(load_dataset());
     let statics = Arc::new(load_static_files());
     let tls_config = load_tls_config();
 
     for _ in 1..threads {
-        let ds = dataset.clone();
         let sf = statics.clone();
         let tls = tls_config.clone();
         thread::spawn(move || {
@@ -239,7 +148,7 @@ fn main() -> io::Result<()> {
                 .build()
                 .unwrap();
             let local = tokio::task::LocalSet::new();
-            local.block_on(&rt, serve(ds, sf, tls)).unwrap();
+            local.block_on(&rt, serve(sf, tls)).unwrap();
         });
     }
 
@@ -247,7 +156,7 @@ fn main() -> io::Result<()> {
         .enable_all()
         .build()?;
     let local = tokio::task::LocalSet::new();
-    local.block_on(&rt, serve(dataset, statics, tls_config))
+    local.block_on(&rt, serve(statics, tls_config))
 }
 
 fn static_response(sf: &StaticFile) -> Result<Response<BoxBody<Bytes, Infallible>>, http::Error> {
@@ -257,9 +166,8 @@ fn static_response(sf: &StaticFile) -> Result<Response<BoxBody<Bytes, Infallible
         .body(Full::from(sf.data.clone()).boxed())
 }
 
-fn make_service(ds: Arc<Vec<DatasetItem>>, statics: Arc<HashMap<String, StaticFile>>) -> impl Fn(Request<Incoming>) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<Response<BoxBody<Bytes, Infallible>>, http::Error>> + Send>> + Clone {
+fn make_service(statics: Arc<HashMap<String, StaticFile>>) -> impl Fn(Request<Incoming>) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<Response<BoxBody<Bytes, Infallible>>, http::Error>> + Send>> + Clone {
     move |req: Request<Incoming>| {
-        let ds = ds.clone();
         let statics = statics.clone();
         Box::pin(async move {
             let path = req.uri().path();
@@ -274,8 +182,6 @@ fn make_service(ds: Arc<Vec<DatasetItem>>, statics: Arc<HashMap<String, StaticFi
                     }
                 }
                 "/baseline2" => baseline_get(query.as_deref()),
-                "/upload" if req.method() == http::Method::POST => upload_handler(req).await,
-                "/json" => json_response(&ds),
                 p if p.starts_with("/static/") => {
                     let name = &p[8..];
                     match statics.get(name) {
@@ -289,7 +195,7 @@ fn make_service(ds: Arc<Vec<DatasetItem>>, statics: Arc<HashMap<String, StaticFi
     }
 }
 
-async fn serve(dataset: Arc<Vec<DatasetItem>>, statics: Arc<HashMap<String, StaticFile>>, tls_config: Option<Arc<ServerConfig>>) -> io::Result<()> {
+async fn serve(statics: Arc<HashMap<String, StaticFile>>, tls_config: Option<Arc<ServerConfig>>) -> io::Result<()> {
     let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 8080));
     let socket = create_socket(addr)?;
     let listener = TcpListener::from_std(socket.into())?;
@@ -303,7 +209,6 @@ async fn serve(dataset: Arc<Vec<DatasetItem>>, statics: Arc<HashMap<String, Stat
         let h2_addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 8443));
         let h2_socket = create_socket(h2_addr)?;
         let h2_listener = TcpListener::from_std(h2_socket.into())?;
-        let ds = dataset.clone();
         let sf = statics.clone();
         tokio::task::spawn_local(async move {
             loop {
@@ -312,7 +217,6 @@ async fn serve(dataset: Arc<Vec<DatasetItem>>, statics: Arc<HashMap<String, Stat
                     Err(_) => continue,
                 };
                 let acceptor = acceptor.clone();
-                let ds = ds.clone();
                 let sf = sf.clone();
                 tokio::task::spawn_local(async move {
                     let tls_stream = match acceptor.accept(stream).await {
@@ -320,7 +224,7 @@ async fn serve(dataset: Arc<Vec<DatasetItem>>, statics: Arc<HashMap<String, Stat
                         Err(_) => return,
                     };
                     let io = TokioIo::new(tls_stream);
-                    let svc = make_service(ds, sf);
+                    let svc = make_service(sf);
                     let _ = http2::Builder::new(TokioExecutor::new())
                         .serve_connection(io, service_fn(svc))
                         .await;
@@ -332,11 +236,10 @@ async fn serve(dataset: Arc<Vec<DatasetItem>>, statics: Arc<HashMap<String, Stat
     loop {
         let (stream, _) = listener.accept().await?;
         let http = http.clone();
-        let ds = dataset.clone();
         let sf = statics.clone();
         tokio::task::spawn_local(async move {
             let io = TokioIo::new(stream);
-            let svc = make_service(ds, sf);
+            let svc = make_service(sf);
             let _ = http.serve_connection(io, service_fn(svc)).await;
         });
     }

@@ -1,15 +1,11 @@
 package httparenahandler
 
 import (
-	"database/sql"
-	"encoding/json"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -17,7 +13,6 @@ import (
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
-	_ "modernc.org/sqlite"
 )
 
 func init() {
@@ -25,49 +20,13 @@ func init() {
 	httpcaddyfile.RegisterHandlerDirective("httparena", parseCaddyfile)
 }
 
-type Rating struct {
-	Score float64 `json:"score"`
-	Count int     `json:"count"`
-}
-
-type ProcessedItem struct {
-	ID       int      `json:"id"`
-	Name     string   `json:"name"`
-	Category string   `json:"category"`
-	Price    float64  `json:"price"`
-	Quantity int      `json:"quantity"`
-	Active   bool     `json:"active"`
-	Tags     []string `json:"tags"`
-	Rating   Rating   `json:"rating"`
-	Total    float64  `json:"total"`
-}
-
-type ProcessResponse struct {
-	Items []ProcessedItem `json:"items"`
-	Count int             `json:"count"`
-}
-
 type staticFile struct {
 	data        []byte
 	contentType string
 }
 
-type RawItem struct {
-	ID       int      `json:"id"`
-	Name     string   `json:"name"`
-	Category string   `json:"category"`
-	Price    float64  `json:"price"`
-	Quantity int      `json:"quantity"`
-	Active   bool     `json:"active"`
-	Tags     []string `json:"tags"`
-	Rating   Rating   `json:"rating"`
-}
-
 type Handler struct {
-	dataset           []RawItem
-	jsonLargeResponse []byte
-	staticFiles       map[string]staticFile
-	db                *sql.DB
+	staticFiles map[string]staticFile
 }
 
 func (Handler) CaddyModule() caddy.ModuleInfo {
@@ -78,46 +37,6 @@ func (Handler) CaddyModule() caddy.ModuleInfo {
 }
 
 func (h *Handler) Provision(ctx caddy.Context) error {
-	path := os.Getenv("DATASET_PATH")
-	if path == "" {
-		path = "/data/dataset.json"
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil // dataset not available, /json will 500
-	}
-
-	if err := json.Unmarshal(data, &h.dataset); err != nil {
-		return nil
-	}
-
-	// Load large dataset for /compression
-	largeData, err := os.ReadFile("/data/dataset-large.json")
-	if err == nil {
-		var largeDataset []struct {
-			ID       int      `json:"id"`
-			Name     string   `json:"name"`
-			Category string   `json:"category"`
-			Price    float64  `json:"price"`
-			Quantity int      `json:"quantity"`
-			Active   bool     `json:"active"`
-			Tags     []string `json:"tags"`
-			Rating   Rating   `json:"rating"`
-		}
-		if err := json.Unmarshal(largeData, &largeDataset); err == nil {
-			largeItems := make([]ProcessedItem, len(largeDataset))
-			for i, d := range largeDataset {
-				largeItems[i] = ProcessedItem{
-					ID: d.ID, Name: d.Name, Category: d.Category,
-					Price: d.Price, Quantity: d.Quantity, Active: d.Active,
-					Tags: d.Tags, Rating: d.Rating,
-					Total: math.Round(d.Price*float64(d.Quantity)*100) / 100,
-				}
-			}
-			h.jsonLargeResponse, _ = json.Marshal(ProcessResponse{Items: largeItems, Count: len(largeItems)})
-		}
-	}
-
 	// Load static files
 	mimeTypes := map[string]string{
 		".css": "text/css", ".js": "application/javascript", ".html": "text/html",
@@ -141,13 +60,6 @@ func (h *Handler) Provision(ctx caddy.Context) error {
 			}
 			h.staticFiles[e.Name()] = staticFile{data: d, contentType: ct}
 		}
-	}
-
-	// Open SQLite database
-	db, err := sql.Open("sqlite", "file:/data/benchmark.db?mode=ro&immutable=1")
-	if err == nil {
-		db.SetMaxOpenConns(runtime.NumCPU())
-		h.db = db
 	}
 
 	return nil
@@ -191,27 +103,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 		w.Write([]byte("ok"))
 		return nil
 
-	case "/json":
-		if h.dataset != nil {
-			items := make([]ProcessedItem, len(h.dataset))
-			for i, d := range h.dataset {
-				items[i] = ProcessedItem{
-					ID: d.ID, Name: d.Name, Category: d.Category,
-					Price: d.Price, Quantity: d.Quantity, Active: d.Active,
-					Tags: d.Tags, Rating: d.Rating,
-					Total: math.Round(d.Price*float64(d.Quantity)*100) / 100,
-				}
-			}
-			resp, _ := json.Marshal(ProcessResponse{Items: items, Count: len(items)})
-			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("Server", "caddy")
-			w.Header().Set("Content-Length", strconv.Itoa(len(resp)))
-			w.Write(resp)
-		} else {
-			http.Error(w, "No dataset", 500)
-		}
-		return nil
-
 	case "/baseline2":
 		sum := sumQuery(r)
 		w.Header().Set("Content-Type", "text/plain")
@@ -232,77 +123,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyht
 		fmt.Fprint(w, sum)
 		return nil
 
-	case "/upload":
-		if r.Method == "POST" && r.Body != nil {
-			n, _ := io.Copy(io.Discard, r.Body)
-			w.Header().Set("Content-Type", "text/plain")
-			w.Header().Set("Server", "caddy")
-			fmt.Fprintf(w, "%d", n)
-		} else {
-			http.Error(w, "POST required", 405)
-		}
-		return nil
-
-	case "/compression":
-		if h.jsonLargeResponse != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("Server", "caddy")
-			w.Write(h.jsonLargeResponse)
-		} else {
-			http.Error(w, "No dataset", 500)
-		}
-		return nil
-
-	case "/db":
-		if h.db == nil {
-			http.Error(w, "DB not available", 500)
-			return nil
-		}
-		minStr := r.URL.Query().Get("min")
-		maxStr := r.URL.Query().Get("max")
-		minPrice := 10.0
-		maxPrice := 50.0
-		if v, err := strconv.ParseFloat(minStr, 64); err == nil {
-			minPrice = v
-		}
-		if v, err := strconv.ParseFloat(maxStr, 64); err == nil {
-			maxPrice = v
-		}
-		rows, err := h.db.Query("SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50", minPrice, maxPrice)
-		if err != nil {
-			http.Error(w, "Query failed", 500)
-			return nil
-		}
-		defer rows.Close()
-		var items []map[string]interface{}
-		for rows.Next() {
-			var dbId int
-			var name, category, tags string
-			var price float64
-			var quantity int
-			var active int
-			var ratingScore float64
-			var ratingCount int
-			if err := rows.Scan(&dbId, &name, &category, &price, &quantity, &active, &tags, &ratingScore, &ratingCount); err != nil {
-				continue
-			}
-			var tagsArr []string
-			json.Unmarshal([]byte(tags), &tagsArr)
-			items = append(items, map[string]interface{}{
-				"id": dbId, "name": name, "category": category,
-				"price": price, "quantity": quantity, "active": active == 1,
-				"tags": tagsArr,
-				"rating": map[string]interface{}{"score": ratingScore, "count": ratingCount},
-			})
-		}
-		resp := map[string]interface{}{
-			"items": items,
-			"count": len(items),
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Server", "caddy")
-		json.NewEncoder(w).Encode(resp)
-		return nil
 	}
 
 	if strings.HasPrefix(path, "/static/") {

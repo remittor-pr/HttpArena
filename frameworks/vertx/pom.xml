@@ -14,7 +14,6 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <vertx.version>4.5.14</vertx.version>
-        <jackson.version>2.16.1</jackson.version>
     </properties>
 
     <dependencies>
@@ -27,16 +26,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
             <version>${vertx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>3.47.2.0</version>
         </dependency>
     </dependencies>
 
