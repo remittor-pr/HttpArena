@@ -4,7 +4,7 @@ HTTP framework benchmark platform.
 
 16 test profiles. 64-core dedicated hardware. Same conditions for every framework.
 
-[View Leaderboard](https://MDA2AV.github.io/HttpArena/) | [Documentation](https://MDA2AV.github.io/HttpArena/docs/) | [Add a Framework](https://MDA2AV.github.io/HttpArena/docs/add-framework/)
+[View Leaderboard](https://www.http-arena.com/) | [Documentation](https://www.http-arena.com/docs/) | [Add a Framework](https://www.http-arena.com/docs/add-framework/)
 
 ---
 
