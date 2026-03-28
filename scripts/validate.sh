@@ -102,12 +102,15 @@ if has_test "async-db"; then
         -v "$DATA_DIR/pgdb-seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro" \
         postgres:17-alpine \
         -c max_connections=500
-    for i in $(seq 1 30); do
+    for i in $(seq 1 60); do
         if docker exec "$PG_CONTAINER" pg_isready -U bench -d benchmark >/dev/null 2>&1; then
-            echo "[postgres] Ready"
-            break
+            # Ensure seed data is loaded (pg_isready fires before init scripts finish)
+            if docker exec "$PG_CONTAINER" psql -U bench -d benchmark -tAc "SELECT 1 FROM items LIMIT 1" 2>/dev/null | grep -q 1; then
+                echo "[postgres] Ready"
+                break
+            fi
         fi
-        [ "$i" -eq 30 ] && { echo "FAIL: Postgres sidecar not ready"; exit 1; }
+        [ "$i" -eq 60 ] && { echo "FAIL: Postgres sidecar not ready"; exit 1; }
         sleep 1
     done
     docker_args+=(-e "DATABASE_URL=postgres://bench:bench@localhost:5432/benchmark")

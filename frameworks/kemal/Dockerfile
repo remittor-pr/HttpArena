@@ -4,7 +4,7 @@ FROM crystallang/crystal:1.14-alpine AS builder
 WORKDIR /app
 
 # Install SQLite dev headers, libpq, and gcc for reuseport shim
-RUN apk add --no-cache sqlite-dev sqlite-static gcc musl-dev
+RUN apk add --no-cache sqlite-dev sqlite-static gcc musl-dev libpq-dev git
 
 # Build SO_REUSEPORT shim
 COPY reuseport.c /tmp/reuseport.c
@@ -21,7 +21,7 @@ RUN crystal build src/server.cr -o server --release --no-debug
 # Runtime stage
 FROM alpine:3.20
 
-RUN apk add --no-cache ca-certificates libgcc gc libevent sqlite-libs pcre2
+RUN apk add --no-cache ca-certificates libgcc gc libevent sqlite-libs pcre2 libpq
 
 WORKDIR /app
 COPY --from=builder /app/server /app/server

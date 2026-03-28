@@ -1,6 +1,7 @@
 #include <ulfius.h>
 #include <jansson.h>
 #include <sqlite3.h>
+#include <libpq-fe.h>
 #include <zlib.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,10 +35,15 @@ static StaticFile static_files[MAX_STATIC_FILES];
 static int static_file_count = 0;
 
 static int db_available = 0;
+static int pg_available = 0;
+static char pg_conninfo[512] = {0};
 
 /* Thread-local DB */
 static __thread sqlite3 *tl_db = NULL;
 static __thread sqlite3_stmt *tl_stmt = NULL;
+
+/* Thread-local PostgreSQL */
+static __thread PGconn *tl_pg = NULL;
 
 static sqlite3 *open_db(void) {
     sqlite3 *h = NULL;
@@ -60,6 +66,81 @@ static sqlite3 *get_db(void) {
         }
     }
     return tl_db;
+}
+
+/* Parse postgres://user:pass@host:port/dbname into libpq conninfo */
+static void parse_database_url(const char *url, char *out, size_t out_len) {
+    char user[64] = "", pass[64] = "", host[128] = "", port[8] = "5432", dbname[64] = "";
+
+    const char *p = url;
+    /* Skip scheme: postgres:// or postgresql:// */
+    if (strncmp(p, "postgres://", 11) == 0) p += 11;
+    else if (strncmp(p, "postgresql://", 13) == 0) p += 13;
+    else { out[0] = 0; return; }
+
+    /* user:pass@host:port/dbname */
+    const char *at = strchr(p, '@');
+    if (at) {
+        const char *colon = memchr(p, ':', at - p);
+        if (colon) {
+            size_t ulen = colon - p;
+            if (ulen >= sizeof(user)) ulen = sizeof(user) - 1;
+            memcpy(user, p, ulen); user[ulen] = 0;
+            size_t plen = at - colon - 1;
+            if (plen >= sizeof(pass)) plen = sizeof(pass) - 1;
+            memcpy(pass, colon + 1, plen); pass[plen] = 0;
+        } else {
+            size_t ulen = at - p;
+            if (ulen >= sizeof(user)) ulen = sizeof(user) - 1;
+            memcpy(user, p, ulen); user[ulen] = 0;
+        }
+        p = at + 1;
+    }
+    const char *slash = strchr(p, '/');
+    const char *colon2 = strchr(p, ':');
+    if (colon2 && (!slash || colon2 < slash)) {
+        size_t hlen = colon2 - p;
+        if (hlen >= sizeof(host)) hlen = sizeof(host) - 1;
+        memcpy(host, p, hlen); host[hlen] = 0;
+        const char *port_start = colon2 + 1;
+        const char *port_end = slash ? slash : port_start + strlen(port_start);
+        size_t ptlen = port_end - port_start;
+        if (ptlen >= sizeof(port)) ptlen = sizeof(port) - 1;
+        memcpy(port, port_start, ptlen); port[ptlen] = 0;
+    } else if (slash) {
+        size_t hlen = slash - p;
+        if (hlen >= sizeof(host)) hlen = sizeof(host) - 1;
+        memcpy(host, p, hlen); host[hlen] = 0;
+    } else {
+        strncpy(host, p, sizeof(host) - 1);
+    }
+    if (slash && *(slash + 1)) {
+        strncpy(dbname, slash + 1, sizeof(dbname) - 1);
+    }
+
+    snprintf(out, out_len, "host=%s port=%s dbname=%s user=%s password=%s",
+             host, port, dbname, user, pass);
+}
+
+static PGconn *get_pg(void) {
+    if (!tl_pg) {
+        tl_pg = PQconnectdb(pg_conninfo);
+        if (PQstatus(tl_pg) != CONNECTION_OK) {
+            PQfinish(tl_pg);
+            tl_pg = NULL;
+            return NULL;
+        }
+    }
+    /* Check if connection is still alive, reconnect if needed */
+    if (PQstatus(tl_pg) != CONNECTION_OK) {
+        PQreset(tl_pg);
+        if (PQstatus(tl_pg) != CONNECTION_OK) {
+            PQfinish(tl_pg);
+            tl_pg = NULL;
+            return NULL;
+        }
+    }
+    return tl_pg;
 }
 
 /* ── Data loading ── */
@@ -344,6 +425,73 @@ int cb_db(const struct _u_request *request, struct _u_response *response, void *
     return U_CALLBACK_CONTINUE;
 }
 
+int cb_async_db(const struct _u_request *request, struct _u_response *response, void *user_data) {
+    if (pg_conninfo[0] == '\0' || !get_pg()) {
+        ulfius_set_string_body_response(response, 200, "{\"items\":[],\"count\":0}");
+        u_map_put(response->map_header, "Content-Type", "application/json");
+        return U_CALLBACK_CONTINUE;
+    }
+    double min_price = 10.0, max_price = 50.0;
+    const char *v;
+    if ((v = u_map_get(request->map_url, "min")) != NULL) min_price = atof(v);
+    if ((v = u_map_get(request->map_url, "max")) != NULL) max_price = atof(v);
+
+    char min_str[32], max_str[32];
+    snprintf(min_str, sizeof(min_str), "%.2f", min_price);
+    snprintf(max_str, sizeof(max_str), "%.2f", max_price);
+
+    const char *params[2] = { min_str, max_str };
+    PGresult *res = PQexecParams(tl_pg,
+        "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count "
+        "FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50",
+        2, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        PQclear(res);
+        ulfius_set_string_body_response(response, 200, "{\"items\":[],\"count\":0}");
+        u_map_put(response->map_header, "Content-Type", "application/json");
+        return U_CALLBACK_CONTINUE;
+    }
+
+    int nrows = PQntuples(res);
+    json_t *items = json_array();
+    for (int i = 0; i < nrows; i++) {
+        json_t *item = json_object();
+        json_object_set_new(item, "id", json_integer(atoll(PQgetvalue(res, i, 0))));
+        json_object_set_new(item, "name", json_string(PQgetvalue(res, i, 1)));
+        json_object_set_new(item, "category", json_string(PQgetvalue(res, i, 2)));
+        json_object_set_new(item, "price", json_real(atof(PQgetvalue(res, i, 3))));
+        json_object_set_new(item, "quantity", json_integer(atoll(PQgetvalue(res, i, 4))));
+
+        const char *active_val = PQgetvalue(res, i, 5);
+        json_object_set_new(item, "active", (active_val[0] == 't') ? json_true() : json_false());
+
+        const char *tags_str = PQgetvalue(res, i, 6);
+        json_error_t err;
+        json_t *tags = json_loads(tags_str ? tags_str : "[]", 0, &err);
+        json_object_set_new(item, "tags", tags ? tags : json_array());
+
+        json_t *rating = json_object();
+        json_object_set_new(rating, "score", json_real(atof(PQgetvalue(res, i, 7))));
+        json_object_set_new(rating, "count", json_integer(atoll(PQgetvalue(res, i, 8))));
+        json_object_set_new(item, "rating", rating);
+
+        json_array_append_new(items, item);
+    }
+    PQclear(res);
+
+    json_t *resp_json = json_object();
+    json_object_set_new(resp_json, "count", json_integer(json_array_size(items)));
+    json_object_set_new(resp_json, "items", items);
+    char *body = json_dumps(resp_json, JSON_COMPACT);
+    json_decref(resp_json);
+
+    ulfius_set_string_body_response(response, 200, body);
+    u_map_put(response->map_header, "Content-Type", "application/json");
+    free(body);
+    return U_CALLBACK_CONTINUE;
+}
+
 int cb_static(const struct _u_request *request, struct _u_response *response, void *user_data) {
     const char *filename = u_map_get(request->map_url, "filename");
     if (!filename) {
@@ -376,6 +524,19 @@ int main(void) {
         if (test) { db_available = 1; sqlite3_close(test); }
     }
 
+    {
+        const char *db_url = getenv("DATABASE_URL");
+        if (db_url) {
+            parse_database_url(db_url, pg_conninfo, sizeof(pg_conninfo));
+            PGconn *test_pg = PQconnectdb(pg_conninfo);
+            if (PQstatus(test_pg) == CONNECTION_OK) {
+                pg_available = 1;
+                printf("PostgreSQL connection OK\n");
+            }
+            PQfinish(test_pg);
+        }
+    }
+
     if (ulfius_init_instance(&instance, PORT, NULL, NULL) != U_OK) {
         fprintf(stderr, "Error initializing ulfius on port %d\n", PORT);
         return 1;
@@ -390,6 +551,7 @@ int main(void) {
     ulfius_add_endpoint_by_val(&instance, "GET", "/baseline11", NULL, 0, &cb_baseline11, NULL);
     ulfius_add_endpoint_by_val(&instance, "POST", "/baseline11", NULL, 0, &cb_baseline11, NULL);
     ulfius_add_endpoint_by_val(&instance, "GET", "/db", NULL, 0, &cb_db, NULL);
+    ulfius_add_endpoint_by_val(&instance, "GET", "/async-db", NULL, 0, &cb_async_db, NULL);
     ulfius_add_endpoint_by_val(&instance, "GET", "/static/:filename", NULL, 0, &cb_static, NULL);
 
     if (ulfius_start_framework(&instance) != U_OK) {
@@ -421,6 +583,7 @@ int main(void) {
                 ulfius_add_endpoint_by_val(&instance_tls, "GET", "/baseline11", NULL, 0, &cb_baseline11, NULL);
                 ulfius_add_endpoint_by_val(&instance_tls, "POST", "/baseline11", NULL, 0, &cb_baseline11, NULL);
                 ulfius_add_endpoint_by_val(&instance_tls, "GET", "/db", NULL, 0, &cb_db, NULL);
+                ulfius_add_endpoint_by_val(&instance_tls, "GET", "/async-db", NULL, 0, &cb_async_db, NULL);
                 ulfius_add_endpoint_by_val(&instance_tls, "GET", "/static/:filename", NULL, 0, &cb_static, NULL);
 
                 if (ulfius_start_secure_framework(&instance_tls, key_data, cert_data) == U_OK) {

@@ -1,5 +1,6 @@
 #include <drogon/drogon.h>
 #include <sqlite3.h>
+#include <thread>
 #include <dirent.h>
 #include <fstream>
 #include <sstream>
@@ -59,6 +60,11 @@ static sqlite3 *getDb()
     }
     return tl_db;
 }
+
+// ── PostgreSQL (async-db) ──
+
+static bool pg_available = false;
+static drogon::orm::DbClientPtr pgClient;
 
 static void loadDataset()
 {
@@ -171,6 +177,7 @@ public:
     ADD_METHOD_TO(BenchmarkCtrl::upload,      "/upload",           Post);
     ADD_METHOD_TO(BenchmarkCtrl::baseline11,  "/baseline11",       Get, Post);
     ADD_METHOD_TO(BenchmarkCtrl::dbEndpoint,  "/db",               Get);
+    ADD_METHOD_TO(BenchmarkCtrl::asyncDb,    "/async-db",         Get);
     ADD_METHOD_TO(BenchmarkCtrl::staticFile,  "/static/{1}",       Get);
     METHOD_LIST_END
 
@@ -325,6 +332,66 @@ public:
         callback(resp);
     }
 
+    void asyncDb(const HttpRequestPtr &req,
+                 std::function<void(const HttpResponsePtr &)> &&callback)
+    {
+        static const std::string empty_resp = "{\"items\":[],\"count\":0}";
+        if (!pg_available || !pgClient) {
+            auto resp = HttpResponse::newHttpResponse();
+            resp->setBody(empty_resp);
+            resp->setContentTypeCode(CT_APPLICATION_JSON);
+            callback(resp);
+            return;
+        }
+        double minPrice = 10.0, maxPrice = 50.0;
+        for (auto &[k, v] : req->parameters()) {
+            if (k == "min") { try { minPrice = std::stod(v); } catch (...) {} }
+            else if (k == "max") { try { maxPrice = std::stod(v); } catch (...) {} }
+        }
+        pgClient->execSqlAsync(
+            "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50",
+            [callback](const drogon::orm::Result &result) {
+                Json::Value respJson;
+                Json::Value items(Json::arrayValue);
+                for (const auto &row : result) {
+                    Json::Value item;
+                    item["id"] = static_cast<Json::Int64>(row["id"].as<int32_t>());
+                    item["name"] = row["name"].as<std::string>();
+                    item["category"] = row["category"].as<std::string>();
+                    item["price"] = row["price"].as<double>();
+                    item["quantity"] = static_cast<Json::Int64>(row["quantity"].as<int32_t>());
+                    item["active"] = row["active"].as<bool>();
+                    Json::CharReaderBuilder rb;
+                    Json::Value tags;
+                    std::string errs;
+                    std::string tagsStr = row["tags"].as<std::string>();
+                    std::istringstream tis(tagsStr);
+                    Json::parseFromStream(rb, tis, &tags, &errs);
+                    item["tags"] = tags;
+                    Json::Value rating;
+                    rating["score"] = row["rating_score"].as<double>();
+                    rating["count"] = static_cast<Json::Int64>(row["rating_count"].as<int32_t>());
+                    item["rating"] = rating;
+                    items.append(std::move(item));
+                }
+                respJson["items"] = std::move(items);
+                respJson["count"] = static_cast<int>(result.size());
+                Json::StreamWriterBuilder wb;
+                wb["indentation"] = "";
+                auto resp = HttpResponse::newHttpResponse();
+                resp->setBody(Json::writeString(wb, respJson));
+                resp->setContentTypeCode(CT_APPLICATION_JSON);
+                callback(resp);
+            },
+            [callback](const drogon::orm::DrogonDbException &e) {
+                auto resp = HttpResponse::newHttpResponse();
+                resp->setBody("{\"items\":[],\"count\":0}");
+                resp->setContentTypeCode(CT_APPLICATION_JSON);
+                callback(resp);
+            },
+            minPrice, maxPrice);
+    }
+
     void staticFile(const HttpRequestPtr &req,
                     std::function<void(const HttpResponsePtr &)> &&callback,
                     const std::string &filename)
@@ -354,6 +421,37 @@ int main()
         sqlite3 *test = openDb();
         if (test) { db_available = true; sqlite3_close(test); }
     }
+    {
+        const char *dbUrl = getenv("DATABASE_URL");
+        if (dbUrl) {
+            // Parse postgres://user:pass@host:port/dbname
+            std::string s(dbUrl);
+            auto se = s.find("://");
+            if (se != std::string::npos) {
+                s = s.substr(se + 3);
+                std::string user, pass, host = "localhost", port = "5432", dbname;
+                auto at = s.find('@');
+                if (at != std::string::npos) {
+                    auto up = s.substr(0, at);
+                    s = s.substr(at + 1);
+                    auto c = up.find(':');
+                    if (c != std::string::npos) { user = up.substr(0, c); pass = up.substr(c + 1); }
+                    else user = up;
+                }
+                auto sl = s.find('/');
+                if (sl != std::string::npos) { dbname = s.substr(sl + 1); s = s.substr(0, sl); }
+                auto c = s.find(':');
+                if (c != std::string::npos) { host = s.substr(0, c); port = s.substr(c + 1); }
+                else host = s;
+                int nconns = std::thread::hardware_concurrency();
+                if (nconns < 4) nconns = 4;
+                pgClient = drogon::orm::DbClient::newPgClient(
+                    "host=" + host + " port=" + port + " dbname=" + dbname +
+                    " user=" + user + " password=" + pass, nconns);
+                pg_available = true;
+            }
+        }
+    }
 
     app().setLogLevel(trantor::Logger::kWarn);
     app().setThreadNum(0);
@@ -372,6 +470,7 @@ int main()
         app().addListener("0.0.0.0", 8443, true, cert, key);
 
     app().enableGzip(true);
+
     app().run();
     return 0;
 }

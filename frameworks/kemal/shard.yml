@@ -12,5 +12,8 @@ dependencies:
   sqlite3:
     github: crystal-lang/crystal-sqlite3
     version: ~> 0.21
+  pg:
+    github: will/crystal-pg
+    version: ~> 0.28
 
 crystal: ">= 1.10.0"

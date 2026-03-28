@@ -1,6 +1,7 @@
 import prologue
-import std/[json, strutils, math, os, tables, posix]
+import std/[json, strutils, math, os, tables, posix, uri]
 import db_connector/db_sqlite
+import db_connector/db_postgres
 import zippy
 
 type
@@ -21,8 +22,10 @@ type
 var dataset: seq[DatasetItem]
 var jsonLargeResponse: string
 var staticFiles: Table[string, (string, string)] # filename -> (data, content_type)
-var db: DbConn
+var db: db_sqlite.DbConn
 var dbAvailable: bool
+var pgDb: db_postgres.DbConn
+var pgAvailable: bool
 
 proc getMime(ext: string): string =
   case ext
@@ -120,10 +123,41 @@ proc loadStaticFiles() =
 
 proc loadDb() =
   try:
-    db = open("/data/benchmark.db", "", "", "")
+    db = db_sqlite.open("/data/benchmark.db", "", "", "")
     dbAvailable = true
   except:
     dbAvailable = false
+
+var pgConnStr: string = ""
+
+proc loadPgDb() =
+  try:
+    let dbUrl = getEnv("DATABASE_URL", "")
+    if dbUrl.len == 0:
+      return
+    let parsed = parseUri(dbUrl)
+    let host = parsed.hostname
+    let port = if parsed.port.len > 0: parsed.port else: "5432"
+    let user = parsed.username
+    let password = parsed.password
+    let dbName = parsed.path.strip(chars = {'/'})
+    pgConnStr = "host=" & host & " port=" & port & " user=" & user & " password=" & password & " dbname=" & dbName
+    pgDb = db_postgres.open("", "", "", pgConnStr)
+    pgAvailable = true
+  except:
+    pgAvailable = false
+
+proc ensurePg(): bool =
+  if pgAvailable:
+    return true
+  if pgConnStr.len == 0:
+    return false
+  try:
+    pgDb = db_postgres.open("", "", "", pgConnStr)
+    pgAvailable = true
+    return true
+  except:
+    return false
 
 const validMethodStrs = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
 
@@ -228,6 +262,38 @@ let dbHandler: HandlerAsync = proc(ctx: Context) {.async, closure, gcsafe.} =
     ctx.response.setHeader("Content-Type", "application/json")
     resp $(%*{"items": items, "count": items.len})
 
+let asyncDbHandler: HandlerAsync = proc(ctx: Context) {.async, closure, gcsafe.} =
+  {.cast(gcsafe).}:
+    if not ensurePg():
+      ctx.response.setHeader("Content-Type", "application/json")
+      resp "{\"items\":[],\"count\":0}"
+      return
+
+    let minPrice = try: parseFloat(ctx.getQueryParams("min", "10")) except ValueError: 10.0
+    let maxPrice = try: parseFloat(ctx.getQueryParams("max", "50")) except ValueError: 50.0
+
+    var items = newJArray()
+    try:
+      let rows = pgDb.getAllRows(sql"SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50",
+        $minPrice, $maxPrice)
+      for row in rows:
+        let tagsJson = try: parseJson(row[6]) except JsonParsingError: newJArray()
+        items.add(%*{
+          "id": parseInt(row[0]),
+          "name": row[1],
+          "category": row[2],
+          "price": parseFloat(row[3]),
+          "quantity": parseInt(row[4]),
+          "active": row[5] == "t",
+          "tags": tagsJson,
+          "rating": {"score": parseFloat(row[7]), "count": parseInt(row[8])}
+        })
+    except:
+      discard
+
+    ctx.response.setHeader("Content-Type", "application/json")
+    resp $(%*{"items": items, "count": items.len})
+
 let staticHandler: HandlerAsync = proc(ctx: Context) {.async, closure, gcsafe.} =
   {.cast(gcsafe).}:
     let filename = ctx.getPathParams("filename")
@@ -265,6 +331,7 @@ proc startWorker() =
   loadDatasetLarge()
   loadStaticFiles()
   loadDb()
+  loadPgDb()
 
   let settings = newSettings(
     port = Port(8080),
@@ -301,6 +368,7 @@ proc startWorker() =
   app.addRoute("/compression", compressionHandler, HttpGet)
   app.addRoute("/upload", uploadHandler, HttpPost)
   app.addRoute("/db", dbHandler, HttpGet)
+  app.addRoute("/async-db", asyncDbHandler, HttpGet)
   app.addRoute("/static/{filename}", staticHandler, HttpGet)
 
   app.run()

@@ -2,6 +2,8 @@ require "kemal"
 require "json"
 require "compress/gzip"
 require "sqlite3"
+require "db"
+require "pg"
 
 
 # ---------------------------------------------------------------------------
@@ -50,8 +52,25 @@ end
 
 DB_AVAILABLE = File.exists?(DB_PATH)
 
-
 PG_QUERY = "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50"
+
+PG_POOL_SIZE = {System.cpu_count.to_i * 4, 64}.max
+
+class PgPool
+  @@db : DB::Database? = nil
+
+  def self.get : DB::Database?
+    return @@db if @@db
+    if url = ENV["DATABASE_URL"]?
+      separator = url.includes?('?') ? '&' : '?'
+      pg_url = "#{url}#{separator}max_pool_size=#{PG_POOL_SIZE}&max_idle_pool_size=#{PG_POOL_SIZE}"
+      @@db = DB.open(pg_url)
+    end
+    @@db
+  rescue
+    nil
+  end
+end
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -178,6 +197,43 @@ get "/db" do |env|
   end
 
   {items: items, count: items.size}.to_json
+end
+
+get "/async-db" do |env|
+  server_header(env)
+  env.response.content_type = "application/json"
+
+  unless pg = PgPool.get
+    next %({"items":[],"count":0})
+  end
+
+  min_val = (env.params.query["min"]?.try(&.to_f) || 10.0)
+  max_val = (env.params.query["max"]?.try(&.to_f) || 50.0)
+
+  begin
+    items = [] of Hash(String, JSON::Any)
+
+    pg.query(PG_QUERY, min_val, max_val) do |rs|
+      rs.each do
+        item = Hash(String, JSON::Any).new
+        item["id"] = JSON::Any.new(rs.read(Int32).to_i64)
+        item["name"] = JSON::Any.new(rs.read(String))
+        item["category"] = JSON::Any.new(rs.read(String))
+        item["price"] = JSON::Any.new(rs.read(Float64))
+        item["quantity"] = JSON::Any.new(rs.read(Int32).to_i64)
+        item["active"] = JSON::Any.new(rs.read(Bool))
+        item["tags"] = rs.read(JSON::Any)
+        rating_score = rs.read(Float64)
+        rating_count = rs.read(Int32).to_i64
+        item["rating"] = JSON::Any.new({"score" => JSON::Any.new(rating_score), "count" => JSON::Any.new(rating_count)})
+        items << item
+      end
+    end
+
+    {items: items, count: items.size}.to_json
+  rescue
+    %({"items":[],"count":0})
+  end
 end
 
 post "/upload" do |env|

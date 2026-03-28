@@ -3,7 +3,7 @@ FROM ubuntu:24.04 AS build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc make cmake git ca-certificates pkg-config \
     libmicrohttpd-dev libjansson-dev libcurl4-openssl-dev \
-    libgnutls28-dev libsqlite3-dev zlib1g-dev \
+    libgnutls28-dev libsqlite3-dev zlib1g-dev libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Build ulfius and its dependency orcania/yder from source
@@ -30,11 +30,12 @@ WORKDIR /app
 COPY src/server.c ./
 RUN gcc -O3 -flto -march=native -o server server.c \
     $(pkg-config --cflags --libs libulfius) \
-    -ljansson -lsqlite3 -lz -lm -lpthread
+    $(pkg-config --cflags libpq) \
+    -ljansson -lsqlite3 -lpq -lz -lm -lpthread
 
 FROM ubuntu:24.04
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libmicrohttpd12t64 libjansson4 libgnutls30t64 libsqlite3-0 zlib1g && \
+    libmicrohttpd12t64 libjansson4 libgnutls30t64 libsqlite3-0 zlib1g libpq5 && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=build /usr/local/lib/libulfius.so* /usr/local/lib/
 COPY --from=build /usr/local/lib/liborcania.so* /usr/local/lib/

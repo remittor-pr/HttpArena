@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   get  '/json',        to: 'benchmark#json_endpoint'
   get  '/compression', to: 'benchmark#compression'
   get  '/db',          to: 'benchmark#db'
+  get  '/async-db',    to: 'benchmark#async_db'
   post '/upload',      to: 'benchmark#upload'
 
   # Catch-all for unknown paths → 404

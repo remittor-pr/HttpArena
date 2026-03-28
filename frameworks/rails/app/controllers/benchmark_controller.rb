@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'zlib'
+require 'pg'
 
 class BenchmarkController < ActionController::API
   # Pre-load datasets at class level (shared across workers via preload)
@@ -21,6 +22,7 @@ class BenchmarkController < ActionController::API
   end
 
   DB_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50'
+  PG_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50'
 
   def pipeline
     render plain: 'ok'
@@ -92,6 +94,32 @@ class BenchmarkController < ActionController::API
     render json: { items: items, count: items.length }
   end
 
+  def async_db
+    conn = get_pg
+    unless conn
+      render json: { items: [], count: 0 }
+      return
+    end
+
+    min_val = (params[:min] || 10.0).to_f
+    max_val = (params[:max] || 50.0).to_f
+
+    result = conn.exec_params(PG_QUERY, [min_val, max_val])
+    items = result.map do |r|
+      {
+        'id' => r['id'].to_i, 'name' => r['name'], 'category' => r['category'],
+        'price' => r['price'].to_f, 'quantity' => r['quantity'].to_i,
+        'active' => r['active'] == 't',
+        'tags' => JSON.parse(r['tags']),
+        'rating' => { 'score' => r['rating_score'].to_f, 'count' => r['rating_count'].to_i }
+      }
+    end
+    render json: { items: items, count: items.length }
+  rescue PG::Error
+    Thread.current[:pg_conn] = nil
+    render json: { items: [], count: 0 }
+  end
+
   def upload
     data = request.body.read
     render plain: data.bytesize.to_s
@@ -109,6 +137,14 @@ class BenchmarkController < ActionController::API
       db.execute('PRAGMA mmap_size=268435456')
       db.results_as_hash = true
       db
+    end
+  end
+
+  def get_pg
+    Thread.current[:pg_conn] ||= begin
+      PG.connect(ENV['DATABASE_URL'])
+    rescue
+      nil
     end
   end
 end

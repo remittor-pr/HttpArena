@@ -1,8 +1,8 @@
 FROM ubuntu:24.04 AS build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    g++ cmake make git ca-certificates \
-    libjsoncpp-dev uuid-dev zlib1g-dev libssl-dev libsqlite3-dev \
+    g++ cmake make git ca-certificates pkg-config \
+    libjsoncpp-dev uuid-dev zlib1g-dev libssl-dev libsqlite3-dev libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Build drogon from source
@@ -12,7 +12,7 @@ RUN git clone --depth 1 --branch v1.9.10 https://github.com/drogonframework/drog
     cmake -B build -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CXX_FLAGS="-flto" \
       -DBUILD_EXAMPLES=OFF -DBUILD_CTL=OFF \
-      -DBUILD_ORM=OFF -DBUILD_BROTLI=OFF \
+      -DBUILD_ORM=ON -DBUILD_BROTLI=OFF \
       -S . && \
     cmake --build build -j$(nproc) && \
     cmake --install build
@@ -25,7 +25,7 @@ RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -S . && \
 
 FROM ubuntu:24.04
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libjsoncpp25 libssl3t64 libuuid1 libsqlite3-0 && \
+    libjsoncpp25 libssl3t64 libuuid1 libsqlite3-0 libpq5 && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=build /usr/local/lib/libtrantor.so* /usr/local/lib/
 COPY --from=build /usr/local/lib/libdrogon.so* /usr/local/lib/

@@ -4,6 +4,7 @@ require 'bundler/setup'
 Bundler.require(:default)
 
 require 'zlib'
+require 'pg'
 
 class App < Sinatra::Base
   configure do
@@ -44,6 +45,7 @@ class App < Sinatra::Base
   end
 
   DB_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50'
+  PG_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50'
 
   helpers do
     def get_db
@@ -52,6 +54,16 @@ class App < Sinatra::Base
         db.execute('PRAGMA mmap_size=268435456')
         db.results_as_hash = true
         db
+      end
+    end
+
+    def pg_conn
+      Thread.current[:sinatra_pg] ||= begin
+        url = ENV['DATABASE_URL']
+        return nil unless url
+        PG.connect(url)
+      rescue PG::Error
+        nil
       end
     end
   end
@@ -133,6 +145,33 @@ class App < Sinatra::Base
     end
     content_type 'application/json'
     headers 'Server' => 'sinatra'
+    JSON.generate({ 'items' => items, 'count' => items.length })
+  end
+
+  get '/async-db' do
+    content_type 'application/json'
+    headers 'Server' => 'sinatra'
+    conn = pg_conn
+    unless conn
+      return '{"items":[],"count":0}'
+    end
+    min_val = (params['min'] || 10.0).to_f
+    max_val = (params['max'] || 50.0).to_f
+    begin
+      result = conn.exec_params(PG_QUERY, [min_val, max_val])
+    rescue PG::Error
+      Thread.current[:sinatra_pg] = nil
+      return '{"items":[],"count":0}'
+    end
+    items = result.map do |r|
+      {
+        'id' => r['id'].to_i, 'name' => r['name'], 'category' => r['category'],
+        'price' => r['price'].to_f, 'quantity' => r['quantity'].to_i,
+        'active' => r['active'] == 't',
+        'tags' => JSON.parse(r['tags']),
+        'rating' => { 'score' => r['rating_score'].to_f, 'count' => r['rating_count'].to_i }
+      }
+    end
     JSON.generate({ 'items' => items, 'count' => items.length })
   end
 

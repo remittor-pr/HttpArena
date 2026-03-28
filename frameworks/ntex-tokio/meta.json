@@ -1,0 +1,20 @@
+{
+  "display_name": "ntex-tokio",
+  "language": "Rust",
+  "type": "framework",
+  "engine": "Tokio",
+  "description": "ntex web framework with Tokio runtime, compiled with -O3 and thin LTO.",
+  "repo": "https://github.com/ntex-rs/ntex",
+  "enabled": true,
+  "tests": [
+    "baseline",
+    "noisy",
+    "pipelined",
+    "limited-conn",
+    "json",
+    "upload",
+    "compression",
+    "mixed",
+    "async-db"
+  ]
+}
