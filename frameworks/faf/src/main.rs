@@ -11,12 +11,13 @@
 // Extended beyond faf's callback API to support POST body reading
 // required by HttpArena's baseline test profile.
 
+use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::os::unix::io::AsRawFd;
 
 // ── Constants ───────────────────────────────────────────────────────────
 
-const MAX_CONN: usize = 4096;
+const MAX_CONN: usize = 65536;
 const REQ_BUF_SIZE: usize = 8192;
 const RES_BUF_SIZE: usize = 65536;
 const MAX_EVENTS: i32 = 512;
@@ -258,8 +259,8 @@ fn worker(listener_fd: i32) {
         let mut ev = libc::epoll_event { events: libc::EPOLLIN as u32, u64: listener_fd as u64 };
         libc::epoll_ctl(epfd, libc::EPOLL_CTL_ADD, listener_fd, &mut ev);
 
-        let mut reqbufs: Vec<Vec<u8>> = (0..MAX_CONN).map(|_| vec![0u8; REQ_BUF_SIZE]).collect();
-        let mut filled = vec![0usize; MAX_CONN];
+        let mut reqbufs: HashMap<usize, Vec<u8>> = HashMap::with_capacity(4096);
+        let mut filled: HashMap<usize, usize> = HashMap::with_capacity(4096);
         let mut resbuf = vec![0u8; RES_BUF_SIZE];
         let mut events: Vec<libc::epoll_event> = vec![std::mem::zeroed(); MAX_EVENTS as usize];
         let mut timeout: i32 = -1;
@@ -283,7 +284,9 @@ fn worker(listener_fd: i32) {
                             let one: i32 = 1;
                             libc::setsockopt(cfd, libc::IPPROTO_TCP, libc::TCP_NODELAY,
                                 &one as *const _ as *const libc::c_void, 4);
-                            filled[cfd as usize] = 0;
+                            let fi = cfd as usize;
+                            filled.insert(fi, 0);
+                            reqbufs.entry(fi).or_insert_with(|| vec![0u8; REQ_BUF_SIZE]);
                             let mut cev = libc::epoll_event {
                                 events: libc::EPOLLIN as u32,
                                 u64: cfd as u64,
@@ -297,14 +300,14 @@ fn worker(listener_fd: i32) {
                 }
 
                 let fi = fd as usize;
-                if fi >= MAX_CONN {
+                if fi >= MAX_CONN || !reqbufs.contains_key(&fi) {
                     libc::epoll_ctl(epfd, libc::EPOLL_CTL_DEL, fd, std::ptr::null_mut());
                     libc::close(fd);
                     continue;
                 }
 
-                let cur = filled[fi];
-                let ptr = reqbufs[fi].as_mut_ptr().add(cur);
+                let cur = *filled.get(&fi).unwrap_or(&0);
+                let ptr = reqbufs.get_mut(&fi).unwrap().as_mut_ptr().add(cur);
                 let read = libc::recv(fd, ptr as *mut libc::c_void, REQ_BUF_SIZE - cur, 0);
 
                 if read <= 0 {
@@ -314,7 +317,8 @@ fn worker(listener_fd: i32) {
                     }
                     libc::epoll_ctl(epfd, libc::EPOLL_CTL_DEL, fd, std::ptr::null_mut());
                     libc::close(fd);
-                    filled[fi] = 0;
+                    filled.remove(&fi);
+                    reqbufs.remove(&fi);
                     continue;
                 }
 
@@ -324,7 +328,7 @@ fn worker(listener_fd: i32) {
 
                 // Pipelined request processing loop (core faf pattern)
                 while consumed < total {
-                    let rem = &reqbufs[fi][consumed..total];
+                    let rem = &reqbufs.get(&fi).unwrap()[consumed..total];
                     if rem.len() < 16 { break; }
 
                     let hdr_end = find_headers_end(rem);
@@ -396,7 +400,8 @@ fn worker(listener_fd: i32) {
                         if err != libc::EAGAIN && err != libc::EINTR {
                             libc::epoll_ctl(epfd, libc::EPOLL_CTL_DEL, fd, std::ptr::null_mut());
                             libc::close(fd);
-                            filled[fi] = 0;
+                            filled.remove(&fi);
+                            reqbufs.remove(&fi);
                             continue;
                         }
                     }
@@ -405,12 +410,12 @@ fn worker(listener_fd: i32) {
                 // Keep unconsumed bytes for next read (partial request handling)
                 if consumed > 0 && consumed < total {
                     let left = total - consumed;
-                    reqbufs[fi].copy_within(consumed..total, 0);
-                    filled[fi] = left;
+                    reqbufs.get_mut(&fi).unwrap().copy_within(consumed..total, 0);
+                    filled.insert(fi, left);
                 } else if consumed >= total {
-                    filled[fi] = 0;
+                    filled.insert(fi, 0);
                 } else {
-                    filled[fi] = total;
+                    filled.insert(fi, total);
                 }
             }
         }
@@ -428,7 +433,7 @@ fn create_listener() -> i32 {
     socket.set_nonblocking(true).expect("nonblock");
     let addr: SocketAddr = "0.0.0.0:8080".parse().unwrap();
     socket.bind(&addr.into()).expect("bind");
-    socket.listen(4096).expect("listen");
+    socket.listen(65536).expect("listen");
     let fd = socket.as_raw_fd();
     std::mem::forget(socket); // Don't close on drop — worker owns the fd
     fd
