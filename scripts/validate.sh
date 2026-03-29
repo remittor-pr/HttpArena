@@ -471,13 +471,22 @@ if has_test "static"; then
     check_header "GET /static/manifest.json Content-Type" "Content-Type" "application/json" \
         -s "http://localhost:$PORT/static/manifest.json"
 
-    static_size=$(curl -s -o /dev/null -w '%{size_download}' "http://localhost:$PORT/static/reset.css")
-    if [ "$static_size" -gt 0 ]; then
-        echo "  PASS [static response size] ($static_size bytes)"
+    # Verify file sizes match actual files on disk
+    static_fail=false
+    for sf in reset.css layout.css theme.css components.css utilities.css analytics.js helpers.js app.js vendor.js router.js header.html footer.html regular.woff2 bold.woff2 logo.svg icon-sprite.svg hero.webp thumb1.webp thumb2.webp manifest.json; do
+        expected_size=$(wc -c < "$DATA_DIR/static/$sf" 2>/dev/null || echo "0")
+        actual_size=$(curl -s -o /dev/null -w '%{size_download}' "http://localhost:$PORT/static/$sf")
+        if [ "$actual_size" -eq "$expected_size" ] 2>/dev/null; then
+            true
+        else
+            echo "  FAIL [static/$sf size]: expected $expected_size bytes, got $actual_size"
+            FAIL=$((FAIL + 1))
+            static_fail=true
+        fi
+    done
+    if [ "$static_fail" = "false" ]; then
+        echo "  PASS [static file sizes] (20 files verified)"
         PASS=$((PASS + 1))
-    else
-        echo "  FAIL [static response size]: empty response"
-        FAIL=$((FAIL + 1))
     fi
 
     check_status "GET /static/nonexistent.txt" "404" \

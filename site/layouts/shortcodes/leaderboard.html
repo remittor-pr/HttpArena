@@ -503,7 +503,7 @@ var lbProfiles = {{ $profiles | jsonify | safeJS }};
   </div>
   <div style="font-size:0.75rem; color:#94a3b8; margin:0 0 0.75rem 0;">Click a row to expand details</div>
 
-  {{ $isReconn := or (eq $p.id "limited-conn") (eq $p.id "noisy") }}
+  {{ $isReconn := or (eq $p.id "limited-conn") (eq $p.id "noisy") (eq $p.id "static") }}
   {{ $isNoisy := eq $p.id "noisy" }}
   <div class="lb-conn-panel{{ if not (or (eq $p.id "mixed") (eq $p.id "compression")) }} active{{ end }}" data-profile="{{ $p.id }}" data-conns="best">
     <div class="lb">
