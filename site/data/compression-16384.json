@@ -788,6 +788,26 @@
     "status_5xx": 0
   },
   {
+    "framework": "Roda",
+    "language": "Ruby",
+    "rps": 9016,
+    "avg_latency": "1.28s",
+    "p99_latency": "2.61s",
+    "cpu": "12027.0%",
+    "memory": "16.9GiB",
+    "connections": 16384,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "1.97GB/s",
+    "input_bw": "651.55KB/s",
+    "reconnects": 0,
+    "status_2xx": 45081,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "Sinatra",
     "language": "Ruby",
     "rps": 8747,

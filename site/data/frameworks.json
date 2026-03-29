@@ -54,6 +54,7 @@
   "Rails": {"description": "Ruby on Rails (API mode) on Puma, multi-worker with one worker per CPU core.", "repo": "https://github.com/rails/rails", "type": "framework", "engine": "puma"},
   "ringzero": {"description": "Custom C HTTP server built on io_uring with a multi-reactor architecture. No epoll, no thread-per-connection.", "repo": "https://github.com/MDA2AV/ringzero", "type": "engine", "engine": "io_uring"},
   "rocket": {"description": "Rocket 0.5 on Tokio with Rustls for HTTP/2, compiled with -O3 and thin LTO.", "repo": "https://github.com/SergioBenitez/Rocket", "type": "framework", "engine": "rocket"},
+  "Roda": {"description": "Roda routing tree web toolkit", "repo": "https://github.com/jeremyevans/roda", "type": "framework", "engine": "puma"},
   "rust-epoll": {"description": "Zero-dependency Rust HTTP engine using raw epoll syscalls, one-thread-per-core with SO_REUSEPORT.", "repo": "", "type": "engine", "engine": "epoll"},
   "salvo": {"description": "Salvo web framework with Quinn HTTP/3 support on Tokio runtime, compiled with -O3 and thin LTO.", "repo": "https://github.com/salvo-rs/salvo", "type": "framework", "engine": "Salvo"},
   "Sinatra": {"description": "Sinatra DSL web framework on Puma, multi-threaded with one worker per CPU core.", "repo": "https://github.com/sinatra/sinatra", "type": "framework", "engine": "puma"},
