@@ -3,7 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using genhttp;
 
 using GenHTTP.Engine.Internal;
-using GenHTTP.Modules.Practices;
+using GenHTTP.Modules.Compression;
 
 var certPath = Environment.GetEnvironmentVariable("TLS_CERT") ?? "/certs/server.crt";
 var keyPath = Environment.GetEnvironmentVariable("TLS_KEY") ?? "/certs/server.key";
@@ -13,7 +13,7 @@ var app = Project.Create();
 
 var host = Host.Create()
                .Handler(app)
-               .Defaults(clientCaching: false);
+               .Compression();
 
 host.Bind(IPAddress.Any, 8080);
 
