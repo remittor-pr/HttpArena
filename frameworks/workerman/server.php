@@ -40,7 +40,7 @@ function loadStaticFiles()
         if (!$fileinfo->isDot()) {
             $files['/static/' . $fileinfo->getFilename()] = [
                 file_get_contents($fileinfo->getPathname()),
-                mime_content_type($fileinfo->getPathname()) ?? 'application/octet-stream'
+                mime_content_type($fileinfo->getPathname()) ?: 'application/octet-stream'
             ];
         }
     }
