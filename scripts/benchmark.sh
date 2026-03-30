@@ -415,7 +415,7 @@ for profile in "${profiles_to_run[@]}"; do
         -v "$ROOT_DIR/data/benchmark.db:/data/benchmark.db:ro"
         -v "$ROOT_DIR/data/static:/data/static:ro"
         -v "$CERTS_DIR:/certs:ro")
-    if [ "$endpoint" = "async-db" ]; then
+    if [ "$endpoint" = "async-db" ] || [ "$endpoint" = "mixed" ]; then
         docker_args+=(-e "DATABASE_URL=postgres://bench:bench@localhost:5432/benchmark")
     fi
     if [ -n "$cpu_limit" ]; then
