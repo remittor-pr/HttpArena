@@ -1,7 +1,6 @@
 const cluster = require('cluster');
 const os = require('os');
 const fs = require('fs');
-const http2 = require('http2');
 const zlib = require('zlib');
 
 const SERVER_NAME = 'fastify';
@@ -92,44 +91,12 @@ function startWorker() {
     app.addContentTypeParser('application/octet-stream', { parseAs: 'buffer' }, (req, body, done) => done(null, body));
     app.addContentTypeParser('*', { parseAs: 'buffer' }, (req, body, done) => done(null, body));
 
-    // --- /static/:filename ---
-    app.get('/static/:filename', (req, reply) => {
-        const sf = staticFiles[req.params.filename];
-        if (sf) {
-            reply
-                .header('server', SERVER_NAME)
-                .header('content-type', sf.ct)
-                .header('content-length', sf.buf.length)
-                .send(sf.buf);
-        } else {
-            reply.code(404).send();
-        }
-    });
+    // Register shared routes (baseline, static)
+    registerSharedRoutes(app);
 
     // --- /pipeline ---
     app.get('/pipeline', (req, reply) => {
         reply.header('server', SERVER_NAME).type('text/plain').send('ok');
-    });
-
-    // --- /baseline11 GET & POST ---
-    app.get('/baseline11', (req, reply) => {
-        const s = sumQuery(req.query);
-        reply.header('server', SERVER_NAME).type('text/plain').send(String(s));
-    });
-
-    app.post('/baseline11', (req, reply) => {
-        const querySum = sumQuery(req.query);
-        const body = typeof req.body === 'string' ? req.body : (req.body ? req.body.toString() : '');
-        let total = querySum;
-        const n = parseInt(body.trim(), 10);
-        if (n === n) total += n;
-        reply.header('server', SERVER_NAME).type('text/plain').send(String(total));
-    });
-
-    // --- /baseline2 ---
-    app.get('/baseline2', (req, reply) => {
-        const s = sumQuery(req.query);
-        reply.header('server', SERVER_NAME).type('text/plain').send(String(s));
     });
 
     // --- /json ---
@@ -245,50 +212,63 @@ function startWorker() {
     });
 }
 
+// --- Shared route handlers (used by both H1 and H2 instances) ---
+function registerSharedRoutes(app) {
+    app.get('/static/:filename', (req, reply) => {
+        const sf = staticFiles[req.params.filename];
+        if (sf) {
+            reply
+                .header('server', SERVER_NAME)
+                .header('content-type', sf.ct)
+                .header('content-length', sf.buf.length)
+                .send(sf.buf);
+        } else {
+            reply.code(404).send();
+        }
+    });
+
+    app.get('/baseline11', (req, reply) => {
+        const s = sumQuery(req.query);
+        reply.header('server', SERVER_NAME).type('text/plain').send(String(s));
+    });
+
+    app.post('/baseline11', (req, reply) => {
+        const querySum = sumQuery(req.query);
+        const body = typeof req.body === 'string' ? req.body : (req.body ? req.body.toString() : '');
+        let total = querySum;
+        const n = parseInt(body.trim(), 10);
+        if (n === n) total += n;
+        reply.header('server', SERVER_NAME).type('text/plain').send(String(total));
+    });
+
+    app.get('/baseline2', (req, reply) => {
+        const s = sumQuery(req.query);
+        reply.header('server', SERVER_NAME).type('text/plain').send(String(s));
+    });
+}
+
 function startH2() {
     const certFile = process.env.TLS_CERT || '/certs/server.crt';
     const keyFile = process.env.TLS_KEY || '/certs/server.key';
     try {
-        const opts = {
-            cert: fs.readFileSync(certFile),
-            key: fs.readFileSync(keyFile),
-            allowHTTP1: false,
-        };
-        const h2server = http2.createSecureServer(opts, (req, res) => {
-            const url = req.url;
-            const q = url.indexOf('?');
-            const p = q === -1 ? url : url.slice(0, q);
-            if (p.startsWith('/static/')) {
-                const name = p.slice(8);
-                const sf = staticFiles[name];
-                if (sf) {
-                    res.writeHead(200, { 'content-type': sf.ct, 'content-length': sf.buf.length, 'server': SERVER_NAME });
-                    res.end(sf.buf);
-                } else {
-                    res.writeHead(404);
-                    res.end();
-                }
-            } else {
-                // baseline h2
-                let sum = 0;
-                if (q !== -1) {
-                    const qs = url.slice(q + 1);
-                    let i = 0;
-                    while (i < qs.length) {
-                        const eq = qs.indexOf('=', i);
-                        if (eq === -1) break;
-                        let amp = qs.indexOf('&', eq);
-                        if (amp === -1) amp = qs.length;
-                        const n = parseInt(qs.slice(eq + 1, amp), 10);
-                        if (n === n) sum += n;
-                        i = amp + 1;
-                    }
-                }
-                res.writeHead(200, { 'content-type': 'text/plain', 'server': SERVER_NAME });
-                res.end(String(sum));
-            }
+        const Fastify = require('fastify');
+        const h2app = Fastify({
+            logger: false,
+            http2: true,
+            https: {
+                cert: fs.readFileSync(certFile),
+                key: fs.readFileSync(keyFile),
+                allowHTTP1: false,
+            },
+            bodyLimit: 50 * 1024 * 1024,
         });
-        h2server.listen(8443);
+
+        h2app.addContentTypeParser('text/plain', { parseAs: 'string' }, (req, body, done) => done(null, body));
+        h2app.addContentTypeParser('application/octet-stream', { parseAs: 'buffer' }, (req, body, done) => done(null, body));
+        h2app.addContentTypeParser('*', { parseAs: 'buffer' }, (req, body, done) => done(null, body));
+
+        registerSharedRoutes(h2app);
+        h2app.listen({ port: 8443, host: '0.0.0.0' });
     } catch (e) {
         // TLS certs not available, skip H2
     }
