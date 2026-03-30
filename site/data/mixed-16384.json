@@ -1078,5 +1078,32 @@
     "tpl_compression": 85553,
     "tpl_static": 95221,
     "tpl_async_db": 2
+  },
+  {
+    "framework": "Fletch",
+    "language": "Dart",
+    "rps": 611,
+    "avg_latency": "1.15s",
+    "p99_latency": "5.00s",
+    "cpu": "854.6%",
+    "memory": "9.9GiB",
+    "connections": 16384,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "31.95MB/s",
+    "input_bw": "43.68MB/s",
+    "reconnects": 2060,
+    "status_2xx": 9168,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0,
+    "tpl_baseline": 2983,
+    "tpl_json": 576,
+    "tpl_db": 573,
+    "tpl_upload": 546,
+    "tpl_compression": 2154,
+    "tpl_static": 1133,
+    "tpl_async_db": 1203
   }
 ]

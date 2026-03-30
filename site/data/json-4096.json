@@ -894,5 +894,25 @@
     "status_3xx": 0,
     "status_4xx": 0,
     "status_5xx": 0
+  },
+  {
+    "framework": "Fletch",
+    "language": "Dart",
+    "rps": 37808,
+    "avg_latency": "33.00ms",
+    "p99_latency": "323.20ms",
+    "cpu": "1346.5%",
+    "memory": "1.3GiB",
+    "connections": 4096,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "308.22MB/s",
+    "input_bw": "",
+    "reconnects": 0,
+    "status_2xx": 189044,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
   }
 ]
