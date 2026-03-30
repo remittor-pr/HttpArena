@@ -35,11 +35,30 @@ jobs:
           ref: refs/pull/${{ inputs.pr }}/head
           fetch-depth: 0
 
+      - name: Validate inputs
+        run: |
+          if [ -z "${{ inputs.framework }}" ]; then
+            echo "Error: framework is required"
+            exit 1
+          fi
+          if [ ! -d "frameworks/${{ inputs.framework }}" ]; then
+            echo "Error: framework '${{ inputs.framework }}' not found"
+            exit 1
+          fi
+
       - name: Fetch main branch data for comparison
         run: |
+          # Save PR's site/data aside, get main's for comparison
+          cp -r site/data /tmp/pr_site_data 2>/dev/null || true
           git fetch origin main --depth=1
           git checkout origin/main -- site/data/ 2>/dev/null || true
-          git checkout refs/pull/${{ inputs.pr }}/head -- . 2>/dev/null || true
+          # Keep main's site/data for comparison, restore PR code
+          cp -r site/data /tmp/main_site_data 2>/dev/null || true
+          cp -r /tmp/pr_site_data/* site/data/ 2>/dev/null || true
+
+      - name: Clean previous containers
+        run: |
+          docker ps -aq --filter "name=httparena-" | xargs -r docker rm -f 2>/dev/null || true
 
       - name: Run benchmarks
         id: bench
@@ -49,19 +68,26 @@ jobs:
           if [ "${{ inputs.save }}" = "true" ]; then
             SAVE_FLAG="--save"
           fi
-          ./scripts/benchmark.sh "${{ inputs.framework }}" ${{ inputs.profile }} $SAVE_FLAG 2>&1 | tee "$log"
+          ./scripts/benchmark.sh "${{ inputs.framework }}" "${{ inputs.profile }}" $SAVE_FLAG 2>&1 | tee "$log"
           echo "log_file=$log" >> "$GITHUB_OUTPUT"
 
       - name: Compare with main
         id: compare
         run: |
-          comparison=$(./scripts/compare.sh "${{ inputs.framework }}" ${{ inputs.profile }} 2>/dev/null || echo "")
+          # Use main's site/data for comparison
+          if [ -d /tmp/main_site_data ]; then
+            cp -r /tmp/main_site_data/* site/data/ 2>/dev/null || true
+          fi
+          comparison=$(./scripts/compare.sh "${{ inputs.framework }}" "${{ inputs.profile }}" 2>/dev/null || echo "")
           echo "$comparison" > /tmp/bench_comparison.md
+          # Restore PR site/data
+          if [ -d /tmp/pr_site_data ]; then
+            cp -r /tmp/pr_site_data/* site/data/ 2>/dev/null || true
+          fi
 
       - name: Commit saved results
         if: inputs.save == 'true'
         run: |
-          # Get the PR's source branch and repo
           PR_DATA=$(gh api "/repos/${{ github.repository }}/pulls/${{ inputs.pr }}" --jq '.head.ref + " " + .head.repo.full_name')
           PR_BRANCH=$(echo "$PR_DATA" | awk '{print $1}')
           PR_REPO=$(echo "$PR_DATA" | awk '{print $2}')
@@ -80,34 +106,33 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Post results to PR
+        if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           log="${{ steps.bench.outputs.log_file }}"
           profile="${{ inputs.profile }}"
           profile_label="${profile:-all tests}"
+          fw="${{ inputs.framework }}"
 
-          # Extract best results
-          results=$(grep -E "^=== Best:" "$log" | sed 's/^=== //' || echo "No results")
-          headers=$(grep -E "^=== .* / .* / " "$log" | sed 's/^=== //' | sed 's/ ===//' || true)
+          # Extract only this framework's results from the log
+          results=$(grep -E "^=== $fw / " "$log" -A1 | grep "Best:" | sed 's/^=== //' || echo "No results")
+          headers=$(grep -E "^=== $fw / .* / " "$log" | sed 's/^=== //' | sed 's/ ===//' || true)
 
-          # Build table
           body="## Benchmark Results"$'\n\n'
-          body+="**Framework:** \`${{ inputs.framework }}\` | **Test:** \`${profile_label}\`"$'\n\n'
+          body+="**Framework:** \`${fw}\` | **Test:** \`${profile_label}\`"$'\n\n'
           body+='```'$'\n'
 
-          # Interleave headers and results
           paste -d'\n' <(echo "$headers") <(echo "$results") | while IFS= read -r header; do
             IFS= read -r result || true
-            echo "$header"
-            echo "  $result"
+            [ -n "$header" ] && echo "$header"
+            [ -n "$result" ] && echo "  $result"
             echo ""
           done >> /tmp/bench_table.txt
 
-          body+=$(cat /tmp/bench_table.txt)
+          body+=$(cat /tmp/bench_table.txt 2>/dev/null || echo "No results captured")
           body+=$'\n```\n\n'
 
-          # Add comparison if available
           comparison=$(cat /tmp/bench_comparison.md 2>/dev/null || echo "")
           if [ -n "$comparison" ]; then
             body+="## Comparison with main"$'\n\n'
@@ -115,9 +140,9 @@ jobs:
           fi
 
           body+="<details><summary>Full log</summary>"$'\n\n```\n'
-          tail -200 "$log" >> /tmp/bench_full.txt
-          body+=$(cat /tmp/bench_full.txt)
+          tail -200 "$log" >> /tmp/bench_full.txt 2>/dev/null || true
+          body+=$(cat /tmp/bench_full.txt 2>/dev/null || echo "No log")
           body+=$'\n```\n</details>'
 
           gh pr comment "${{ inputs.pr }}" --repo "${{ github.repository }}" --body "$body"
-          rm -f "$log" /tmp/bench_table.txt /tmp/bench_full.txt /tmp/bench_comparison.md
+          rm -f "$log" /tmp/bench_table.txt /tmp/bench_full.txt /tmp/bench_comparison.md /tmp/pr_site_data /tmp/main_site_data 2>/dev/null || true
