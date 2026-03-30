@@ -115,9 +115,24 @@ jobs:
           profile_label="${profile:-all tests}"
           fw="${{ inputs.framework }}"
 
-          # Extract only this framework's results from the log
-          results=$(grep -E "^=== $fw / " "$log" -A1 | grep "Best:" | sed 's/^=== //' || echo "No results")
-          headers=$(grep -E "^=== $fw / .* / " "$log" | sed 's/^=== //' | sed 's/ ===//' || true)
+          # Extract this framework's results from the log
+          # Headers: "=== actix / baseline / 512c ... ==="
+          # Best lines: "=== Best: 123456 req/s ... ==="
+          # They appear sequentially - each header followed by its best result
+          headers=""
+          results=""
+          in_fw=false
+          while IFS= read -r line; do
+            if echo "$line" | grep -qE "^=== $fw / .* / "; then
+              h=$(echo "$line" | sed 's/^=== //' | sed 's/ ===$//')
+              headers+="$h"$'\n'
+              in_fw=true
+            elif [ "$in_fw" = true ] && echo "$line" | grep -qE "^=== Best:"; then
+              r=$(echo "$line" | sed 's/^=== //' | sed 's/ ===$//')
+              results+="$r"$'\n'
+              in_fw=false
+            fi
+          done < "$log"
 
           body="## Benchmark Results"$'\n\n'
           body+="**Framework:** \`${fw}\` | **Test:** \`${profile_label}\`"$'\n\n'
