@@ -318,7 +318,7 @@ if has_test "compression"; then
 
     # Must return Content-Encoding: gzip when Accept-Encoding: gzip is sent
     comp_headers=$(curl -s -D- -o /dev/null -H "Accept-Encoding: gzip" "http://localhost:$PORT/compression")
-    comp_encoding=$(echo "$comp_headers" | grep -i "^content-encoding:" | tr -d '\r' | awk '{print tolower($2)}' || true)
+    comp_encoding=$(echo "$comp_headers" | grep -i "^content-encoding:" | sed 's/^[^:]*: *//' | tr -d '\r' | awk '{print tolower($1)}' || true)
     if [ "$comp_encoding" = "gzip" ]; then
         echo "  PASS [compression Content-Encoding: gzip]"
         PASS=$((PASS + 1))
