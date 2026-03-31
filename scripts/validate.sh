@@ -138,10 +138,23 @@ echo "[ready] Server is up"
 
 # ───── Helpers ─────
 
+DOCS_BASE="https://www.http-arena.com/docs/test-profiles"
+
+fail_with_link() {
+    local msg="$1"
+    local docs_url="$2"
+    echo "  FAIL $msg"
+    if [ -n "$docs_url" ]; then
+        echo "        → $docs_url"
+    fi
+    FAIL=$((FAIL + 1))
+}
+
 check() {
     local label="$1"
     local expected_body="$2"
-    shift 2
+    local docs_url="$3"
+    shift 3
     local response
     response=$(curl -s -D- "$@")
     local body
@@ -151,15 +164,15 @@ check() {
         echo "  PASS [$label]"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [$label]: expected body '$expected_body', got '$body'"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[$label]: expected body '$expected_body', got '$body'" "$docs_url"
     fi
 }
 
 check_status() {
     local label="$1"
     local expected_status="$2"
-    shift 2
+    local docs_url="$3"
+    shift 3
     local http_code
     http_code=$(curl -s -o /dev/null -w '%{http_code}' "$@")
 
@@ -167,8 +180,7 @@ check_status() {
         echo "  PASS [$label] (HTTP $http_code)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [$label]: expected HTTP $expected_status, got HTTP $http_code"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[$label]: expected HTTP $expected_status, got HTTP $http_code" "$docs_url"
     fi
 }
 
@@ -176,7 +188,8 @@ check_header() {
     local label="$1"
     local header_name="$2"
     local expected_value="$3"
-    shift 3
+    local docs_url="$4"
+    shift 4
     local headers
     headers=$(curl -s -D- -o /dev/null "$@")
     local value
@@ -190,8 +203,7 @@ check_header() {
         echo "  PASS [$label] ($header_name: $value)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [$label]: expected $header_name '$expected_value', got '$value'"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[$label]: expected $header_name '$expected_value', got '$value'" "$docs_url"
     fi
 }
 
@@ -213,15 +225,16 @@ wait_h2() {
 # ───── Baseline (GET/POST /baseline11) ─────
 
 if has_test "baseline" || has_test "limited-conn"; then
+    BASELINE_DOCS="$DOCS_BASE/h1/baseline/validation"
     echo "[test] baseline endpoints"
-    check "GET /baseline11?a=13&b=42" "55" \
+    check "GET /baseline11?a=13&b=42" "55" "$BASELINE_DOCS" \
         "http://localhost:$PORT/baseline11?a=13&b=42"
 
-    check "POST /baseline11?a=13&b=42 body=20" "75" \
+    check "POST /baseline11?a=13&b=42 body=20" "75" "$BASELINE_DOCS" \
         -X POST -H "Content-Type: text/plain" -d "20" \
         "http://localhost:$PORT/baseline11?a=13&b=42"
 
-    check "POST /baseline11?a=13&b=42 chunked body=20" "75" \
+    check "POST /baseline11?a=13&b=42 chunked body=20" "75" "$BASELINE_DOCS" \
         -X POST -H "Content-Type: text/plain" -H "Transfer-Encoding: chunked" -d "20" \
         "http://localhost:$PORT/baseline11?a=13&b=42"
 
@@ -229,16 +242,16 @@ if has_test "baseline" || has_test "limited-conn"; then
     echo "[test] baseline anti-cheat (randomized inputs)"
     A1=$((RANDOM % 900 + 100))
     B1=$((RANDOM % 900 + 100))
-    check "GET /baseline11?a=$A1&b=$B1 (random)" "$((A1 + B1))" \
+    check "GET /baseline11?a=$A1&b=$B1 (random)" "$((A1 + B1))" "$BASELINE_DOCS" \
         "http://localhost:$PORT/baseline11?a=$A1&b=$B1"
 
     BODY1=$((RANDOM % 900 + 100))
     BODY2=$((RANDOM % 900 + 100))
     while [ "$BODY1" -eq "$BODY2" ]; do BODY2=$((RANDOM % 900 + 100)); done
-    check "POST body=$BODY1 (cache check 1)" "$((13 + 42 + BODY1))" \
+    check "POST body=$BODY1 (cache check 1)" "$((13 + 42 + BODY1))" "$BASELINE_DOCS" \
         -X POST -H "Content-Type: text/plain" -d "$BODY1" \
         "http://localhost:$PORT/baseline11?a=13&b=42"
-    check "POST body=$BODY2 (cache check 2)" "$((13 + 42 + BODY2))" \
+    check "POST body=$BODY2 (cache check 2)" "$((13 + 42 + BODY2))" "$BASELINE_DOCS" \
         -X POST -H "Content-Type: text/plain" -d "$BODY2" \
         "http://localhost:$PORT/baseline11?a=13&b=42"
 fi
@@ -246,14 +259,16 @@ fi
 # ───── Pipelined (GET /pipeline) ─────
 
 if has_test "pipelined"; then
+    PIPELINED_DOCS="$DOCS_BASE/h1/pipelined/validation"
     echo "[test] pipelined endpoint"
-    check "GET /pipeline" "ok" \
+    check "GET /pipeline" "ok" "$PIPELINED_DOCS" \
         "http://localhost:$PORT/pipeline"
 fi
 
 # ───── JSON Processing (GET /json) ─────
 
 if has_test "json"; then
+    JSON_DOCS="$DOCS_BASE/h1/json-processing/validation"
     echo "[test] json endpoint"
     response=$(curl -s "http://localhost:$PORT/json")
     json_result=$(echo "$response" | python3 -c "
@@ -279,23 +294,23 @@ print(f'{count} {has_total} {correct_totals}')
         echo "  PASS [GET /json] (50 items, totals computed correctly)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [GET /json]: count=$json_count, has_total=$json_total, correct_totals=$json_correct"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[GET /json]: count=$json_count, has_total=$json_total, correct_totals=$json_correct" "$JSON_DOCS"
     fi
 
     # Check Content-Type header
-    check_header "GET /json Content-Type" "Content-Type" "application/json" \
+    check_header "GET /json Content-Type" "Content-Type" "application/json" "$JSON_DOCS" \
         "http://localhost:$PORT/json"
 fi
 
 # ───── Upload (POST /upload) ─────
 
 if has_test "upload"; then
+    UPLOAD_DOCS="$DOCS_BASE/h1/upload/validation"
     echo "[test] upload endpoint"
     # Small upload: returns byte count
     UPLOAD_BODY="Hello, HttpArena!"
     EXPECTED_LEN=${#UPLOAD_BODY}
-    check "POST /upload small body" "$EXPECTED_LEN" \
+    check "POST /upload small body" "$EXPECTED_LEN" "$UPLOAD_DOCS" \
         -X POST -H "Content-Type: application/octet-stream" --data-binary "$UPLOAD_BODY" \
         "http://localhost:$PORT/upload"
 
@@ -307,14 +322,14 @@ if has_test "upload"; then
         echo "  PASS [POST /upload random body] (bytes: $ACTUAL_LEN)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [POST /upload random body]: expected '$EXPECTED_RANDOM_LEN', got '$ACTUAL_LEN'"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[POST /upload random body]: expected '$EXPECTED_RANDOM_LEN', got '$ACTUAL_LEN'" "$UPLOAD_DOCS"
     fi
 fi
 
 # ───── Compression (GET /compression) ─────
 
 if has_test "compression"; then
+    COMP_DOCS="$DOCS_BASE/h1/compression/validation"
     echo "[test] compression endpoint"
 
     # Must return Content-Encoding: gzip when Accept-Encoding: gzip is sent
@@ -324,8 +339,7 @@ if has_test "compression"; then
         echo "  PASS [compression Content-Encoding: gzip]"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [compression]: expected Content-Encoding gzip, got '$comp_encoding'"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[compression]: expected Content-Encoding gzip, got '$comp_encoding'" "$COMP_DOCS"
     fi
 
     # Verify compressed response is valid JSON with items and totals
@@ -345,8 +359,7 @@ print(f'{count} {has_total}')
         echo "  PASS [compression response] (6000 items with totals)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [compression response]: count=$comp_count, has_total=$comp_total"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[compression response]: count=$comp_count, has_total=$comp_total" "$COMP_DOCS"
     fi
 
     # Verify compressed size is reasonable (should be well under 1MB uncompressed ~1MB)
@@ -355,18 +368,29 @@ print(f'{count} {has_total}')
         echo "  PASS [compression size] ($comp_size bytes < 500KB)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [compression size]: $comp_size bytes — compression not effective"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[compression size]: $comp_size bytes — compression not effective" "$COMP_DOCS"
+    fi
+
+    # Verify compression happens per-request (not pre-compressed cache)
+    # Request without Accept-Encoding: gzip must NOT return Content-Encoding: gzip
+    no_enc_headers=$(curl -s -D- -o /dev/null "http://localhost:$PORT/compression")
+    no_enc_encoding=$(echo "$no_enc_headers" | grep -i "^content-encoding:" | sed 's/^[^:]*: *//' | tr -d '\r' | awk '{print tolower($1)}' || true)
+    if [ -z "$no_enc_encoding" ]; then
+        echo "  PASS [per-request compression] (no Content-Encoding without Accept-Encoding)"
+        PASS=$((PASS + 1))
+    else
+        fail_with_link "[per-request compression]: got Content-Encoding: $no_enc_encoding without Accept-Encoding — compression must happen per request, not pre-compressed" "$COMP_DOCS"
     fi
 fi
 
 # ───── Noisy / Resilience (baseline + malformed requests) ─────
 
 if has_test "noisy"; then
+    NOISY_DOCS="$DOCS_BASE/h1/noisy/validation"
     echo "[test] noisy resilience"
 
     # Valid baseline request still works
-    check "GET /baseline11?a=13&b=42 (noisy context)" "55" \
+    check "GET /baseline11?a=13&b=42 (noisy context)" "55" "$NOISY_DOCS" \
         "http://localhost:$PORT/baseline11?a=13&b=42"
 
     # Bad method should return 4xx (400 or 405)
@@ -375,24 +399,24 @@ if has_test "noisy"; then
         echo "  PASS [bad method] (HTTP $noisy_bad_method)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [bad method]: expected 4xx, got HTTP $noisy_bad_method"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[bad method]: expected 4xx, got HTTP $noisy_bad_method" "$NOISY_DOCS"
     fi
 
     # Nonexistent path should return 404
-    check_status "GET /this/path/does/not/exist" "404" \
+    check_status "GET /this/path/does/not/exist" "404" "$NOISY_DOCS" \
         "http://localhost:$PORT/this/path/does/not/exist"
 
     # After noise, valid request still works (server didn't crash)
     A4=$((RANDOM % 900 + 100))
     B4=$((RANDOM % 900 + 100))
-    check "GET /baseline11?a=$A4&b=$B4 (post-noise)" "$((A4 + B4))" \
+    check "GET /baseline11?a=$A4&b=$B4 (post-noise)" "$((A4 + B4))" "$NOISY_DOCS" \
         "http://localhost:$PORT/baseline11?a=$A4&b=$B4"
 fi
 
 # ───── DB (GET /db — SQLite, tested when framework has mixed test) ─────
 
 if has_test "mixed"; then
+    DB_DOCS="$DOCS_BASE/h1/database/validation"
     echo "[test] db endpoint (mixed test prerequisite)"
     response=$(curl -s "http://localhost:$PORT/db?min=10&max=50")
     db_result=$(echo "$response" | python3 -c "
@@ -414,11 +438,10 @@ print(f'{count} {has_rating} {has_tags} {has_active_bool}')
         echo "  PASS [GET /db?min=10&max=50] ($db_count items, correct structure)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [GET /db?min=10&max=50]: count=$db_count, rating=$db_rating, tags=$db_tags, active=$db_active"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[GET /db?min=10&max=50]: count=$db_count, rating=$db_rating, tags=$db_tags, active=$db_active" "$DB_DOCS"
     fi
 
-    check_header "GET /db Content-Type" "Content-Type" "application/json" \
+    check_header "GET /db Content-Type" "Content-Type" "application/json" "$DB_DOCS" \
         "http://localhost:$PORT/db?min=10&max=50"
 
     # Anti-cheat: empty range should return 0 items
@@ -428,14 +451,14 @@ print(f'{count} {has_rating} {has_tags} {has_active_bool}')
         echo "  PASS [GET /db empty range] (count=0)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [GET /db empty range]: expected count=0, got $db_empty"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[GET /db empty range]: expected count=0, got $db_empty" "$DB_DOCS"
     fi
 fi
 
 # ───── Baseline H2 (GET /baseline2 over HTTP/2 + TLS) ─────
 
 if has_test "baseline-h2"; then
+    H2_DOCS="$DOCS_BASE/h2/baseline-h2/validation"
     echo "[test] baseline-h2 endpoint"
     if wait_h2; then
         # Verify server actually speaks HTTP/2
@@ -444,17 +467,16 @@ if has_test "baseline-h2"; then
             echo "  PASS [HTTP/2 protocol negotiation] (HTTP/$h2_proto)"
             PASS=$((PASS + 1))
         else
-            echo "  FAIL [HTTP/2 protocol negotiation]: server responded with HTTP/$h2_proto"
-            FAIL=$((FAIL + 1))
+            fail_with_link "[HTTP/2 protocol negotiation]: server responded with HTTP/$h2_proto" "$H2_DOCS"
         fi
 
-        check "GET /baseline2?a=13&b=42 over HTTP/2" "55" \
+        check "GET /baseline2?a=13&b=42 over HTTP/2" "55" "$H2_DOCS" \
             -sk --http2 "https://localhost:$H2PORT/baseline2?a=13&b=42"
 
         # Anti-cheat: randomized query params
         A3=$((RANDOM % 900 + 100))
         B3=$((RANDOM % 900 + 100))
-        check "GET /baseline2?a=$A3&b=$B3 over HTTP/2 (random)" "$((A3 + B3))" \
+        check "GET /baseline2?a=$A3&b=$B3 over HTTP/2 (random)" "$((A3 + B3))" "$H2_DOCS" \
             -sk --http2 "https://localhost:$H2PORT/baseline2?a=$A3&b=$B3"
     fi
 fi
@@ -462,14 +484,15 @@ fi
 # ───── Static Files H1 (GET /static/* over HTTP/1.1) ─────
 
 if has_test "static"; then
+    STATIC_DOCS="$DOCS_BASE/h1/static/validation"
     echo "[test] static endpoint"
-    check_header "GET /static/reset.css Content-Type" "Content-Type" "text/css" \
+    check_header "GET /static/reset.css Content-Type" "Content-Type" "text/css" "$STATIC_DOCS" \
         -s "http://localhost:$PORT/static/reset.css"
 
-    check_header "GET /static/app.js Content-Type" "Content-Type" "application/javascript" \
+    check_header "GET /static/app.js Content-Type" "Content-Type" "application/javascript" "$STATIC_DOCS" \
         -s "http://localhost:$PORT/static/app.js"
 
-    check_header "GET /static/manifest.json Content-Type" "Content-Type" "application/json" \
+    check_header "GET /static/manifest.json Content-Type" "Content-Type" "application/json" "$STATIC_DOCS" \
         -s "http://localhost:$PORT/static/manifest.json"
 
     # Verify file sizes match actual files on disk
@@ -480,8 +503,7 @@ if has_test "static"; then
         if [ "$actual_size" -eq "$expected_size" ] 2>/dev/null; then
             true
         else
-            echo "  FAIL [static/$sf size]: expected $expected_size bytes, got $actual_size"
-            FAIL=$((FAIL + 1))
+            fail_with_link "[static/$sf size]: expected $expected_size bytes, got $actual_size" "$STATIC_DOCS"
             static_fail=true
         fi
     done
@@ -490,23 +512,24 @@ if has_test "static"; then
         PASS=$((PASS + 1))
     fi
 
-    check_status "GET /static/nonexistent.txt" "404" \
+    check_status "GET /static/nonexistent.txt" "404" "$STATIC_DOCS" \
         -s "http://localhost:$PORT/static/nonexistent.txt"
 fi
 
 # ───── Static Files H2 (GET /static/* over HTTP/2 + TLS) ─────
 
 if has_test "static-h2"; then
+    STATIC_H2_DOCS="$DOCS_BASE/h2/static-h2/validation"
     echo "[test] static-h2 endpoint"
     if wait_h2; then
         # Check a few static files exist and return correct Content-Type
-        check_header "GET /static/reset.css Content-Type" "Content-Type" "text/css" \
+        check_header "GET /static/reset.css Content-Type" "Content-Type" "text/css" "$STATIC_H2_DOCS" \
             -sk --http2 "https://localhost:$H2PORT/static/reset.css"
 
-        check_header "GET /static/app.js Content-Type" "Content-Type" "application/javascript" \
+        check_header "GET /static/app.js Content-Type" "Content-Type" "application/javascript" "$STATIC_H2_DOCS" \
             -sk --http2 "https://localhost:$H2PORT/static/app.js"
 
-        check_header "GET /static/manifest.json Content-Type" "Content-Type" "application/json" \
+        check_header "GET /static/manifest.json Content-Type" "Content-Type" "application/json" "$STATIC_H2_DOCS" \
             -sk --http2 "https://localhost:$H2PORT/static/manifest.json"
 
         # Check response size is non-zero
@@ -515,12 +538,11 @@ if has_test "static-h2"; then
             echo "  PASS [static-h2 response size] ($static_size bytes)"
             PASS=$((PASS + 1))
         else
-            echo "  FAIL [static-h2 response size]: empty response"
-            FAIL=$((FAIL + 1))
+            fail_with_link "[static-h2 response size]: empty response" "$STATIC_H2_DOCS"
         fi
 
         # 404 for missing files
-        check_status "GET /static/nonexistent.txt" "404" \
+        check_status "GET /static/nonexistent.txt" "404" "$STATIC_H2_DOCS" \
             -sk --http2 "https://localhost:$H2PORT/static/nonexistent.txt"
     fi
 fi
@@ -528,6 +550,7 @@ fi
 # ───── Async Database (GET /async-db) ─────
 
 if has_test "async-db"; then
+    ASYNCDB_DOCS="$DOCS_BASE/h1/async-database/validation"
     echo "[test] async-db endpoint"
     response=$(curl -s "http://localhost:$PORT/async-db?min=10&max=50")
     pgdb_result=$(echo "$response" | python3 -c "
@@ -549,11 +572,10 @@ print(f'{count} {has_rating} {has_tags} {has_active_bool}')
         echo "  PASS [GET /async-db?min=10&max=50] ($pgdb_count items, correct structure)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [GET /async-db?min=10&max=50]: count=$pgdb_count, rating=$pgdb_rating, tags=$pgdb_tags, active=$pgdb_active"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[GET /async-db?min=10&max=50]: count=$pgdb_count, rating=$pgdb_rating, tags=$pgdb_tags, active=$pgdb_active" "$ASYNCDB_DOCS"
     fi
 
-    check_header "GET /async-db Content-Type" "Content-Type" "application/json" \
+    check_header "GET /async-db Content-Type" "Content-Type" "application/json" "$ASYNCDB_DOCS" \
         "http://localhost:$PORT/async-db?min=10&max=50"
 
     # Anti-cheat: empty range should return 0 items
@@ -563,14 +585,14 @@ print(f'{count} {has_rating} {has_tags} {has_active_bool}')
         echo "  PASS [GET /async-db empty range] (count=0)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL [GET /async-db empty range]: expected count=0, got $pgdb_empty"
-        FAIL=$((FAIL + 1))
+        fail_with_link "[GET /async-db empty range]: expected count=0, got $pgdb_empty" "$ASYNCDB_DOCS"
     fi
 fi
 
 # ───── WebSocket Echo (ws://localhost/ws) ─────
 
 if has_test "echo-ws"; then
+    WS_DOCS="$DOCS_BASE/ws/echo/validation"
     echo "[test] echo-ws endpoint"
     WS_OUTPUT=$(python3 "$SCRIPT_DIR/validate-ws.py" localhost "$PORT" /ws 2>&1)
     echo "$WS_OUTPUT"
@@ -580,6 +602,9 @@ if has_test "echo-ws"; then
     WS_FAIL=$(echo "$WS_OUTPUT" | grep -oP '(\d+) failed' | grep -oP '\d+')
     PASS=$((PASS + ${WS_PASS:-0}))
     FAIL=$((FAIL + ${WS_FAIL:-0}))
+    if [ "${WS_FAIL:-0}" -gt 0 ]; then
+        echo "        → $WS_DOCS"
+    fi
 fi
 
 # ───── Summary ─────
