@@ -46,17 +46,24 @@ declare -A PROFILES=(
     [echo-ws]="1|0||512,4096,16384|ws-echo"
     [async-db]="1|0||1024|async-db"
 )
-PROFILE_ORDER=(baseline pipelined limited-conn json upload compression noisy mixed static async-db baseline-h2 static-h2 baseline-h3 static-h3 unary-grpc unary-grpc-tls echo-ws tcp-frag)
+PROFILE_ORDER=(baseline pipelined limited-conn json upload compression noisy mixed static async-db baseline-h2 static-h2 baseline-h3 static-h3 unary-grpc unary-grpc-tls echo-ws)
 
 # Parse flags
 SAVE_RESULTS=false
+ENABLE_FRAG=false
 POSITIONAL=()
 for arg in "$@"; do
     case "$arg" in
         --save) SAVE_RESULTS=true ;;
+        --frag) ENABLE_FRAG=true ;;
         *) POSITIONAL+=("$arg") ;;
     esac
 done
+
+# Only include tcp-frag in profile order when --frag is passed
+if [ "$ENABLE_FRAG" = "true" ]; then
+    PROFILE_ORDER+=(tcp-frag)
+fi
 FRAMEWORK="${POSITIONAL[0]:-}"
 PROFILE_FILTER="${POSITIONAL[1]:-}"
 

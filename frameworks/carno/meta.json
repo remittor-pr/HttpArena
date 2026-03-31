@@ -1,7 +1,7 @@
 {
   "display_name": "Carno.js",
   "language": "TS",
-  "type": "framework",
+  "type": "tuned",
   "engine": "Bun",
   "description": "Ultra-fast, performance-first framework for Bun with JIT-compiled routes, decorator-based API, and built-in DI.",
   "repo": "https://github.com/carnojs/carno.js",

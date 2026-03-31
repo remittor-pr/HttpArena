@@ -648,6 +648,26 @@
     "status_5xx": 0
   },
   {
+    "framework": "helidon",
+    "language": "Java",
+    "rps": 11893,
+    "avg_latency": "691us",
+    "p99_latency": "24.10ms",
+    "cpu": "6027.8%",
+    "memory": "13.4GiB",
+    "connections": 512,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "85.19MB/s",
+    "input_bw": "1.20MB/s",
+    "reconnects": 0,
+    "status_2xx": 59465,
+    "status_3xx": 0,
+    "status_4xx": 2902311,
+    "status_5xx": 0
+  },
+  {
     "framework": "hummingbird",
     "language": "Swift",
     "rps": 312520,
