@@ -17,7 +17,7 @@ var hasCert = File.Exists(certPath) && File.Exists(keyPath);
 
 var server = HttpServer.CreateBuilder()
                        .UseEngine<CadenteHttpServerEngine>()
-                       .UseListeningPort(8080)
+                       .UseListeningPort(new ListeningPort(false, "0.0.0.0", 8080))
                        .UseConfiguration(c =>
                        {
                            c.EnableAutomaticResponseCompression = true;
@@ -28,7 +28,7 @@ var server = HttpServer.CreateBuilder()
 if (hasCert)
 {
     server.UseSsl(X509Certificate2.CreateFromPemFile(certPath, keyPath))
-          .UseListeningPort(new ListeningPort(true, "localhost", 8443));
+          .UseListeningPort(new ListeningPort(true, "0.0.0.0", 8443));
 }
 
 Router router = new Router();
