@@ -1,13 +1,14 @@
 use actix_files::Files;
 use actix_web::http::header::{ContentType, HeaderValue, SERVER};
-use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer};
-use deadpool_postgres::{Manager, ManagerConfig, Pool, RecyclingMethod};
+use actix_web::{web, App, HttpResponse, HttpServer};
+use bytes::Bytes;
+use deadpool_postgres::{Manager, ManagerConfig, Pool as PgPool, RecyclingMethod};
 use futures_util::StreamExt;
-use rusqlite::Connection;
+use r2d2::Pool as SqlitePool;
+use r2d2_sqlite::SqliteConnectionManager;
 use rustls::ServerConfig;
 use serde::{Deserialize, Serialize};
 use std::io;
-use std::sync::{Arc, Mutex};
 
 static SERVER_HDR: HeaderValue = HeaderValue::from_static("actix");
 
@@ -15,6 +16,12 @@ static SERVER_HDR: HeaderValue = HeaderValue::from_static("actix");
 struct BaselineQuery {
     a: Option<i64>,
     b: Option<i64>,
+}
+
+#[derive(Deserialize)]
+struct PriceQuery {
+    min: Option<f64>,
+    max: Option<f64>,
 }
 
 #[derive(Deserialize, Clone)]
@@ -62,10 +69,8 @@ struct JsonResponse {
 
 struct AppState {
     dataset: Vec<DatasetItem>,
-    json_large_cache: Vec<u8>,
+    json_large_cache: Bytes,
 }
-
-struct WorkerDb(Mutex<Connection>);
 
 fn load_dataset() -> Vec<DatasetItem> {
     let path = std::env::var("DATASET_PATH").unwrap_or_else(|_| "/data/dataset.json".to_string());
@@ -75,7 +80,7 @@ fn load_dataset() -> Vec<DatasetItem> {
     }
 }
 
-fn build_json_cache(dataset: &[DatasetItem]) -> Vec<u8> {
+fn build_json_cache(dataset: &[DatasetItem]) -> Bytes {
     let items: Vec<ProcessedItem> = dataset
         .iter()
         .map(|d| ProcessedItem {
@@ -97,7 +102,7 @@ fn build_json_cache(dataset: &[DatasetItem]) -> Vec<u8> {
         count: items.len(),
         items,
     };
-    serde_json::to_vec(&resp).unwrap_or_default()
+    Bytes::from(serde_json::to_vec(&resp).unwrap_or_default())
 }
 
 async fn pipeline() -> HttpResponse {
@@ -109,7 +114,6 @@ async fn pipeline() -> HttpResponse {
 
 async fn baseline11_get(query: web::Query<BaselineQuery>) -> HttpResponse {
     let sum = query.a.unwrap_or(0) + query.b.unwrap_or(0);
-
     HttpResponse::Ok()
         .insert_header((SERVER, SERVER_HDR.clone()))
         .body(sum.to_string())
@@ -117,7 +121,6 @@ async fn baseline11_get(query: web::Query<BaselineQuery>) -> HttpResponse {
 
 async fn baseline11_post(query: web::Query<BaselineQuery>, body: web::Bytes) -> HttpResponse {
     let mut sum = query.a.unwrap_or(0) + query.b.unwrap_or(0);
-
     if let Ok(s) = std::str::from_utf8(&body) {
         if let Ok(n) = s.trim().parse::<i64>() {
             sum += n;
@@ -131,7 +134,6 @@ async fn baseline11_post(query: web::Query<BaselineQuery>, body: web::Bytes) -> 
 
 async fn baseline2(query: web::Query<BaselineQuery>) -> HttpResponse {
     let sum = query.a.unwrap_or(0) + query.b.unwrap_or(0);
-
     HttpResponse::Ok()
         .insert_header((SERVER, SERVER_HDR.clone()))
         .body(sum.to_string())
@@ -150,7 +152,7 @@ async fn upload(mut payload: web::Payload) -> HttpResponse {
         .body(size.to_string())
 }
 
-async fn json_endpoint(state: web::Data<Arc<AppState>>) -> HttpResponse {
+async fn json_endpoint(state: web::Data<AppState>) -> HttpResponse {
     if state.dataset.is_empty() {
         return HttpResponse::InternalServerError().body("No dataset");
     }
@@ -183,16 +185,19 @@ async fn json_endpoint(state: web::Data<Arc<AppState>>) -> HttpResponse {
         .body(body)
 }
 
-async fn compression(state: web::Data<Arc<AppState>>) -> HttpResponse {
+async fn compression(state: web::Data<AppState>) -> HttpResponse {
     HttpResponse::Ok()
         .insert_header(("Content-Type", "application/json"))
         .insert_header(("Server", "actix"))
         .body(state.json_large_cache.clone())
 }
 
-async fn db_endpoint(req: HttpRequest, db: web::Data<Option<WorkerDb>>) -> HttpResponse {
-    let db = match db.as_ref() {
-        Some(d) => d,
+async fn db_endpoint(
+    query: web::Query<PriceQuery>,
+    pool: web::Data<Option<SqlitePool<SqliteConnectionManager>>>,
+) -> HttpResponse {
+    let pool = match pool.as_ref() {
+        Some(p) => p.clone(),
         None => {
             return HttpResponse::Ok()
                 .insert_header((SERVER, SERVER_HDR.clone()))
@@ -200,45 +205,37 @@ async fn db_endpoint(req: HttpRequest, db: web::Data<Option<WorkerDb>>) -> HttpR
                 .body(r#"{"items":[],"count":0}"#);
         }
     };
-    let min: f64 = req
-        .uri()
-        .query()
-        .and_then(|q| {
-            q.split('&')
-                .find_map(|p| p.strip_prefix("min=").and_then(|v| v.parse().ok()))
-        })
-        .unwrap_or(10.0);
-    let max: f64 = req
-        .uri()
-        .query()
-        .and_then(|q| {
-            q.split('&')
-                .find_map(|p| p.strip_prefix("max=").and_then(|v| v.parse().ok()))
-        })
-        .unwrap_or(50.0);
-    let conn = db.0.lock().unwrap();
-    let mut stmt = conn.prepare_cached(
-        "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ?1 AND ?2 LIMIT 50"
-    ).unwrap();
-    let rows = stmt.query_map(rusqlite::params![min, max], |row| {
-        Ok(serde_json::json!({
-            "id": row.get::<_, i64>(0)?,
-            "name": row.get::<_, String>(1)?,
-            "category": row.get::<_, String>(2)?,
-            "price": row.get::<_, f64>(3)?,
-            "quantity": row.get::<_, i64>(4)?,
-            "active": row.get::<_, i64>(5)? == 1,
-            "tags": serde_json::from_str::<serde_json::Value>(&row.get::<_, String>(6)?).unwrap_or_default(),
-            "rating": serde_json::json!({
-                "score": row.get::<_, f64>(7)?,
-                "count": row.get::<_, i64>(8)?
-            })
-        }))
-    });
-    let items: Vec<serde_json::Value> = match rows {
-        Ok(mapped) => mapped.filter_map(|r| r.ok()).collect(),
-        Err(_) => Vec::new(),
-    };
+    let min = query.min.unwrap_or(10.0);
+    let max = query.max.unwrap_or(50.0);
+
+    let items = web::block(move || {
+        let conn = pool.get().unwrap();
+        let mut stmt = conn.prepare_cached(
+            "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count \
+             FROM items WHERE price BETWEEN ?1 AND ?2 LIMIT 50",
+        ).unwrap();
+        let rows = stmt.query_map(rusqlite::params![min, max], |row| {
+            Ok(serde_json::json!({
+                "id": row.get::<_, i64>(0)?,
+                "name": row.get::<_, String>(1)?,
+                "category": row.get::<_, String>(2)?,
+                "price": row.get::<_, f64>(3)?,
+                "quantity": row.get::<_, i64>(4)?,
+                "active": row.get::<_, i64>(5)? == 1,
+                "tags": serde_json::from_str::<serde_json::Value>(
+                    &row.get::<_, String>(6)?
+                ).unwrap_or_default(),
+                "rating": {
+                    "score": row.get::<_, f64>(7)?,
+                    "count": row.get::<_, i64>(8)?
+                }
+            }))
+        }).unwrap();
+        rows.filter_map(|r| r.ok()).collect::<Vec<_>>()
+    })
+    .await
+    .unwrap_or_default();
+
     let result = serde_json::json!({"items": items, "count": items.len()});
     HttpResponse::Ok()
         .insert_header((SERVER, SERVER_HDR.clone()))
@@ -246,7 +243,10 @@ async fn db_endpoint(req: HttpRequest, db: web::Data<Option<WorkerDb>>) -> HttpR
         .body(result.to_string())
 }
 
-async fn pgdb_endpoint(req: HttpRequest, pool: web::Data<Option<Pool>>) -> HttpResponse {
+async fn pgdb_endpoint(
+    query: web::Query<PriceQuery>,
+    pool: web::Data<Option<PgPool>>,
+) -> HttpResponse {
     let pool = match pool.as_ref() {
         Some(p) => p,
         None => {
@@ -256,22 +256,9 @@ async fn pgdb_endpoint(req: HttpRequest, pool: web::Data<Option<Pool>>) -> HttpR
                 .body(r#"{"items":[],"count":0}"#);
         }
     };
-    let min: f64 = req
-        .uri()
-        .query()
-        .and_then(|q| {
-            q.split('&')
-                .find_map(|p| p.strip_prefix("min=").and_then(|v| v.parse().ok()))
-        })
-        .unwrap_or(10.0);
-    let max: f64 = req
-        .uri()
-        .query()
-        .and_then(|q| {
-            q.split('&')
-                .find_map(|p| p.strip_prefix("max=").and_then(|v| v.parse().ok()))
-        })
-        .unwrap_or(50.0);
+    let min = query.min.unwrap_or(10.0);
+    let max = query.max.unwrap_or(50.0);
+
     let client = match pool.get().await {
         Ok(c) => c,
         Err(_) => {
@@ -281,9 +268,13 @@ async fn pgdb_endpoint(req: HttpRequest, pool: web::Data<Option<Pool>>) -> HttpR
                 .body(r#"{"items":[],"count":0}"#);
         }
     };
-    let stmt = client.prepare_cached(
-        "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50"
-    ).await.unwrap();
+    let stmt = client
+        .prepare_cached(
+            "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count \
+             FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50",
+        )
+        .await
+        .unwrap();
     let rows = match client.query(&stmt, &[&min, &max]).await {
         Ok(r) => r,
         Err(_) => {
@@ -339,21 +330,20 @@ fn load_tls_config() -> Option<ServerConfig> {
 async fn main() -> io::Result<()> {
     let dataset = load_dataset();
 
-    let large_dataset: Vec<DatasetItem> = match std::fs::read_to_string("/data/dataset-large.json")
-    {
-        Ok(data) => serde_json::from_str(&data).unwrap_or_default(),
-        Err(_) => Vec::new(),
-    };
+    let large_dataset: Vec<DatasetItem> =
+        match std::fs::read_to_string("/data/dataset-large.json") {
+            Ok(data) => serde_json::from_str(&data).unwrap_or_default(),
+            Err(_) => Vec::new(),
+        };
     let json_large_cache = build_json_cache(&large_dataset);
 
-    let state = Arc::new(AppState {
+    let state = web::Data::new(AppState {
         dataset,
         json_large_cache,
     });
 
-    let pg_pool: Option<Pool> = std::env::var("DATABASE_URL").ok().and_then(|url| {
+    let pg_pool: Option<PgPool> = std::env::var("DATABASE_URL").ok().and_then(|url| {
         let pg_config: tokio_postgres::Config = url.parse().ok()?;
-
         let mgr = Manager::from_config(
             pg_config,
             deadpool_postgres::tokio_postgres::NoTls,
@@ -362,9 +352,17 @@ async fn main() -> io::Result<()> {
             },
         );
         let pool_size = (num_cpus::get() * 4).max(64);
-
         Pool::builder(mgr).max_size(pool_size).build().ok()
     });
+
+    // r2d2 pool shared across all workers — each get() hands out a connection from the pool
+    let sqlite_pool: Option<SqlitePool<SqliteConnectionManager>> =
+        SqliteConnectionManager::file("/data/benchmark.db")
+            .with_flags(rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
+            .with_init(|conn| conn.execute_batch("PRAGMA mmap_size=268435456"))
+            .map(|mgr| r2d2::Pool::builder().max_size(16).build(mgr).ok())
+            .ok()
+            .flatten();
 
     let tls_config = load_tls_config();
     let workers = num_cpus::get();
@@ -372,20 +370,12 @@ async fn main() -> io::Result<()> {
     let mut server = HttpServer::new({
         let state = state.clone();
         let pg_pool = pg_pool.clone();
+        let sqlite_pool = sqlite_pool.clone();
         move || {
-            let worker_db = Connection::open_with_flags(
-                "/data/benchmark.db",
-                rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-            )
-            .ok()
-            .map(|conn| {
-                conn.execute_batch("PRAGMA mmap_size=268435456").ok();
-                WorkerDb(Mutex::new(conn))
-            });
             App::new()
                 .wrap(actix_web::middleware::Compress::default())
-                .app_data(web::Data::new(state.clone()))
-                .app_data(web::Data::new(worker_db))
+                .app_data(state.clone())
+                .app_data(web::Data::new(sqlite_pool.clone()))
                 .app_data(web::PayloadConfig::new(25 * 1024 * 1024))
                 .app_data(web::Data::new(pg_pool.clone()))
                 .route("/pipeline", web::get().to(pipeline))
