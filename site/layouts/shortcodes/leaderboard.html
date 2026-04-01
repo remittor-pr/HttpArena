@@ -111,54 +111,23 @@
   margin-right: 0.25rem;
 }
 html.dark .lb-filters-hint { color: #4b5563; }
-.lb-lang-filter {
-  padding: 0.3rem 0.75rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #94a3b8;
-  cursor: pointer;
-  border-radius: 6px;
-  border: 1.5px solid #e2e8f0;
-  background: transparent;
-  transition: all 0.15s ease;
-  user-select: none;
-}
-.lb-lang-filter:hover {
-  color: #475569;
-  border-color: #cbd5e1;
-  background: rgba(59, 130, 246, 0.06);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-}
-.lb-lang-filter.active {
-  font-weight: 600;
-}
-.lb-lang-filter[data-lang="all"].active { color: #3b82f6; border-color: #3b82f6; background: rgba(59,130,246,0.06); }
-{{ range $lang, $c := site.Data.langcolors }}
-.lb-lang-filter[data-lang="{{ $lang }}"].active { color: {{ $c.accent }}; border-color: {{ $c.accent }}; background: rgba({{ $c.rgb }},0.08); }
-{{ end }}
-
-/* Search */
-.lb-search {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
 .lb-search-input {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.8rem;
+  width: 100%;
+  padding: 0.4rem 2rem 0.4rem 0.75rem;
+  font-size: 0.85rem;
   font-family: inherit;
   color: #334155;
   border: 1.5px solid #e2e8f0;
   border-radius: 6px;
   background: transparent;
   outline: none;
-  width: 18rem;
   transition: border-color 0.15s ease;
 }
 .lb-search-input::placeholder { color: #94a3b8; }
-.lb-search-input:focus { border-color: #3b82f6; }
+.lb-search-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.08); }
+html.dark .lb-search-input { color: #e2e8f0; border-color: #334155; }
+html.dark .lb-search-input::placeholder { color: #64748b; }
+html.dark .lb-search-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
 
 /* Type filter */
 .lb-type-filter {
@@ -360,12 +329,6 @@ html.dark .lb-tab { color: #94a3b8; }
 html.dark .lb-tab:hover { color: #e2e8f0; background: rgba(255, 255, 255, 0.06); }
 html.dark .lb-tab.active { color: #93c5fd; background: rgba(59, 130, 246, 0.15); box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2), 0 1px 3px rgba(0, 0, 0, 0.3); font-weight: 700; }
 html.dark .lb-desc { color: #94a3b8; }
-html.dark .lb-lang-filter { color: #64748b; border-color: #334155; }
-html.dark .lb-lang-filter:hover { color: #94a3b8; border-color: #475569; background: rgba(255, 255, 255, 0.03); }
-html.dark .lb-lang-filter[data-lang="all"].active { color: #60a5fa; border-color: #3b82f6; background: rgba(59,130,246,0.12); }
-{{ range $lang, $c := site.Data.langcolors }}
-html.dark .lb-lang-filter[data-lang="{{ $lang }}"].active { color: {{ $c.textDark }}; border-color: {{ $c.accent }}; background: rgba({{ $c.rgb }},0.12); }
-{{ end }}
 html.dark .lb-filters-label { color: #64748b; }
 html.dark .lb-search-input { color: #e2e8f0; border-color: #334155; }
 html.dark .lb-search-input::placeholder { color: #64748b; }
@@ -383,12 +346,7 @@ html.dark .lb-conn-tab:hover { color: #94a3b8; border-color: #475569; background
 html.dark .lb-conn-tab.active { color: #a78bfa; border-color: #8b5cf6; background: rgba(139, 92, 246, 0.12); }
 .lb-card-title { font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem; }
 .lb-toggle-icon { font-size: 1rem; color: #94a3b8; margin-left: 0.35rem; transition: color 0.15s ease; }
-.lb-filters-toggle:hover .lb-toggle-icon { color: #3b82f6; }
-.lb-filters-toggle { margin-bottom: 0; }
-.lb-filters-body { margin-top: 0.75rem; }
 html.dark .lb-card-title { color: #ffffff; }
-html.dark .lb-toggle-icon { color: #64748b; }
-html.dark .lb-filters-toggle:hover .lb-toggle-icon { color: #60a5fa; }
 
 /* Mobile */
 @media (max-width: 768px) {
@@ -455,23 +413,31 @@ var lbProfiles = {{ $profiles | jsonify | safeJS }};
 {{ end }}
 {{ $langs = sort $langs }}
 
-<div class="lb-card">
-  <div class="lb-card-title lb-filters-toggle" style="cursor:pointer;">Filters <span class="lb-toggle-icon">+</span> <span class="lb-filters-hint lb-toggle-hint">(expand)</span></div>
-  <div class="lb-filters-body" style="display:none;">
-    <div class="lb-filters" style="margin-top:0;">
-      <span class="lb-filters-label">Lang</span>
-      <span class="lb-filters-hint">(Toggle)</span>
-      <div class="lb-lang-filter active" data-lang="all">All</div>
-      {{ range $langs }}
-      <div class="lb-lang-filter active" data-lang="{{ . }}">{{ . }}</div>
-      {{ end }}
-    </div>
-    <div class="lb-search">
-      <span class="lb-filters-label">Filter</span>
-      <input type="text" class="lb-search-input" placeholder="e.g. ringzero, fasthttp, C, C#" />
-    </div>
-  </div>
-</div>
+<style>
+.lb-dropdown-btn { padding:0.4rem 0.75rem; font-size:0.82rem; font-weight:500; color:#475569; border:1.5px solid #e2e8f0; border-radius:6px; background:transparent; cursor:pointer; display:flex; align-items:center; gap:0.35rem; white-space:nowrap; transition:all 0.15s ease; }
+.lb-dropdown-btn:hover { border-color:#3b82f6; color:#3b82f6; }
+.lb-dropdown-arrow { font-size:0.65rem; }
+.lb-dropdown-count { font-size:0.7rem; background:#3b82f6; color:#fff; border-radius:9px; padding:0 0.4rem; min-width:1.1rem; text-align:center; display:none; }
+.lb-dropdown-menu { position:absolute; top:calc(100% + 4px); left:0; z-index:100; background:#fff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:0.4rem 0; min-width:10rem; max-height:20rem; overflow-y:auto; }
+.lb-dropdown-item { display:flex; align-items:center; gap:0.5rem; padding:0.35rem 0.75rem; font-size:0.82rem; color:#334155; cursor:pointer; user-select:none; transition:background 0.1s; }
+.lb-dropdown-item:hover { background:rgba(59,130,246,0.06); }
+.lb-dropdown-check { width:14px; height:14px; border:1.5px solid #cbd5e1; border-radius:3px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
+.lb-dropdown-item.selected .lb-dropdown-check { background:#3b82f6; border-color:#3b82f6; }
+.lb-dropdown-item.selected .lb-dropdown-check::after { content:'\2713'; color:#fff; font-size:0.6rem; font-weight:700; }
+.lb-dropdown-sep { height:1px; background:#e2e8f0; margin:0.25rem 0; }
+.lb-search-clear { position:absolute; right:0.4rem; top:50%; transform:translateY(-50%); border:none; background:none; color:#94a3b8; font-size:1.1rem; cursor:pointer; padding:0 0.25rem; line-height:1; }
+.lb-search-clear:hover { color:#64748b; }
+html.dark .lb-filter-bar { background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08); }
+html.dark .lb-dropdown-btn { color:#94a3b8; border-color:#334155; }
+html.dark .lb-dropdown-btn:hover { border-color:#3b82f6; color:#60a5fa; }
+html.dark .lb-dropdown-menu { background:#1e293b; border-color:#334155; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+html.dark .lb-dropdown-item { color:#e2e8f0; }
+html.dark .lb-dropdown-item:hover { background:rgba(59,130,246,0.12); }
+html.dark .lb-dropdown-check { border-color:#475569; }
+html.dark .lb-dropdown-sep { background:#334155; }
+html.dark .lb-search-clear { color:#64748b; }
+html.dark .lb-search-clear:hover { color:#94a3b8; }
+</style>
 
 <div class="lb-type-note" style="margin-top:1rem; margin-bottom:0.75rem; padding:0.85rem 1.25rem; border-radius:0.5rem; background:linear-gradient(135deg, rgba(59,130,246,0.04), rgba(139,92,246,0.04)); border:1px solid rgba(59,130,246,0.15); color:#1e293b; font-size:1.02rem; line-height:1.7;">
 </div>
@@ -601,6 +567,20 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaa42</pre>
     {{ end }}
     </div>
   </div>
+  <div class="lb-filter-bar" style="margin:0.5rem 0; padding:0.5rem 1rem; background:rgba(0,0,0,0.02); border-radius:8px; border:1px solid rgba(0,0,0,0.06); display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+    <div class="lb-dropdown" data-filter="lang" style="position:relative;">
+      <button class="lb-dropdown-btn">Language <span class="lb-dropdown-count"></span><span class="lb-dropdown-arrow">&#9662;</span></button>
+      <div class="lb-dropdown-menu" style="display:none;"></div>
+    </div>
+    <div class="lb-dropdown" data-filter="engine" style="position:relative;">
+      <button class="lb-dropdown-btn">Engine <span class="lb-dropdown-count"></span><span class="lb-dropdown-arrow">&#9662;</span></button>
+      <div class="lb-dropdown-menu" style="display:none;"></div>
+    </div>
+    <div style="position:relative; flex:1; max-width:40rem;">
+      <input type="text" class="lb-search-input" placeholder="Filter by name, language, or engine — comma for multiple (e.g. C#, Rust)" />
+      <button class="lb-search-clear" aria-label="Clear" style="display:none;">&times;</button>
+    </div>
+  </div>
   <div style="font-size:0.75rem; color:#94a3b8; margin:0 0 0.75rem 0;">Click a row to expand details</div>
 
   {{ $isReconn := or (eq $p.id "limited-conn") (eq $p.id "noisy") (eq $p.id "static") }}
@@ -655,7 +635,7 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaa42</pre>
     {{ $pct := mul (div (float $r.rps) (float $maxRps)) 100.0 }}
     {{ $meta := index site.Data.frameworks $r.framework }}
     {{ $s2xx := int ($r.status_2xx | default 0) }}{{ $s3xx := int ($r.status_3xx | default 0) }}{{ $s4xx := int ($r.status_4xx | default 0) }}{{ $s5xx := int ($r.status_5xx | default 0) }}{{ $errs := add $s4xx $s5xx }}
-    <div class="lb-row{{ if $isReconn }} lb-row-reconn{{ end }}{{ if $isNoisy }} lb-row-noisy{{ end }}" data-lang="{{ $r.language | default "" }}" data-name="{{ $r.framework }}" data-rps="{{ printf "%.0f" $r.rps }}" data-bandwidth="{{ $r.bandwidth | default "" }}" data-input-bw="{{ $r.input_bw | default "" }}" data-type="{{ with $meta }}{{ .type | default "production" }}{{ end }}" data-desc="{{ with $meta }}{{ .description }}{{ end }}" data-repo="{{ with $meta }}{{ .repo }}{{ end }}" data-s2xx="{{ $s2xx }}" data-s3xx="{{ $s3xx }}" data-s4xx="{{ $s4xx }}" data-s5xx="{{ $s5xx }}" {{ if $r.tpl_baseline }}data-tpl-baseline="{{ int $r.tpl_baseline }}" data-tpl-json="{{ int ($r.tpl_json | default 0) }}" data-tpl-db="{{ int ($r.tpl_db | default 0) }}" data-tpl-upload="{{ int ($r.tpl_upload | default 0) }}" data-tpl-compression="{{ int ($r.tpl_compression | default 0) }}" data-tpl-static="{{ int ($r.tpl_static | default 0) }}" data-tpl-async-db="{{ int ($r.tpl_async_db | default 0) }}"{{ end }}{{ if $r.tf_get }} data-tf-get="{{ int $r.tf_get }}" data-tf-get-err="{{ int ($r.tf_get_err | default 0) }}" data-tf-post="{{ int ($r.tf_post | default 0) }}" data-tf-post-err="{{ int ($r.tf_post_err | default 0) }}" data-tf-chunked="{{ int ($r.tf_chunked | default 0) }}" data-tf-chunked-err="{{ int ($r.tf_chunked_err | default 0) }}" data-tf-noise="{{ int ($r.tf_noise | default 0) }}" data-tf-noise-err="{{ int ($r.tf_noise_err | default 0) }}" data-tf-cookie="{{ int ($r.tf_cookie | default 0) }}" data-tf-cookie-err="{{ int ($r.tf_cookie_err | default 0) }}" data-tf-headers="{{ int ($r.tf_headers | default 0) }}" data-tf-headers-err="{{ int ($r.tf_headers_err | default 0) }}" data-tf-body29="{{ int ($r.tf_body29 | default 0) }}" data-tf-body29-err="{{ int ($r.tf_body29_err | default 0) }}"{{ end }}>
+    <div class="lb-row{{ if $isReconn }} lb-row-reconn{{ end }}{{ if $isNoisy }} lb-row-noisy{{ end }}" data-lang="{{ $r.language | default "" }}" data-name="{{ $r.framework }}" data-rps="{{ printf "%.0f" $r.rps }}" data-bandwidth="{{ $r.bandwidth | default "" }}" data-input-bw="{{ $r.input_bw | default "" }}" data-type="{{ with $meta }}{{ .type | default "production" }}{{ end }}" data-engine="{{ with $meta }}{{ .engine | default "" }}{{ end }}" data-desc="{{ with $meta }}{{ .description }}{{ end }}" data-repo="{{ with $meta }}{{ .repo }}{{ end }}" data-s2xx="{{ $s2xx }}" data-s3xx="{{ $s3xx }}" data-s4xx="{{ $s4xx }}" data-s5xx="{{ $s5xx }}" {{ if $r.tpl_baseline }}data-tpl-baseline="{{ int $r.tpl_baseline }}" data-tpl-json="{{ int ($r.tpl_json | default 0) }}" data-tpl-db="{{ int ($r.tpl_db | default 0) }}" data-tpl-upload="{{ int ($r.tpl_upload | default 0) }}" data-tpl-compression="{{ int ($r.tpl_compression | default 0) }}" data-tpl-static="{{ int ($r.tpl_static | default 0) }}" data-tpl-async-db="{{ int ($r.tpl_async_db | default 0) }}"{{ end }}{{ if $r.tf_get }} data-tf-get="{{ int $r.tf_get }}" data-tf-get-err="{{ int ($r.tf_get_err | default 0) }}" data-tf-post="{{ int ($r.tf_post | default 0) }}" data-tf-post-err="{{ int ($r.tf_post_err | default 0) }}" data-tf-chunked="{{ int ($r.tf_chunked | default 0) }}" data-tf-chunked-err="{{ int ($r.tf_chunked_err | default 0) }}" data-tf-noise="{{ int ($r.tf_noise | default 0) }}" data-tf-noise-err="{{ int ($r.tf_noise_err | default 0) }}" data-tf-cookie="{{ int ($r.tf_cookie | default 0) }}" data-tf-cookie-err="{{ int ($r.tf_cookie_err | default 0) }}" data-tf-headers="{{ int ($r.tf_headers | default 0) }}" data-tf-headers-err="{{ int ($r.tf_headers_err | default 0) }}" data-tf-body29="{{ int ($r.tf_body29 | default 0) }}" data-tf-body29-err="{{ int ($r.tf_body29_err | default 0) }}"{{ end }}>
       {{ $ftype := "framework" }}{{ with $meta }}{{ $ftype = .type | default "production" }}{{ end }}
       <div class="lb-rank">{{ add $j 1 }}</div>
       <div class="lb-name">{{ $r.framework }}</div>
@@ -734,22 +714,6 @@ function buildBestPanels() {
 }
 buildBestPanels();
 
-/* Filters card toggle */
-document.querySelector('.lb-filters-toggle').addEventListener('click', function() {
-  var body = document.querySelector('.lb-filters-body');
-  var icon = this.querySelector('.lb-toggle-icon');
-  var hint = this.querySelector('.lb-toggle-hint');
-  if (body.style.display === 'none') {
-    body.style.display = 'block';
-    icon.textContent = '\u2212';
-    hint.textContent = '(minimize)';
-  } else {
-    body.style.display = 'none';
-    icon.textContent = '+';
-    hint.textContent = '(expand)';
-  }
-});
-
 /* Profile tabs — each panel has its own set; clicking switches panels */
 document.querySelectorAll('.lb-tab').forEach(function(tab) {
   tab.addEventListener('click', function() {
@@ -772,15 +736,10 @@ document.querySelectorAll('.lb-conn-tab').forEach(function(btn) {
 });
 
 function applyFilters() {
-  var filters = document.querySelectorAll('#lb-wrapper .lb-lang-filter[data-lang]:not([data-lang="all"])');
-  var activeLangs = new Set();
-  filters.forEach(function(f) { if (f.classList.contains('active')) activeLangs.add(f.dataset.lang); });
-  var allBtn = document.querySelector('#lb-wrapper .lb-lang-filter[data-lang="all"]');
-  var allLangs = filters.length === 0 || (allBtn && allBtn.classList.contains('active'));
-  if (allBtn) {
-    if (activeLangs.size === filters.length) allBtn.classList.add('active');
-    else allBtn.classList.remove('active');
-  }
+  var langState = lbDropdownState.lang;
+  var engineState = lbDropdownState.engine;
+  var allLangs = langState.selected.size === langState.all.size;
+  var allEngines = engineState.selected.size === engineState.all.size;
 
   var activePanel = document.querySelector('.lb-panel.active') || document;
   var showAll = activePanel.querySelector('.lb-type-filter[data-type="all"]').classList.contains('active');
@@ -799,7 +758,8 @@ function applyFilters() {
     typeNote.innerHTML = defs.join('<br>');
   }
 
-  var searchVal = document.querySelector('.lb-search-input').value.toLowerCase().trim();
+  var activeSearchInput = (activePanel.querySelector('.lb-search-input') || document.querySelector('.lb-search-input'));
+  var searchVal = activeSearchInput ? activeSearchInput.value.toLowerCase().trim() : '';
   var terms = searchVal ? searchVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
 
   buildBestPanels();
@@ -813,13 +773,15 @@ function applyFilters() {
     rows.forEach(function(row) {
       var lang = row.dataset.lang;
       var name = row.dataset.name.toLowerCase();
+      var engine = (row.dataset.engine || '').toLowerCase();
       var type = row.dataset.type || 'production';
-      var langMatch = allLangs || activeLangs.has(lang);
+      var langMatch = allLangs || langState.selected.has(lang);
+      var engineMatch = allEngines || engineState.selected.has(engine);
       var typeMatch = (type === 'engine' && showEngine) || (type === 'tuned' && showTuned) || (type === 'production' && showProduction) || (type !== 'engine' && type !== 'tuned' && showProduction);
       var textMatch = terms.length === 0 || terms.some(function(t) {
-        return name.indexOf(t) !== -1 || lang.toLowerCase().indexOf(t) !== -1;
+        return name.indexOf(t) !== -1 || lang.toLowerCase().indexOf(t) !== -1 || engine.indexOf(t) !== -1;
       });
-      if (langMatch && typeMatch && textMatch) {
+      if (langMatch && engineMatch && typeMatch && textMatch) {
         row.classList.remove('lb-hidden');
         var rps = Number(row.dataset.rps);
         if (rps > maxRps) maxRps = rps;
@@ -852,37 +814,120 @@ function applyFilters() {
   if (typeof applyTcpFragScores === 'function') applyTcpFragScores();
 }
 
-/* Language filters */
-document.querySelectorAll('.lb-lang-filter').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    var lang = btn.dataset.lang;
-    var allFilters = document.querySelectorAll('.lb-lang-filter');
-    var allBtn = document.querySelector('.lb-lang-filter[data-lang="all"]');
+/* Dropdown filter system — shared state, synced across all panels */
+var lbDropdownState = {};
 
-    if (lang === 'all') {
-      allFilters.forEach(function(f) { f.classList.add('active'); });
-    } else if (btn.classList.contains('active') && allBtn.classList.contains('active')) {
-      allFilters.forEach(function(f) { f.classList.remove('active'); });
-      btn.classList.add('active');
-    } else {
-      btn.classList.toggle('active');
-      allBtn.classList.remove('active');
-      var anyLang = document.querySelector('.lb-lang-filter[data-lang]:not([data-lang="all"]).active');
-      if (!anyLang) {
-        allFilters.forEach(function(f) { f.classList.add('active'); });
-      } else {
-        var langFilters = document.querySelectorAll('.lb-lang-filter[data-lang]:not([data-lang="all"])');
-        var activeLangFilters = document.querySelectorAll('.lb-lang-filter[data-lang]:not([data-lang="all"]).active');
-        if (langFilters.length === activeLangFilters.length) allBtn.classList.add('active');
-      }
-    }
-    applyFilters();
-  });
+// Collect languages and engines from all rows
+var lbLangs = new Set();
+var lbEngines = new Set();
+var lbEngineLabels = {};
+document.querySelectorAll('.lb-row:not(.lb-header)').forEach(function(row) {
+  if (row.dataset.lang) lbLangs.add(row.dataset.lang);
+  var engine = row.dataset.engine;
+  if (engine) {
+    var key = engine.toLowerCase();
+    lbEngines.add(key);
+    if (!lbEngineLabels[key]) lbEngineLabels[key] = engine;
+  }
 });
 
-/* Search */
-document.querySelector('.lb-search-input').addEventListener('input', function() {
-  applyFilters();
+lbDropdownState.lang = { all: new Set(lbLangs), selected: new Set(lbLangs) };
+lbDropdownState.engine = { all: new Set(lbEngines), selected: new Set(lbEngines) };
+
+function lbSyncDropdowns(filterKey, labels) {
+  var state = lbDropdownState[filterKey];
+  document.querySelectorAll('.lb-dropdown[data-filter="' + filterKey + '"]').forEach(function(wrapper) {
+    var menu = wrapper.querySelector('.lb-dropdown-menu');
+    var countEl = wrapper.querySelector('.lb-dropdown-count');
+    var sorted = Array.from(state.all).sort();
+    menu.innerHTML = '';
+    var allItem = document.createElement('div');
+    allItem.className = 'lb-dropdown-item' + (state.selected.size === state.all.size ? ' selected' : '');
+    allItem.dataset.val = '__all__';
+    allItem.innerHTML = '<div class="lb-dropdown-check"></div><span>All</span>';
+    menu.appendChild(allItem);
+    var sep = document.createElement('div');
+    sep.className = 'lb-dropdown-sep';
+    menu.appendChild(sep);
+    sorted.forEach(function(v) {
+      var item = document.createElement('div');
+      item.className = 'lb-dropdown-item' + (state.selected.has(v) ? ' selected' : '');
+      item.dataset.val = v;
+      item.innerHTML = '<div class="lb-dropdown-check"></div><span>' + (labels && labels[v] || v) + '</span>';
+      menu.appendChild(item);
+    });
+    var isAll = state.selected.size === state.all.size;
+    countEl.style.display = isAll ? 'none' : '';
+    countEl.textContent = isAll ? '' : state.selected.size;
+  });
+}
+
+lbSyncDropdowns('lang', null);
+lbSyncDropdowns('engine', lbEngineLabels);
+
+function lbUpdateAllDropdowns(filterKey, labels) {
+  var state = lbDropdownState[filterKey];
+  document.querySelectorAll('.lb-dropdown[data-filter="' + filterKey + '"]').forEach(function(wrapper) {
+    var menu = wrapper.querySelector('.lb-dropdown-menu');
+    var countEl = wrapper.querySelector('.lb-dropdown-count');
+    var isAll = state.selected.size === state.all.size;
+    countEl.style.display = isAll ? 'none' : '';
+    countEl.textContent = isAll ? '' : state.selected.size;
+    var ai = menu.querySelector('[data-val="__all__"]');
+    if (ai) { if (isAll) ai.classList.add('selected'); else ai.classList.remove('selected'); }
+    menu.querySelectorAll('[data-val]:not([data-val="__all__"])').forEach(function(item) {
+      if (state.selected.has(item.dataset.val)) item.classList.add('selected');
+      else item.classList.remove('selected');
+    });
+  });
+}
+
+document.addEventListener('click', function(ev) {
+  var ddItem = ev.target.closest('.lb-dropdown-item');
+  if (ddItem) {
+    var wrapper = ddItem.closest('.lb-dropdown');
+    var filterKey = wrapper.dataset.filter;
+    var state = lbDropdownState[filterKey];
+    var val = ddItem.dataset.val;
+    if (val === '__all__') {
+      if (state.selected.size === state.all.size) state.selected.clear();
+      else state.selected = new Set(state.all);
+    } else {
+      if (state.selected.has(val)) { state.selected.delete(val); if (state.selected.size === 0) state.selected = new Set(state.all); }
+      else state.selected.add(val);
+    }
+    lbUpdateAllDropdowns(filterKey, filterKey === 'engine' ? lbEngineLabels : null);
+    applyFilters();
+    return;
+  }
+  var ddBtn = ev.target.closest('.lb-dropdown-btn');
+  if (ddBtn) {
+    ev.stopPropagation();
+    var menu = ddBtn.parentElement.querySelector('.lb-dropdown-menu');
+    var wasOpen = menu.style.display !== 'none';
+    document.querySelectorAll('.lb-dropdown-menu').forEach(function(m) { m.style.display = 'none'; });
+    if (!wasOpen) menu.style.display = '';
+    return;
+  }
+  if (!ev.target.closest('.lb-dropdown')) {
+    document.querySelectorAll('.lb-dropdown-menu').forEach(function(m) { m.style.display = 'none'; });
+  }
+});
+
+/* Search — sync across all panels */
+document.querySelectorAll('.lb-search-input').forEach(function(input) {
+  var clearBtn = input.parentElement.querySelector('.lb-search-clear');
+  input.addEventListener('input', function() {
+    var val = input.value;
+    document.querySelectorAll('.lb-search-input').forEach(function(other) { if (other !== input) other.value = val; });
+    document.querySelectorAll('.lb-search-clear').forEach(function(btn) { btn.style.display = val ? '' : 'none'; });
+    applyFilters();
+  });
+  clearBtn.addEventListener('click', function() {
+    document.querySelectorAll('.lb-search-input').forEach(function(inp) { inp.value = ''; });
+    document.querySelectorAll('.lb-search-clear').forEach(function(btn) { btn.style.display = 'none'; });
+    applyFilters();
+  });
 });
 
 /* Type filters (mutually exclusive, synced across panels) */

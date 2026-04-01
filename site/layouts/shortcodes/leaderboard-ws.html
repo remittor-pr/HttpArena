@@ -20,43 +20,6 @@ var lbWsCurrentMeta = {{ site.Data.frameworks | jsonify | safeJS }};
 var lbWsProfiles = {{ $profiles | jsonify | safeJS }};
 </script>
 
-{{/* Collect all unique languages across all data files */}}
-{{ $langs := slice }}
-{{ range $profiles }}
-  {{ $pid := .id }}
-  {{ range .conns }}
-    {{ $key := printf "%s-%d" $pid . }}
-    {{ $data := index site.Data $key }}
-    {{ if $data }}
-      {{ range $data }}
-        {{ $l := .language | default "" }}
-        {{ if and $l (not (in $langs $l)) }}
-          {{ $langs = $langs | append $l }}
-        {{ end }}
-      {{ end }}
-    {{ end }}
-  {{ end }}
-{{ end }}
-{{ $langs = sort $langs }}
-
-<div class="lb-card">
-  <div class="lb-card-title lb-filters-toggle-ws" style="cursor:pointer;">Filters <span class="lb-toggle-icon">+</span> <span class="lb-filters-hint lb-toggle-hint">(expand)</span></div>
-  <div class="lb-filters-body-ws" style="display:none;">
-    <div class="lb-filters" style="margin-top:0;">
-      <span class="lb-filters-label">Lang</span>
-      <span class="lb-filters-hint">(Toggle)</span>
-      <div class="lb-lang-filter active" data-lang="all">All</div>
-      {{ range $langs }}
-      <div class="lb-lang-filter active" data-lang="{{ . }}">{{ . }}</div>
-      {{ end }}
-    </div>
-    <div class="lb-search">
-      <span class="lb-filters-label">Filter</span>
-      <input type="text" class="lb-search-input" placeholder="e.g. aspnet-minimal, C#" />
-    </div>
-  </div>
-</div>
-
 <div class="lb-type-note-ws" style="margin-top:1rem; margin-bottom:0.75rem; padding:0.85rem 1.25rem; border-radius:0.5rem; background:linear-gradient(135deg, rgba(59,130,246,0.04), rgba(139,92,246,0.04)); border:1px solid rgba(59,130,246,0.15); color:#1e293b; font-size:1.02rem; line-height:1.7;">
 </div>
 <style>
@@ -89,6 +52,20 @@ html.dark .lb-type-note-ws { color: #e2e8f0 !important; background: linear-gradi
     {{ range $ci, $c := $p.conns }}
       <div class="lb-conn-tab" data-conns="{{ $c }}">{{ $c }}</div>
     {{ end }}
+    </div>
+  </div>
+  <div class="lb-filter-bar" style="margin:0.5rem 0; padding:0.5rem 1rem; background:rgba(0,0,0,0.02); border-radius:8px; border:1px solid rgba(0,0,0,0.06); display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+    <div class="lb-dropdown" data-filter="lang" style="position:relative;">
+      <button class="lb-dropdown-btn">Language <span class="lb-dropdown-count"></span><span class="lb-dropdown-arrow">&#9662;</span></button>
+      <div class="lb-dropdown-menu" style="display:none;"></div>
+    </div>
+    <div class="lb-dropdown" data-filter="engine" style="position:relative;">
+      <button class="lb-dropdown-btn">Engine <span class="lb-dropdown-count"></span><span class="lb-dropdown-arrow">&#9662;</span></button>
+      <div class="lb-dropdown-menu" style="display:none;"></div>
+    </div>
+    <div style="position:relative; flex:1; max-width:40rem;">
+      <input type="text" class="lb-search-input" placeholder="Filter by name, language, or engine — comma for multiple (e.g. C#, Rust)" />
+      <button class="lb-search-clear" aria-label="Clear" style="display:none;">&times;</button>
     </div>
   </div>
   <div style="font-size:0.75rem; color:#94a3b8; margin:0 0 0.75rem 0;">Click a row to expand details</div>
@@ -140,7 +117,7 @@ html.dark .lb-type-note-ws { color: #e2e8f0 !important; background: linear-gradi
     {{ $pct := mul (div (float $r.rps) (float $maxRps)) 100.0 }}
     {{ $meta := index site.Data.frameworks $r.framework }}
     {{ $s2xx := int ($r.status_2xx | default 0) }}{{ $s3xx := int ($r.status_3xx | default 0) }}{{ $s4xx := int ($r.status_4xx | default 0) }}{{ $s5xx := int ($r.status_5xx | default 0) }}{{ $errs := add $s4xx $s5xx }}
-    <div class="lb-row" data-lang="{{ $r.language | default "" }}" data-name="{{ $r.framework }}" data-rps="{{ printf "%.0f" $r.rps }}" data-type="{{ with $meta }}{{ .type | default "production" }}{{ end }}" data-desc="{{ with $meta }}{{ .description }}{{ end }}" data-repo="{{ with $meta }}{{ .repo }}{{ end }}" data-s2xx="{{ $s2xx }}" data-s3xx="{{ $s3xx }}" data-s4xx="{{ $s4xx }}" data-s5xx="{{ $s5xx }}">
+    <div class="lb-row" data-lang="{{ $r.language | default "" }}" data-name="{{ $r.framework }}" data-rps="{{ printf "%.0f" $r.rps }}" data-type="{{ with $meta }}{{ .type | default "production" }}{{ end }}" data-engine="{{ with $meta }}{{ .engine | default "" }}{{ end }}" data-desc="{{ with $meta }}{{ .description }}{{ end }}" data-repo="{{ with $meta }}{{ .repo }}{{ end }}" data-s2xx="{{ $s2xx }}" data-s3xx="{{ $s3xx }}" data-s4xx="{{ $s4xx }}" data-s5xx="{{ $s5xx }}">
       {{ $ftype := "framework" }}{{ with $meta }}{{ $ftype = .type | default "production" }}{{ end }}
       <div class="lb-rank">{{ add $j 1 }}</div>
       <div class="lb-name">{{ $r.framework }}</div>
@@ -239,28 +216,12 @@ function buildBest() {
 }
 buildBest();
 
-/* Filters toggle */
-w.querySelector('.lb-filters-toggle-ws').addEventListener('click', function() {
-  var body = w.querySelector('.lb-filters-body-ws');
-  var icon = this.querySelector('.lb-toggle-icon');
-  var hint = this.querySelector('.lb-toggle-hint');
-  if (body.style.display === 'none') {
-    body.style.display = 'block';
-    icon.textContent = '\u2212';
-    hint.textContent = '(minimize)';
-  } else {
-    body.style.display = 'none';
-    icon.textContent = '+';
-    hint.textContent = '(expand)';
-  }
-});
-
 /* Profile tabs — clicking switches panels */
 w.querySelectorAll('.lb-tab-ws').forEach(function(tab) {
   tab.addEventListener('click', function() {
     w.querySelectorAll('.lb-panel-ws').forEach(function(p) { p.classList.remove('active'); });
     w.querySelector('.lb-panel-ws[data-panel="' + tab.dataset.tab + '"]').classList.add('active');
-    applyFilters();
+    applyFilters_ws();
   });
 });
 
@@ -272,21 +233,22 @@ w.querySelectorAll('.lb-conn-tab').forEach(function(btn) {
     btn.classList.add('active');
     panel.querySelectorAll('.lb-conn-panel-ws').forEach(function(cp) { cp.classList.remove('active'); });
     panel.querySelector('.lb-conn-panel-ws[data-conns="' + btn.dataset.conns + '"]').classList.add('active');
-    applyFilters();
+    applyFilters_ws();
   });
 });
 
-function applyFilters() {
-  var filters = w.querySelectorAll('.lb-lang-filter[data-lang]:not([data-lang="all"])');
-  var activeLangs = new Set();
-  filters.forEach(function(f) { if (f.classList.contains('active')) activeLangs.add(f.dataset.lang); });
-  var allBtn = w.querySelector('.lb-lang-filter[data-lang="all"]');
-  var allLangs = filters.length === 0 || (allBtn && allBtn.classList.contains('active'));
+function applyFilters_ws(activePanel) {
+  var langState = lbDropdownState_ws.lang;
+  var engineState = lbDropdownState_ws.engine;
+  var allLangs = langState.selected.size === langState.all.size;
+  var allEngines = engineState.selected.size === engineState.all.size;
 
-  var showAll = w.querySelector('.lb-type-filter[data-type="all"]').classList.contains('active');
-  var showEngine = showAll || w.querySelector('.lb-type-filter[data-type="engine"]').classList.contains('active');
-  var showTuned = showAll || w.querySelector('.lb-type-filter[data-type="tuned"]').classList.contains('active');
-  var showProduction = showAll || w.querySelector('.lb-type-filter[data-type="production"]').classList.contains('active');
+  if (!activePanel) activePanel = w.querySelector('.lb-panel-ws.active') || w;
+
+  var showAll = activePanel.querySelector('.lb-type-filter[data-type="all"]').classList.contains('active');
+  var showEngine = showAll || activePanel.querySelector('.lb-type-filter[data-type="engine"]').classList.contains('active');
+  var showTuned = showAll || activePanel.querySelector('.lb-type-filter[data-type="tuned"]').classList.contains('active');
+  var showProduction = showAll || activePanel.querySelector('.lb-type-filter[data-type="production"]').classList.contains('active');
 
   w.classList.toggle('lb-show-all', showAll);
 
@@ -299,7 +261,8 @@ function applyFilters() {
     typeNote.innerHTML = defs.join('<br>');
   }
 
-  var searchVal = w.querySelector('.lb-search-input').value.toLowerCase().trim();
+  var activeSearchInput = activePanel.querySelector('.lb-search-input') || document.querySelector('.lb-panel-ws .lb-search-input');
+  var searchVal = activeSearchInput ? activeSearchInput.value.toLowerCase().trim() : '';
   var terms = searchVal ? searchVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
 
   buildBest();
@@ -312,12 +275,14 @@ function applyFilters() {
       var lang = row.dataset.lang;
       var name = row.dataset.name.toLowerCase();
       var type = row.dataset.type || 'production';
-      var langMatch = allLangs || activeLangs.has(lang);
+      var engine = (row.dataset.engine || '').toLowerCase();
+      var langMatch = allLangs || langState.selected.has(lang);
+      var engineMatch = allEngines || engineState.selected.has(engine);
       var typeMatch = (type === 'engine' && showEngine) || (type === 'tuned' && showTuned) || (type === 'production' && showProduction) || (type !== 'engine' && type !== 'tuned' && showProduction);
       var textMatch = terms.length === 0 || terms.some(function(t) {
-        return name.indexOf(t) !== -1 || lang.toLowerCase().indexOf(t) !== -1;
+        return name.indexOf(t) !== -1 || lang.toLowerCase().indexOf(t) !== -1 || engine.indexOf(t) !== -1;
       });
-      if (langMatch && typeMatch && textMatch) {
+      if (langMatch && engineMatch && typeMatch && textMatch) {
         row.classList.remove('lb-hidden');
         var rps = Number(row.dataset.rps);
         if (rps > maxRps) maxRps = rps;
@@ -337,33 +302,123 @@ function applyFilters() {
   });
 }
 
-/* Language filters */
-w.querySelectorAll('.lb-lang-filter').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    var lang = btn.dataset.lang;
-    var allFilters = w.querySelectorAll('.lb-lang-filter');
-    var allBtn = w.querySelector('.lb-lang-filter[data-lang="all"]');
-    if (lang === 'all') {
-      allFilters.forEach(function(f) { f.classList.add('active'); });
-    } else if (btn.classList.contains('active') && allBtn.classList.contains('active')) {
-      allFilters.forEach(function(f) { f.classList.remove('active'); });
-      btn.classList.add('active');
-    } else {
-      btn.classList.toggle('active');
-      allBtn.classList.remove('active');
-      if (!w.querySelector('.lb-lang-filter[data-lang]:not([data-lang="all"]).active')) {
-        allFilters.forEach(function(f) { f.classList.add('active'); });
+/* Dropdown filter system */
+var lbDropdownState_ws = {};
+var lbLangs_ws = new Set();
+var lbEngines_ws = new Set();
+var lbEngineLabels_ws = {};
+document.querySelectorAll('.lb-conn-panel-ws .lb-row:not(.lb-header), .lb-conn-panel-ws.active .lb-row:not(.lb-header)').forEach(function(row) {
+  if (row.dataset.lang) lbLangs_ws.add(row.dataset.lang);
+  var engine = row.dataset.engine;
+  if (engine) { var key = engine.toLowerCase(); lbEngines_ws.add(key); if (!lbEngineLabels_ws[key]) lbEngineLabels_ws[key] = engine; }
+});
+// Fallback: also scan rows in panel containers
+document.querySelectorAll('.lb-panel-ws .lb-row:not(.lb-header)').forEach(function(row) {
+  if (row.dataset.lang) lbLangs_ws.add(row.dataset.lang);
+  var engine = row.dataset.engine;
+  if (engine) { var key = engine.toLowerCase(); lbEngines_ws.add(key); if (!lbEngineLabels_ws[key]) lbEngineLabels_ws[key] = engine; }
+});
+
+lbDropdownState_ws.lang = { all: new Set(lbLangs_ws), selected: new Set(lbLangs_ws) };
+lbDropdownState_ws.engine = { all: new Set(lbEngines_ws), selected: new Set(lbEngines_ws) };
+
+function lbSyncDropdowns_ws(filterKey, labels) {
+  var state = lbDropdownState_ws[filterKey];
+  document.querySelectorAll('.lb-panel-ws .lb-dropdown[data-filter="' + filterKey + '"]').forEach(function(wrapper) {
+    var menu = wrapper.querySelector('.lb-dropdown-menu');
+    var countEl = wrapper.querySelector('.lb-dropdown-count');
+    var sorted = Array.from(state.all).sort();
+    menu.innerHTML = '';
+    var allItem = document.createElement('div');
+    allItem.className = 'lb-dropdown-item' + (state.selected.size === state.all.size ? ' selected' : '');
+    allItem.dataset.val = '__all__';
+    allItem.innerHTML = '<div class="lb-dropdown-check"></div><span>All</span>';
+    menu.appendChild(allItem);
+    var sep = document.createElement('div');
+    sep.className = 'lb-dropdown-sep';
+    menu.appendChild(sep);
+    sorted.forEach(function(v) {
+      var item = document.createElement('div');
+      item.className = 'lb-dropdown-item' + (state.selected.has(v) ? ' selected' : '');
+      item.dataset.val = v;
+      item.innerHTML = '<div class="lb-dropdown-check"></div><span>' + (labels && labels[v] || v) + '</span>';
+      menu.appendChild(item);
+    });
+    var isAll = state.selected.size === state.all.size;
+    countEl.style.display = isAll ? 'none' : '';
+    countEl.textContent = isAll ? '' : state.selected.size;
+  });
+}
+lbSyncDropdowns_ws('lang', null);
+lbSyncDropdowns_ws('engine', lbEngineLabels_ws);
+
+function lbUpdateDropdowns_ws(filterKey, labels) {
+  var state = lbDropdownState_ws[filterKey];
+  document.querySelectorAll('.lb-panel-ws .lb-dropdown[data-filter="' + filterKey + '"]').forEach(function(wrapper) {
+    var menu = wrapper.querySelector('.lb-dropdown-menu');
+    var countEl = wrapper.querySelector('.lb-dropdown-count');
+    var isAll = state.selected.size === state.all.size;
+    countEl.style.display = isAll ? 'none' : '';
+    countEl.textContent = isAll ? '' : state.selected.size;
+    var ai = menu.querySelector('[data-val="__all__"]');
+    if (ai) { if (isAll) ai.classList.add('selected'); else ai.classList.remove('selected'); }
+    menu.querySelectorAll('[data-val]:not([data-val="__all__"])').forEach(function(item) {
+      if (state.selected.has(item.dataset.val)) item.classList.add('selected');
+      else item.classList.remove('selected');
+    });
+  });
+}
+
+document.querySelectorAll('.lb-panel-ws .lb-dropdown').forEach(function(dd) {
+  dd.addEventListener('click', function(ev) {
+    var ddItem = ev.target.closest('.lb-dropdown-item');
+    if (ddItem) {
+      var filterKey = dd.dataset.filter;
+      var state = lbDropdownState_ws[filterKey];
+      var val = ddItem.dataset.val;
+      if (val === '__all__') {
+        if (state.selected.size === state.all.size) state.selected.clear();
+        else state.selected = new Set(state.all);
       } else {
-        var total = w.querySelectorAll('.lb-lang-filter[data-lang]:not([data-lang="all"])').length;
-        var active = w.querySelectorAll('.lb-lang-filter[data-lang]:not([data-lang="all"]).active').length;
-        if (total === active) allBtn.classList.add('active');
+        if (state.selected.has(val)) { state.selected.delete(val); if (state.selected.size === 0) state.selected = new Set(state.all); }
+        else state.selected.add(val);
       }
+      lbUpdateDropdowns_ws(filterKey, filterKey === 'engine' ? lbEngineLabels_ws : null);
+      applyFilters_ws();
+      ev.stopPropagation();
+      return;
     }
-    applyFilters();
+    var ddBtn = ev.target.closest('.lb-dropdown-btn');
+    if (ddBtn) {
+      ev.stopPropagation();
+      var menu = dd.querySelector('.lb-dropdown-menu');
+      var wasOpen = menu.style.display !== 'none';
+      document.querySelectorAll('.lb-panel-ws .lb-dropdown-menu').forEach(function(m) { m.style.display = 'none'; });
+      if (!wasOpen) menu.style.display = '';
+    }
   });
 });
 
-w.querySelector('.lb-search-input').addEventListener('input', function() { applyFilters(); });
+document.addEventListener('click', function(ev) {
+  if (!ev.target.closest('.lb-panel-ws .lb-dropdown')) {
+    document.querySelectorAll('.lb-panel-ws .lb-dropdown-menu').forEach(function(m) { m.style.display = 'none'; });
+  }
+});
+
+document.querySelectorAll('.lb-panel-ws .lb-search-input').forEach(function(input) {
+  var clearBtn = input.parentElement.querySelector('.lb-search-clear');
+  input.addEventListener('input', function() {
+    var val = input.value;
+    document.querySelectorAll('.lb-panel-ws .lb-search-input').forEach(function(other) { if (other !== input) other.value = val; });
+    document.querySelectorAll('.lb-panel-ws .lb-search-clear').forEach(function(btn) { btn.style.display = val ? '' : 'none'; });
+    applyFilters_ws();
+  });
+  clearBtn.addEventListener('click', function() {
+    document.querySelectorAll('.lb-panel-ws .lb-search-input').forEach(function(inp) { inp.value = ''; });
+    document.querySelectorAll('.lb-panel-ws .lb-search-clear').forEach(function(btn) { btn.style.display = 'none'; });
+    applyFilters_ws();
+  });
+});
 
 w.querySelectorAll('.lb-type-filter').forEach(function(btn) {
   btn.addEventListener('click', function() {
@@ -381,7 +436,7 @@ w.querySelectorAll('.lb-type-filter').forEach(function(btn) {
       var anyOn = Array.from(typeButtons).some(function(f) { return f.classList.contains('active'); });
       if (!anyOn) { btn.classList.add('active'); }
     }
-    applyFilters();
+    applyFilters_ws();
   });
 });
 
@@ -582,10 +637,10 @@ window.addEventListener('roundChanged', function(ev) {
 
   buildBest();
   w.querySelectorAll('.lb-panel-ws').forEach(function(p) {
-    applyFilters(p);
+    applyFilters_ws(p);
   });
 });
-applyFilters();
+applyFilters_ws();
 
 /* Floating header on scroll */
 var floaterWs = document.getElementById('lb-floating-header-ws');

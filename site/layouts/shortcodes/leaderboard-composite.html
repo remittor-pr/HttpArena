@@ -147,6 +147,52 @@ html.dark #composite-type-note { color: #e2e8f0 !important; background: linear-g
   .composite-sort-col:hover { opacity:0.7; }
   </style>
 
+  <div class="composite-search-wrap" style="margin:0.5rem 0 0 0; padding:0.5rem 1rem; background:rgba(0,0,0,0.02); border-radius:8px; border:1px solid rgba(0,0,0,0.06); display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+    <div class="composite-dropdown" data-filter="lang" style="position:relative;">
+      <button class="composite-dropdown-btn">Language <span class="composite-dropdown-count"></span><span class="composite-dropdown-arrow">&#9662;</span></button>
+      <div class="composite-dropdown-menu" style="display:none;"></div>
+    </div>
+    <div class="composite-dropdown" data-filter="engine" style="position:relative;">
+      <button class="composite-dropdown-btn">Engine <span class="composite-dropdown-count"></span><span class="composite-dropdown-arrow">&#9662;</span></button>
+      <div class="composite-dropdown-menu" style="display:none;"></div>
+    </div>
+    <div style="position:relative; flex:1; max-width:40rem;">
+      <input type="text" class="composite-search-input" placeholder="Filter by name, language, or engine — comma for multiple (e.g. actix, Tokio)" />
+      <button class="composite-search-clear" aria-label="Clear" style="display:none;">&times;</button>
+    </div>
+  </div>
+  <style>
+  .composite-dropdown-btn { padding:0.4rem 0.75rem; font-size:0.82rem; font-weight:500; color:#475569; border:1.5px solid #e2e8f0; border-radius:6px; background:transparent; cursor:pointer; display:flex; align-items:center; gap:0.35rem; white-space:nowrap; transition:all 0.15s ease; }
+  .composite-dropdown-btn:hover { border-color:#3b82f6; color:#3b82f6; }
+  .composite-dropdown-arrow { font-size:0.65rem; }
+  .composite-dropdown-count { font-size:0.7rem; background:#3b82f6; color:#fff; border-radius:9px; padding:0 0.4rem; min-width:1.1rem; text-align:center; display:none; }
+  .composite-dropdown-menu { position:absolute; top:calc(100% + 4px); left:0; z-index:100; background:#fff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:0.4rem 0; min-width:10rem; max-height:20rem; overflow-y:auto; }
+  .composite-dropdown-item { display:flex; align-items:center; gap:0.5rem; padding:0.35rem 0.75rem; font-size:0.82rem; color:#334155; cursor:pointer; user-select:none; transition:background 0.1s; }
+  .composite-dropdown-item:hover { background:rgba(59,130,246,0.06); }
+  .composite-dropdown-check { width:14px; height:14px; border:1.5px solid #cbd5e1; border-radius:3px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
+  .composite-dropdown-item.selected .composite-dropdown-check { background:#3b82f6; border-color:#3b82f6; }
+  .composite-dropdown-item.selected .composite-dropdown-check::after { content:'\2713'; color:#fff; font-size:0.6rem; font-weight:700; }
+  .composite-dropdown-sep { height:1px; background:#e2e8f0; margin:0.25rem 0; }
+  .composite-search-input { width:100%; padding:0.4rem 2rem 0.4rem 0.75rem; font-size:0.85rem; border:1.5px solid #e2e8f0; border-radius:6px; outline:none; background:transparent; color:#1e293b; }
+  .composite-search-input::placeholder { color:#94a3b8; }
+  .composite-search-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.08); }
+  .composite-search-clear { position:absolute; right:0.4rem; top:50%; transform:translateY(-50%); border:none; background:none; color:#94a3b8; font-size:1.1rem; cursor:pointer; padding:0 0.25rem; line-height:1; }
+  .composite-search-clear:hover { color:#64748b; }
+  html.dark .composite-search-wrap { background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08); }
+  html.dark .composite-dropdown-btn { color:#94a3b8; border-color:#334155; }
+  html.dark .composite-dropdown-btn:hover { border-color:#3b82f6; color:#60a5fa; }
+  html.dark .composite-dropdown-menu { background:#1e293b; border-color:#334155; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+  html.dark .composite-dropdown-item { color:#e2e8f0; }
+  html.dark .composite-dropdown-item:hover { background:rgba(59,130,246,0.12); }
+  html.dark .composite-dropdown-check { border-color:#475569; }
+  html.dark .composite-dropdown-sep { background:#334155; }
+  html.dark .composite-search-input { color:#e2e8f0; border-color:#334155; }
+  html.dark .composite-search-input::placeholder { color:#64748b; }
+  html.dark .composite-search-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.12); }
+  html.dark .composite-search-clear { color:#64748b; }
+  html.dark .composite-search-clear:hover { color:#94a3b8; }
+  </style>
+
   <div style="overflow-x:auto; overflow-y:hidden; margin-top:1rem;">
   <div id="composite-table" class="lb" style="min-width:50rem;">
   </div>
@@ -272,6 +318,124 @@ function loadData(newEntries, newMeta) {
 
 loadData(currentEntries, currentMeta);
 
+// Generic dropdown filter system
+var dropdownState = {};
+
+function initDropdown(filterKey, extractValues, extractLabels) {
+  var wrapper = document.querySelector('.composite-dropdown[data-filter="' + filterKey + '"]');
+  var btn = wrapper.querySelector('.composite-dropdown-btn');
+  var menu = wrapper.querySelector('.composite-dropdown-menu');
+  var countEl = wrapper.querySelector('.composite-dropdown-count');
+
+  var state = { all: new Set(), selected: new Set() };
+  dropdownState[filterKey] = state;
+
+  function populate() {
+    var values = extractValues();
+    state.all = values;
+    state.selected = new Set(values);
+    var sorted = Array.from(values).sort();
+    menu.innerHTML = '';
+    var allItem = document.createElement('div');
+    allItem.className = 'composite-dropdown-item selected';
+    allItem.dataset.val = '__all__';
+    allItem.innerHTML = '<div class="composite-dropdown-check"></div><span>All</span>';
+    menu.appendChild(allItem);
+    var sep = document.createElement('div');
+    sep.className = 'composite-dropdown-sep';
+    menu.appendChild(sep);
+    var labels = extractLabels ? extractLabels() : {};
+    sorted.forEach(function(v) {
+      var item = document.createElement('div');
+      item.className = 'composite-dropdown-item selected';
+      item.dataset.val = v;
+      item.innerHTML = '<div class="composite-dropdown-check"></div><span>' + (labels[v] || v) + '</span>';
+      menu.appendChild(item);
+    });
+    updateCount();
+  }
+
+  function updateCount() {
+    var isAll = state.selected.size === state.all.size;
+    countEl.style.display = isAll ? 'none' : '';
+    countEl.textContent = isAll ? '' : state.selected.size;
+    var allItem = menu.querySelector('[data-val="__all__"]');
+    if (allItem) { if (isAll) allItem.classList.add('selected'); else allItem.classList.remove('selected'); }
+    menu.querySelectorAll('[data-val]:not([data-val="__all__"])').forEach(function(item) {
+      if (state.selected.has(item.dataset.val)) item.classList.add('selected');
+      else item.classList.remove('selected');
+    });
+  }
+
+  menu.addEventListener('click', function(ev) {
+    var item = ev.target.closest('.composite-dropdown-item');
+    if (!item) return;
+    var val = item.dataset.val;
+    if (val === '__all__') {
+      if (state.selected.size === state.all.size) state.selected.clear();
+      else state.selected = new Set(state.all);
+    } else {
+      if (state.selected.has(val)) { state.selected.delete(val); if (state.selected.size === 0) state.selected = new Set(state.all); }
+      else state.selected.add(val);
+    }
+    updateCount();
+    renderComposite();
+  });
+
+  btn.addEventListener('click', function(ev) {
+    ev.stopPropagation();
+    document.querySelectorAll('.composite-dropdown-menu').forEach(function(m) { if (m !== menu) m.style.display = 'none'; });
+    menu.style.display = menu.style.display !== 'none' ? 'none' : '';
+  });
+
+  return { populate: populate, state: state };
+}
+
+var langDd = initDropdown('lang', function() {
+  var s = new Set();
+  entries.forEach(function(e) { if (e.language) s.add(e.language); });
+  return s;
+});
+
+var engineDd = initDropdown('engine', function() {
+  var s = new Set();
+  Object.keys(meta).forEach(function(k) { if (meta[k] && meta[k].engine) s.add(meta[k].engine.toLowerCase()); });
+  return s;
+}, function() {
+  // Build display labels: lowercase key -> original case
+  var labels = {};
+  Object.keys(meta).forEach(function(k) {
+    if (meta[k] && meta[k].engine) {
+      var key = meta[k].engine.toLowerCase();
+      if (!labels[key]) labels[key] = meta[k].engine;
+    }
+  });
+  return labels;
+});
+
+document.addEventListener('click', function(ev) {
+  if (!ev.target.closest('.composite-dropdown')) {
+    document.querySelectorAll('.composite-dropdown-menu').forEach(function(m) { m.style.display = 'none'; });
+  }
+});
+
+langDd.populate();
+engineDd.populate();
+
+// Search
+var searchInput = document.querySelector('.composite-search-input');
+var clearBtn = document.querySelector('.composite-search-clear');
+
+searchInput.addEventListener('input', function() {
+  clearBtn.style.display = searchInput.value ? '' : 'none';
+  renderComposite();
+});
+clearBtn.addEventListener('click', function() {
+  searchInput.value = '';
+  clearBtn.style.display = 'none';
+  renderComposite();
+});
+
 // Round change handler
 window.addEventListener('roundChanged', function(ev) {
   var roundId = ev.detail.round;
@@ -283,6 +447,8 @@ window.addEventListener('roundChanged', function(ev) {
       loadData(entriesFromRound(rd), rd._frameworks || currentMeta);
     }
   }
+  langDd.populate();
+  engineDd.populate();
   renderComposite();
 });
 
@@ -320,10 +486,31 @@ function renderComposite() {
   var scoredIds = activeIds.filter(function(pid) { return isScoredForType(pid); });
   var scoredCount = scoredIds.length;
 
+  // Search filter
+  var searchVal = (document.querySelector('.composite-search-input').value || '').toLowerCase().trim();
+  var searchTerms = searchVal ? searchVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+
+  var langState = dropdownState.lang;
+  var engineState = dropdownState.engine;
+  var langAll = langState.selected.size === langState.all.size;
+  var engineAll = engineState.selected.size === engineState.all.size;
+
   function isExcluded(fw) {
     var fmeta = meta[fw] || {};
     var ftype = fmeta.type || 'production';
-    return activeTypes.indexOf(ftype) < 0;
+    if (activeTypes.indexOf(ftype) < 0) return true;
+    if (!langAll && !langState.selected.has(fwLang[fw] || '')) return true;
+    if (!engineAll && !engineState.selected.has((fmeta.engine || '').toLowerCase())) return true;
+    if (searchTerms.length > 0) {
+      var fwLower = fw.toLowerCase();
+      var lang = (fwLang[fw] || '').toLowerCase();
+      var engine = (fmeta.engine || '').toLowerCase();
+      var match = searchTerms.some(function(t) {
+        return fwLower.indexOf(t) !== -1 || lang.indexOf(t) !== -1 || engine.indexOf(t) !== -1;
+      });
+      if (!match) return true;
+    }
+    return false;
   }
 
   // Compute max RPS and max efficiency per active profile (filtered by type)
