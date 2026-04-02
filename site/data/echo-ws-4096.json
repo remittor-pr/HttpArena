@@ -120,26 +120,6 @@
     "status_5xx": 0
   },
   {
-    "framework": "GenHTTP-WS",
-    "language": "C#",
-    "rps": 2166356,
-    "avg_latency": "1.60ms",
-    "p99_latency": "8.27ms",
-    "cpu": "6894.8%",
-    "memory": "591.8MiB",
-    "connections": 4096,
-    "threads": 64,
-    "duration": "5s",
-    "pipeline": 1,
-    "bandwidth": "14.59MB/s",
-    "input_bw": "",
-    "reconnects": 0,
-    "status_2xx": 10831781,
-    "status_3xx": 0,
-    "status_4xx": 0,
-    "status_5xx": 0
-  },
-  {
     "framework": "go-websocket",
     "language": "Go",
     "rps": 1007990,
