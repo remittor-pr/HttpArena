@@ -16,21 +16,38 @@ public class BenchmarkServices : Service
         var path = Resolve("/data/dataset.json", "../../../../../../data/dataset.json");
         if (path == null) return null;
         
-        return System.Text.Json.JsonSerializer.Deserialize<List<DatasetItem>>(File.ReadAllText(path));
+        return JsonSerializer.Deserialize<List<DatasetItem>>(File.ReadAllText(path));
     }
 
     static byte[]? LoadLargeJsonBytes()
-    {
-        var path = Resolve("/data/dataset-large.json", "../../../../../../data/dataset-large.json");
-        if (path == null) return null;
-
-        var items = System.Text.Json.JsonSerializer.Deserialize<List<DatasetItem>>(File.ReadAllText(path));
+    {      
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
         
-        if (items == null) return null;
-
-        var processed = items.Select(d => d.ToProcessed()).ToList();
+        var largePath = "/data/dataset-large.json";
         
-        return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { items = processed, count = processed.Count });
+        if (File.Exists(largePath))
+        {
+            var largeItems = JsonSerializer.Deserialize<List<DatasetItem>>(File.ReadAllText(largePath), jsonOptions);
+            
+            if (largeItems != null)
+            {
+                var processed = largeItems.Select(d => new ProcessedItem
+                {
+                    Id = d.Id, Name = d.Name, Category = d.Category,
+                    Price = d.Price, Quantity = d.Quantity, Active = d.Active,
+                    Tags = d.Tags, Rating = d.Rating,
+                    Total = Math.Round(d.Price * d.Quantity, 2)
+                }).ToList();
+                
+                return JsonSerializer.SerializeToUtf8Bytes(new { items = processed, count = processed.Count }, jsonOptions);
+            }
+        }
+
+        return null;
     }
 
     static string? Resolve(string primary, string fallback)

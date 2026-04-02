@@ -1,4 +1,3 @@
-// Requests.cs  –  DTOs für alle Endpunkte
 using ServiceStack;
 using ServiceStack.Benchmarks;
 
