@@ -48,9 +48,10 @@ class App < Roda
       opts[:static_files_cache][name] = { data: File.binread(path), content_type: ct }
     end
   end
+  opts[:static_files_cache].freeze
 
   # SQLite
-  opts[:database_path] = File.join(DATA_DIR, 'benchmark.db')
+  opts[:database_path] = File.join(DATA_DIR, 'benchmark.db').freeze
 
   DB_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50'.freeze
   PG_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50'.freeze
