@@ -6,7 +6,6 @@ using Npgsql;
 
 using SimpleW;
 using SimpleW.Modules;
-using SimpleW.Benchmarks;
 
 using System.Net;
 using System.Text.Json;
@@ -26,7 +25,6 @@ if (Directory.Exists("/data/static"))
     server.UseStaticFilesModule(options => {
         options.Path = "/data/static";
         options.Prefix = "/static/";
-        options.CacheTimeout = null; // test requirement for static
         options.AutoIndex = false;
     });
 }
