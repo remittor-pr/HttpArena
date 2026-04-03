@@ -1,18 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends --no-install-suggests clang zlib1g-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY aspnet-minimal-aot.csproj ./
-RUN dotnet restore -r linux-x64
-
 COPY . .
-RUN dotnet publish -c Release -r linux-x64 --self-contained true --no-restore -o /app/out
+RUN dotnet publish -c Release -o out
 
-FROM mcr.microsoft.com/dotnet/runtime-deps:10.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 
 
 ADD https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb /packages-microsoft-prod.deb
@@ -27,4 +18,4 @@ WORKDIR /app
 COPY --from=build /app/out .
 EXPOSE 8080 8443/tcp 8443/udp
 
-ENTRYPOINT ["./aspnet-minimal-aot"]
+ENTRYPOINT ["dotnet", "aspnet-minimal-aot.dll"]
