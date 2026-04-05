@@ -2,12 +2,17 @@ package com.httparena.spring.boot;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.catalina.connector.Connector;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.tomcat.CompressionConnectorCustomizer;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.server.autoconfigure.ServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.sqlite.SQLiteDataSource;
@@ -18,7 +23,13 @@ import java.net.URISyntaxException;
 
 @SpringBootApplication
 @EnableConfigurationProperties(HttpArenaProperties.class)
-public class Application {
+public class Application implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+
+	private final ServerProperties serverProperties;
+
+    public Application(final ServerProperties serverProperties) {
+        this.serverProperties = serverProperties;
+    }
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
@@ -68,5 +79,14 @@ public class Application {
 	@ConditionalOnProperty(name = "httparena.postgres-url")
 	public JdbcClient postgresqlJdbcClient(@Qualifier("postgresql-pool") DataSource dataSource) {
 		return JdbcClient.create(dataSource);
+	}
+
+	@Override
+	public void customize(final TomcatServletWebServerFactory factory) {
+		CompressionConnectorCustomizer connectorCustomizer = new CompressionConnectorCustomizer(serverProperties.getCompression());
+		Connector connector = new Connector("HTTP/1.1");
+		connector.setPort(8080);
+		connectorCustomizer.customize(connector);
+		factory.addAdditionalConnectors(connector);
 	}
 }

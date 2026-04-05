@@ -13,5 +13,12 @@ server:
   compression:
     enabled: true
     min-response-size: 500KB
+  http2:
+    enabled: true
+  ssl:
+    certificate: file:/certs/server.crt
+    certificate-private-key: file:/certs/server.key
+    enabled-protocols: TLSv1.3
+  port: 8443
 
 httparena.postgres-url: ${DATABASE_URL:false}
