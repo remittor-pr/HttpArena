@@ -157,12 +157,22 @@ function dbQuery(PDO $pdo, float $min, float $max): string
 
 function handleBaseline(Request $request, Response $response): void
 {
+    $method = $request->getMethod();
+
+    if ($method !== 'GET' && $method !== 'POST') {
+        $response->setStatus(405);
+        $response->setHeader('Content-Type', 'text/plain');
+        $response->write('Method Not Allowed');
+        $response->end();
+        return;
+    }
+
     $params = parseQueryParams($request->getUri());
     $a = (int)($params['a'] ?? 0);
     $b = (int)($params['b'] ?? 0);
     $sum = $a + $b;
 
-    if ($request->getMethod() === 'POST') {
+    if ($method === 'POST') {
         $body = $request->getBody();
         $sum += (int)$body;
     }
