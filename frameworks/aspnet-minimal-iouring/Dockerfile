@@ -1,14 +1,18 @@
 # Stage 1: Build the custom .NET runtime with io_uring socket engine
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS runtime-build
+FROM mcr.microsoft.com/dotnet/sdk:11.0-preview AS runtime-build
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git cmake clang libicu-dev libssl-dev libkrb5-dev zlib1g-dev \
+    git cmake clang lld llvm python3 ninja-build \
+    libicu-dev libssl-dev libkrb5-dev zlib1g-dev \
+    liblttng-ust-dev libunwind-dev \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /runtime
+COPY patch-iouring.py /tmp/patch-iouring.py
 RUN git clone --depth 1 --branch io_uring https://github.com/benaadams/runtime.git . \
+    && python3 /tmp/patch-iouring.py \
     && ./build.sh -subset clr+libs -c Release -bl
 
 # Stage 2: Build the app using the official SDK
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS app-build
+FROM mcr.microsoft.com/dotnet/sdk:11.0-preview AS app-build
 WORKDIR /app
 COPY *.csproj ./
 RUN dotnet restore
@@ -16,7 +20,7 @@ COPY . .
 RUN dotnet publish -c Release -o out
 
 # Stage 3: Final image — patch the runtime with io_uring binaries
-FROM mcr.microsoft.com/dotnet/aspnet:10.0
+FROM mcr.microsoft.com/dotnet/aspnet:11.0-preview
 
 # Install libmsquic for HTTP/3
 ADD https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb /packages-microsoft-prod.deb
@@ -27,7 +31,7 @@ RUN dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb \
     && rm -rf /var/lib/apt/lists/*
 
 # Overlay custom runtime libraries (io_uring socket engine)
-COPY --from=runtime-build /runtime/artifacts/bin/runtime/net10.0-linux-Release-x64/ /usr/share/dotnet/shared/Microsoft.NETCore.App/10.0.0-preview.*/
+COPY --from=runtime-build /runtime/artifacts/bin/runtime/net11.0-linux-Release-x64/ /usr/share/dotnet/shared/Microsoft.NETCore.App/11.0.0-preview.*/
 
 WORKDIR /app
 COPY --from=app-build /app/out .
