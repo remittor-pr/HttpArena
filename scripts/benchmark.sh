@@ -28,7 +28,8 @@ CERTS_DIR="$ROOT_DIR/certs"
 # endpoint: empty = /baseline11 (raw), "json" = /json (GET), "compression" = /compression (GET+gzip), "pipeline" = /pipeline, "upload" = POST /upload (raw),
 #           "h2" = /baseline2 (h2load), "static-h2" = multi-URI h2load, "h3" = /baseline2 (oha HTTP/3), "static-h3" = multi-URI oha,
 #           "grpc" = gRPC unary (h2load h2c), "grpc-tls" = gRPC unary (h2load TLS),
-#           "static" = multi-URI static files (gcannon --raw), "ws-echo" = WebSocket echo (gcannon --ws)
+#           "static" = multi-URI static files (gcannon --raw), "ws-echo" = WebSocket echo (gcannon --ws),
+#           "gateway-64" = multi-URI h2load through reverse proxy (TLS)
 declare -A PROFILES=(
     [baseline]="1|0|0-31,64-95|512,4096|"
     [pipelined]="16|0|0-31,64-95|512,4096|pipeline"
@@ -46,11 +47,12 @@ declare -A PROFILES=(
     [static-h2]="1|0|0-31,64-95|256,1024|static-h2"
     [unary-grpc]="1|0|0-31,64-95|256,1024|grpc"
     [unary-grpc-tls]="1|0|0-31,64-95|256,1024|grpc-tls"
+    [gateway-64]="1|0|0-31,64-95|256,1024|gateway-64"
     [echo-ws]="1|0|0-31,64-95|512,4096,16384|ws-echo"
     [sync-db]="1|0|0-31,64-95|1024|sync-db"
     [async-db]="1|0|0-31,64-95|1024|async-db"
 )
-PROFILE_ORDER=(baseline pipelined limited-conn json upload compression noisy api-4 api-16 assets-4 assets-16 static sync-db async-db baseline-h2 static-h2 unary-grpc unary-grpc-tls echo-ws)
+PROFILE_ORDER=(baseline pipelined limited-conn json upload compression noisy api-4 api-16 assets-4 assets-16 static sync-db async-db baseline-h2 static-h2 gateway-64 unary-grpc unary-grpc-tls echo-ws)
 
 # Parse flags
 SAVE_RESULTS=false
@@ -289,6 +291,11 @@ PG_CONTAINER="httparena-postgres"
 restore_settings() {
     docker stop -t 5 "$CONTAINER_NAME" 2>/dev/null || true
     docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+    # Stop gateway compose stack if running
+    if [ -f "$ROOT_DIR/frameworks/$FRAMEWORK/compose.gateway.yml" ]; then
+        CERTS_DIR="$CERTS_DIR" DATA_DIR="$ROOT_DIR/data" DATABASE_URL="postgres://bench:bench@localhost:5432/benchmark" \
+            docker compose -f "$ROOT_DIR/frameworks/$FRAMEWORK/compose.gateway.yml" -p "httparena-${FRAMEWORK}" down --remove-orphans 2>/dev/null || true
+    fi
     docker stop -t 5 "$PG_CONTAINER" 2>/dev/null || true
     docker rm -f "$PG_CONTAINER" 2>/dev/null || true
     if [ -n "$ORIG_GOVERNOR" ]; then
@@ -343,17 +350,34 @@ echo "[clean] Dropping kernel caches..."
 sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches' 2>/dev/null || true
 sync
 
-# Build once
-echo "=== Building: $FRAMEWORK ==="
-if [ -x "frameworks/$FRAMEWORK/build.sh" ]; then
-    "frameworks/$FRAMEWORK/build.sh" || { echo "FAIL: build"; exit 1; }
-else
-    docker build -t "$IMAGE_NAME" "frameworks/$FRAMEWORK" || { echo "FAIL: build"; exit 1; }
+# Build once — skip if framework only subscribes to gateway-64 (compose handles it)
+GATEWAY_COMPOSE="$ROOT_DIR/frameworks/$FRAMEWORK/compose.gateway.yml"
+GATEWAY_ONLY=false
+if [ "$FRAMEWORK_TESTS" = "gateway-64" ]; then
+    GATEWAY_ONLY=true
+fi
+
+if [ "$GATEWAY_ONLY" = "false" ]; then
+    echo "=== Building: $FRAMEWORK ==="
+    if [ -x "frameworks/$FRAMEWORK/build.sh" ]; then
+        "frameworks/$FRAMEWORK/build.sh" || { echo "FAIL: build"; exit 1; }
+    else
+        docker build -t "$IMAGE_NAME" "frameworks/$FRAMEWORK" || { echo "FAIL: build"; exit 1; }
+    fi
+fi
+
+# Build gateway compose stack if gateway-64 is subscribed
+if echo ",$FRAMEWORK_TESTS," | grep -qF ",gateway-64,"; then
+    if [ -f "$GATEWAY_COMPOSE" ]; then
+        echo "=== Building gateway stack: $FRAMEWORK ==="
+        CERTS_DIR="$CERTS_DIR" DATA_DIR="$ROOT_DIR/data" DATABASE_URL="" \
+            docker compose -f "$GATEWAY_COMPOSE" -p "httparena-${FRAMEWORK}" build || { echo "FAIL: gateway compose build"; exit 1; }
+    fi
 fi
 
 # Start Postgres sidecar if async-db is needed
-if echo ",$FRAMEWORK_TESTS," | grep -qF ",async-db,"; then
-    if [ -z "$PROFILE_FILTER" ] || [ "$PROFILE_FILTER" = "async-db" ] || [ "$PROFILE_FILTER" = "api-4" ] || [ "$PROFILE_FILTER" = "api-16" ]; then
+if echo ",$FRAMEWORK_TESTS," | grep -qF ",async-db," || echo ",$FRAMEWORK_TESTS," | grep -qF ",gateway-64,"; then
+    if [ -z "$PROFILE_FILTER" ] || [ "$PROFILE_FILTER" = "async-db" ] || [ "$PROFILE_FILTER" = "api-4" ] || [ "$PROFILE_FILTER" = "api-16" ] || [ "$PROFILE_FILTER" = "gateway-64" ]; then
         echo "[postgres] Starting Postgres sidecar..."
         docker rm -f "$PG_CONTAINER" 2>/dev/null || true
         docker run -d --name "$PG_CONTAINER" --network host \
@@ -415,38 +439,69 @@ for profile in "${profiles_to_run[@]}"; do
     docker stop -t 5 "$CONTAINER_NAME" 2>/dev/null || true
     docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
 
-    docker_args=(-d --name "$CONTAINER_NAME" --network host
-        --security-opt seccomp=unconfined
-        --ulimit memlock=-1:-1
-        --ulimit nofile="$HARD_NOFILE:$HARD_NOFILE"
-        -v "$ROOT_DIR/data/dataset.json:/data/dataset.json:ro"
-        -v "$ROOT_DIR/data/dataset-large.json:/data/dataset-large.json:ro"
-        -v "$ROOT_DIR/data/benchmark.db:/data/benchmark.db:ro"
-        -v "$ROOT_DIR/data/static:/data/static:ro"
-        -v "$CERTS_DIR:/certs:ro")
-    if [ "$endpoint" = "async-db" ] || [ "$endpoint" = "api-4" ] || [ "$endpoint" = "api-16" ]; then
-        docker_args+=(-e "DATABASE_URL=postgres://bench:bench@localhost:5432/benchmark")
-        docker_args+=(-e "DATABASE_MAX_CONN=256")
-    fi
-    if [ "$endpoint" = "api-4" ] || [ "$endpoint" = "assets-4" ]; then
-        docker_args+=(--memory=16g --memory-swap=16g)
-    fi
-    if [ "$endpoint" = "api-16" ] || [ "$endpoint" = "assets-16" ]; then
-        docker_args+=(--memory=32g --memory-swap=32g)
-    fi
-    if [ -n "$cpu_limit" ]; then
-        if [[ "$cpu_limit" == *-* ]]; then
-            docker_args+=(--cpuset-cpus="$cpu_limit")
-        else
-            # Cap CPU limit to available cores
-            if [ "$cpu_limit" -gt "$AVAILABLE_CPUS" ] 2>/dev/null; then
-                echo "[warn] Profile requests ${cpu_limit} CPUs but only ${AVAILABLE_CPUS} available — capping to ${AVAILABLE_CPUS}"
-                cpu_limit="$AVAILABLE_CPUS"
-            fi
-            docker_args+=(--cpus="$cpu_limit")
+    GATEWAY_MODE=false
+    GATEWAY_PROJECT="httparena-${FRAMEWORK}"
+    if [ "$endpoint" = "gateway-64" ]; then
+        GATEWAY_MODE=true
+        GATEWAY_COMPOSE="$ROOT_DIR/frameworks/$FRAMEWORK/compose.gateway.yml"
+
+        if [ ! -f "$GATEWAY_COMPOSE" ]; then
+            echo "FAIL: compose.gateway.yml not found in frameworks/$FRAMEWORK"
+            continue
         fi
+
+        # Stop any previous compose stack
+        CERTS_DIR="$CERTS_DIR" DATA_DIR="$ROOT_DIR/data" DATABASE_URL="postgres://bench:bench@localhost:5432/benchmark" \
+            docker compose -f "$GATEWAY_COMPOSE" -p "$GATEWAY_PROJECT" down --remove-orphans 2>/dev/null || true
+
+        # Start the compose stack
+        echo "[gateway] Starting compose stack..."
+        CERTS_DIR="$CERTS_DIR" DATA_DIR="$ROOT_DIR/data" DATABASE_URL="postgres://bench:bench@localhost:5432/benchmark" \
+            docker compose -f "$GATEWAY_COMPOSE" -p "$GATEWAY_PROJECT" up -d || { echo "FAIL: gateway compose up"; continue; }
+
+        # Discover container IDs for stats collection — wait briefly then list all running containers in the project
+        sleep 2
+        GATEWAY_CONTAINERS=$(docker ps -q --filter "label=com.docker.compose.project=$GATEWAY_PROJECT" 2>/dev/null | tr '\n' ' ')
+        GATEWAY_CONTAINER_COUNT=$(echo "$GATEWAY_CONTAINERS" | wc -w)
+        echo "[gateway] containers ($GATEWAY_CONTAINER_COUNT): $GATEWAY_CONTAINERS"
+        if [ "$GATEWAY_CONTAINER_COUNT" -lt 2 ]; then
+            echo "[gateway] WARNING: expected at least 2 containers, found $GATEWAY_CONTAINER_COUNT — stats may not sum correctly"
+        fi
+    else
+        # Standard single-container mode
+        docker_args=(-d --name "$CONTAINER_NAME" --network host
+            --security-opt seccomp=unconfined
+            --ulimit memlock=-1:-1
+            --ulimit nofile="$HARD_NOFILE:$HARD_NOFILE"
+            -v "$ROOT_DIR/data/dataset.json:/data/dataset.json:ro"
+            -v "$ROOT_DIR/data/dataset-large.json:/data/dataset-large.json:ro"
+            -v "$ROOT_DIR/data/benchmark.db:/data/benchmark.db:ro"
+            -v "$ROOT_DIR/data/static:/data/static:ro"
+            -v "$CERTS_DIR:/certs:ro")
+        if [ "$endpoint" = "async-db" ] || [ "$endpoint" = "api-4" ] || [ "$endpoint" = "api-16" ]; then
+            docker_args+=(-e "DATABASE_URL=postgres://bench:bench@localhost:5432/benchmark")
+            docker_args+=(-e "DATABASE_MAX_CONN=256")
+        fi
+        if [ "$endpoint" = "api-4" ] || [ "$endpoint" = "assets-4" ]; then
+            docker_args+=(--memory=16g --memory-swap=16g)
+        fi
+        if [ "$endpoint" = "api-16" ] || [ "$endpoint" = "assets-16" ]; then
+            docker_args+=(--memory=32g --memory-swap=32g)
+        fi
+        if [ -n "$cpu_limit" ]; then
+            if [[ "$cpu_limit" == *-* ]]; then
+                docker_args+=(--cpuset-cpus="$cpu_limit")
+            else
+                # Cap CPU limit to available cores
+                if [ "$cpu_limit" -gt "$AVAILABLE_CPUS" ] 2>/dev/null; then
+                    echo "[warn] Profile requests ${cpu_limit} CPUs but only ${AVAILABLE_CPUS} available — capping to ${AVAILABLE_CPUS}"
+                    cpu_limit="$AVAILABLE_CPUS"
+                fi
+                docker_args+=(--cpus="$cpu_limit")
+            fi
+        fi
+        docker run "${docker_args[@]}" "$IMAGE_NAME"
     fi
-    docker run "${docker_args[@]}" "$IMAGE_NAME"
 
     # Wait for server
     echo "[wait] Waiting for server..."
@@ -475,6 +530,8 @@ for profile in "${profiles_to_run[@]}"; do
     else
         if [ "$endpoint" = "h3" ] || [ "$endpoint" = "static-h3" ]; then
             local_check_url="https://localhost:$H2PORT/baseline2?a=1&b=1"
+        elif [ "$endpoint" = "gateway-64" ]; then
+            local_check_url="https://localhost:$H2PORT/static/reset.css"
         elif [ "$endpoint" = "h2" ] || [ "$endpoint" = "static-h2" ]; then
             local_check_url="https://localhost:$H2PORT/static/reset.css"
             [ "$endpoint" = "h2" ] && local_check_url="https://localhost:$H2PORT/baseline2?a=1&b=1"
@@ -546,6 +603,11 @@ for profile in "${profiles_to_run[@]}"; do
             --http-version 3 --insecure
             -o "$oha_out" --output-format json
             -c "$CONNS" -p "$pipeline" -z "$DURATION")
+    elif [ "$endpoint" = "gateway-64" ]; then
+        USE_H2LOAD=true
+        gc_args=("$H2LOAD"
+            -i "$REQUESTS_DIR/gateway-64-uris.txt"
+            -c "$CONNS" -m 100 -t "$H2THREADS" -D "$DURATION")
     elif [ "$endpoint" = "static-h2" ]; then
         USE_H2LOAD=true
         gc_args=("$H2LOAD"
@@ -617,10 +679,24 @@ for profile in "${profiles_to_run[@]}"; do
         echo "[run $run/$RUNS]"
 
         stats_log=$(mktemp)
-        while true; do
-            docker stats --no-stream --format '{{.CPUPerc}} {{.MemUsage}}' "$CONTAINER_NAME" >> "$stats_log" 2>/dev/null
-        done &
-        stats_pid=$!
+        if [ "${GATEWAY_MODE:-false}" = "true" ]; then
+            # Collect stats from all compose containers — sum CPU and memory per snapshot
+            while true; do
+                docker stats --no-stream --format '{{.CPUPerc}} {{.MemUsage}}' $GATEWAY_CONTAINERS 2>/dev/null | \
+                    awk '{
+                        gsub(/%/,"",$1); cpu+=$1;
+                        split($2,a,"/"); v=a[1]; gsub(/[^0-9.]/,"",v);
+                        if($2 ~ /GiB/) v=v*1024;
+                        mem+=v+0
+                    } END { if(NR>0) printf "%.1f%% %.1fMiB\n", cpu, mem }' >> "$stats_log"
+            done &
+            stats_pid=$!
+        else
+            while true; do
+                docker stats --no-stream --format '{{.CPUPerc}} {{.MemUsage}}' "$CONTAINER_NAME" >> "$stats_log" 2>/dev/null
+            done &
+            stats_pid=$!
+        fi
 
         if [ "$USE_OHA" = "true" ]; then
             timeout --foreground 45 "${gc_args[@]}" || true
@@ -794,6 +870,19 @@ else: print(f'{bps}B/s')
         fi
     fi
 
+    # Gateway-64: compute proportional split from h2load total (20 URIs: 12 static, 3 json, 3 async-db, 2 baseline)
+    if [ "$endpoint" = "gateway-64" ] && [ "${status_2xx:-0}" -gt 0 ]; then
+        t_static=$(( status_2xx * 12 / 20 ))
+        t_json=$(( status_2xx * 3 / 20 ))
+        t_async_db=$(( status_2xx * 3 / 20 ))
+        t_baseline=$(( status_2xx * 2 / 20 ))
+        tpl_json=",
+  \"tpl_static\": $t_static,
+  \"tpl_json\": $t_json,
+  \"tpl_async_db\": $t_async_db,
+  \"tpl_baseline\": $t_baseline"
+    fi
+
     # Save results only with --save flag
     if [ "$SAVE_RESULTS" = "true" ]; then
         mkdir -p "$RESULTS_DIR/$profile/$CONNS"
@@ -824,19 +913,35 @@ EOF
         # Save docker logs
         LOGS_DIR="$ROOT_DIR/site/static/logs/$profile/$CONNS"
         mkdir -p "$LOGS_DIR"
-        docker logs "$CONTAINER_NAME" > "$LOGS_DIR/${FRAMEWORK}.log" 2>&1 || true
-        # Truncate large logs (>10MB) to last 5000 lines
-        if [ -f "$LOGS_DIR/${FRAMEWORK}.log" ] && [ "$(stat -c%s "$LOGS_DIR/${FRAMEWORK}.log" 2>/dev/null)" -gt 10485760 ] 2>/dev/null; then
-            tail -5000 "$LOGS_DIR/${FRAMEWORK}.log" > "$LOGS_DIR/${FRAMEWORK}.log.tmp" && mv "$LOGS_DIR/${FRAMEWORK}.log.tmp" "$LOGS_DIR/${FRAMEWORK}.log"
+        if [ "${GATEWAY_MODE:-false}" != "true" ]; then
+            docker logs "$CONTAINER_NAME" > "$LOGS_DIR/${FRAMEWORK}.log" 2>&1 || true
+            # Truncate large logs (>10MB) to last 5000 lines
+            if [ -f "$LOGS_DIR/${FRAMEWORK}.log" ] && [ "$(stat -c%s "$LOGS_DIR/${FRAMEWORK}.log" 2>/dev/null)" -gt 10485760 ] 2>/dev/null; then
+                tail -5000 "$LOGS_DIR/${FRAMEWORK}.log" > "$LOGS_DIR/${FRAMEWORK}.log.tmp" && mv "$LOGS_DIR/${FRAMEWORK}.log.tmp" "$LOGS_DIR/${FRAMEWORK}.log"
+            fi
+            echo "[saved] site/static/logs/$profile/${CONNS}/${FRAMEWORK}.log"
         fi
-        echo "[saved] site/static/logs/$profile/${CONNS}/${FRAMEWORK}.log"
+        # Save per-service logs if gateway mode
+        if [ "${GATEWAY_MODE:-false}" = "true" ]; then
+            for svc in $(CERTS_DIR="$CERTS_DIR" DATA_DIR="$ROOT_DIR/data" DATABASE_URL="postgres://bench:bench@localhost:5432/benchmark" \
+                docker compose -f "$GATEWAY_COMPOSE" -p "$GATEWAY_PROJECT" ps --services 2>/dev/null); do
+                CERTS_DIR="$CERTS_DIR" DATA_DIR="$ROOT_DIR/data" DATABASE_URL="postgres://bench:bench@localhost:5432/benchmark" \
+                    docker compose -f "$GATEWAY_COMPOSE" -p "$GATEWAY_PROJECT" logs "$svc" > "$LOGS_DIR/${FRAMEWORK}-${svc}.log" 2>&1 || true
+                echo "[saved] site/static/logs/$profile/${CONNS}/${FRAMEWORK}-${svc}.log"
+            done
+        fi
     else
         echo "[dry-run] Results not saved (use --save to persist)"
     fi
 
-    # Stop container before next connection count
-    docker stop -t 5 "$CONTAINER_NAME" 2>/dev/null || true
-    docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+    # Stop container(s) before next connection count
+    if [ "${GATEWAY_MODE:-false}" = "true" ]; then
+        CERTS_DIR="$CERTS_DIR" DATA_DIR="$ROOT_DIR/data" DATABASE_URL="postgres://bench:bench@localhost:5432/benchmark" \
+            docker compose -f "$GATEWAY_COMPOSE" -p "$GATEWAY_PROJECT" down --remove-orphans 2>/dev/null || true
+    else
+        docker stop -t 5 "$CONTAINER_NAME" 2>/dev/null || true
+        docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+    fi
 
     done # CONNS loop
 

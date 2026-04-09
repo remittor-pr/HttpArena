@@ -26,7 +26,7 @@ class App < Sinatra::Base
     DATA_DIR = ENV.fetch('DATA_DIR', '/data')
     dataset_path = File.join DATA_DIR, 'dataset.json'
     if File.exist?(dataset_path)
-      set :dataset_items, JSON.parse(File.read(dataset_path))
+      set :dataset_items, JSON.parse(File.read(dataset_path)).freeze
     else
       set :dataset_items, nil
     end
@@ -38,7 +38,7 @@ class App < Sinatra::Base
       items = raw.map do |d|
         d.merge('total' => (d['price'] * d['quantity'] * 100).round / 100.0)
       end
-      set :large_json_payload, JSON.generate({ 'items' => items, 'count' => items.length })
+      set :large_json_payload, JSON.generate({ 'items' => items, 'count' => items.length }).freeze
     else
       set :large_json_payload, nil
     end
@@ -65,22 +65,20 @@ class App < Sinatra::Base
         ct = mime_types.fetch(ext, 'application/octet-stream')
         cache[name] = { data: File.binread(path), content_type: ct }
       end
-      set :static_files_cache, cache
+      set :static_files_cache, cache.freeze
     else
       set :static_files_cache, {}
     end
 
     # SQLite
-    set :database_path, File.join(DATA_DIR, 'benchmark.db')
+    set :database_path, File.join(DATA_DIR, 'benchmark.db').freeze
   end
 
   DB_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50'.freeze
   PG_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50'.freeze
 
   get '/pipeline' do
-    content_type 'text/plain'
-    headers 'Server' => SERVER_NAME
-    'ok'
+    render_plain 'ok'
   end
 
   def handle_baseline11
@@ -93,9 +91,7 @@ class App < Sinatra::Base
       body_str = request.body.read.strip
       total += body_str.to_i
     end
-    content_type 'text/plain'
-    headers 'Server' => SERVER_NAME
-    total.to_s
+    render_plain total.to_s
   end
 
   get('/baseline11') { handle_baseline11 }
@@ -106,9 +102,7 @@ class App < Sinatra::Base
     request.GET.each do |_k, v|
       total += v.to_i
     end
-    content_type 'text/plain'
-    headers 'Server' => SERVER_NAME
-    total.to_s
+    render_plain total.to_s
   end
 
   get '/json' do
@@ -117,9 +111,7 @@ class App < Sinatra::Base
     items = dataset.map do |d|
       d.merge('total' => (d['price'] * d['quantity'] * 100).round / 100.0)
     end
-    content_type 'application/json'
-    headers 'Server' => SERVER_NAME
-    JSON.generate({ 'items' => items, 'count' => items.length })
+    render_json JSON.generate('items' => items, 'count' => items.length)
   end
 
   get '/compression' do
@@ -130,13 +122,10 @@ class App < Sinatra::Base
       gz = Zlib::GzipWriter.new(sio, 1)
       gz.write(dataset)
       gz.close
-      content_type 'application/json'
-      headers 'Content-Encoding' => 'gzip', 'Server' => SERVER_NAME
-      sio.string
+      headers 'Content-Encoding' => 'gzip'
+      render_json sio.string
     else
-      content_type 'application/json'
-      headers 'Server' => SERVER_NAME
-      dataset
+      render_json dataset
     end
   end
 
@@ -156,9 +145,7 @@ class App < Sinatra::Base
         'rating' => { 'score' => r['rating_score'], 'count' => r['rating_count'] }
       }
     end
-    content_type 'application/json'
-    headers 'Server' => SERVER_NAME
-    JSON.generate({ 'items' => items, 'count' => items.length })
+    render_json JSON.generate({ 'items' => items, 'count' => items.length })
   end
 
   get '/async-db' do
@@ -178,20 +165,17 @@ class App < Sinatra::Base
         'rating' => { 'score' => r['rating_score'].to_f, 'count' => r['rating_count'].to_i }
       }
     end
-    content_type 'application/json'
-    headers 'Server' => SERVER_NAME
-    JSON.generate({ 'items' => items, 'count' => items.length })
+    render_json JSON.generate({ 'items' => items, 'count' => items.length })
   end
 
   get '/static/:filename' do
     filename = params['filename']
     entry = settings.static_files_cache[filename]
     if entry
-      content_type entry[:content_type]
-      headers 'Server' => SERVER_NAME
+      headers 'server' => SERVER_NAME, 'content-type' => entry[:content_type]
       entry[:data]
     else
-      headers 'Server' => SERVER_NAME
+      headers 'server' => SERVER_NAME
       halt 404, 'Not Found'
     end
   end

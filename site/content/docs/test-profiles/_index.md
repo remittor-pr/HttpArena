@@ -35,6 +35,7 @@ Data files are **mounted automatically** by the benchmark runner — your Docker
 {{< cards >}}
   {{< card link="h1" title="H/1.1" subtitle="Isolated single-endpoint benchmarks and multi-endpoint workload mixes over plain TCP." icon="lightning-bolt" >}}
   {{< card link="h2" title="H/2" subtitle="Baseline and static file benchmarks over encrypted TLS connections with stream multiplexing." icon="globe-alt" >}}
+  {{< card link="h2-gateway" title="H/2 Gateway" subtitle="Reverse proxy + application server benchmarks over HTTP/2 with TLS. Tests full-stack deployment performance." icon="server" >}}
   {{< card link="h3" title="H/3" subtitle="Baseline and static file benchmarks over QUIC for frameworks with native H/3 support." icon="globe-alt" >}}
   {{< card link="grpc" title="gRPC" subtitle="Unary RPC throughput over cleartext HTTP/2 using Protocol Buffers serialization." icon="globe-alt" >}}
   {{< card link="ws" title="WebSocket" subtitle="WebSocket echo throughput measuring frame processing performance." icon="globe-alt" >}}

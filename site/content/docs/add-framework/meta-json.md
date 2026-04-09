@@ -53,6 +53,7 @@ Create a `meta.json` file in your framework directory:
 | `assets-16` | HTTP/1.1 | `/static/*`, `/json`, `/compression` (16 CPU, 32 GB) |
 | `baseline-h2` | HTTP/2 | `/baseline2` (TLS, port 8443) |
 | `static-h2` | HTTP/2 | `/static/*` (TLS, port 8443) |
+| `gateway-64` | HTTP/2 | `/static/*`, `/json`, `/async-db` via reverse proxy (TLS, port 8443) |
 | `baseline-h3` | HTTP/3 | `/baseline2` (QUIC, port 8443) |
 | `static-h3` | HTTP/3 | `/static/*` (QUIC, port 8443) |
 | `unary-grpc` | gRPC | `BenchmarkService/GetSum` (h2c, port 8080) |
@@ -70,3 +71,25 @@ The `async-db` profile requires an async PostgreSQL driver. The benchmark script
 3. Return JSON: `{"items": [...], "count": N}` with nested `rating: {score, count}` and `tags` as a JSON array
 4. Return `{"items":[],"count":0}` if the database is unavailable
 5. Use lazy connection initialization — retry connecting if Postgres isn't ready at startup
+
+### gateway-64
+
+The `gateway-64` profile tests your framework as part of a complete deployment stack over HTTP/2 with TLS. Unlike other tests that run a single container, this test uses **Docker Compose** to orchestrate multi-container deployments — typically a reverse proxy in front of an application server, but any architecture is allowed.
+
+**Quick start:**
+
+1. Create a `compose.gateway.yml` in your framework directory
+2. Define your services (proxy, server, cache — whatever you need)
+3. Pin each service to specific CPUs using `cpuset` — total must be exactly 64 logical CPUs (0-31 + 64-95), always in physical+SMT pairs (core N and N+64 together)
+4. All services must use `network_mode: host`, `security_opt: [seccomp:unconfined]`, and appropriate ulimits
+5. Use `${CERTS_DIR}`, `${DATA_DIR}`, and `${DATABASE_URL}` env vars — they are exported by the benchmark script
+6. Port **8443** must serve HTTPS/H2 — this is where the load generator sends requests
+7. The stack must implement `/static/*`, `/json`, `/async-db`, and `/baseline2` endpoints
+
+**What makes this different from other tests:**
+- You control the full architecture via Docker Compose
+- Multiple containers compete for a shared 64-CPU budget
+- The proxy, caching layer, and internal protocol choices are all part of the benchmark
+- Static files can be served directly by the proxy (e.g., Nginx) instead of the application server
+
+See the [Gateway-64 implementation guide](/docs/test-profiles/h2-gateway/gateway-64/implementation) for detailed documentation, three complete compose examples (two-tier, three-tier, and single-tier), CPU topology rules, and proxy configuration options.

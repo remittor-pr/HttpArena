@@ -22,6 +22,12 @@ cleanup() {
     # Kill watchdog if still running
     [ -n "${WATCHDOG_PID:-}" ] && kill "$WATCHDOG_PID" 2>/dev/null || true
     docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+    # Stop gateway compose stack if running
+    local gw_compose="$ROOT_DIR/frameworks/$FRAMEWORK/compose.gateway.yml"
+    if [ -f "$gw_compose" ]; then
+        CERTS_DIR="${CERTS_DIR:-$ROOT_DIR/certs}" DATA_DIR="${DATA_DIR:-$ROOT_DIR/data}" DATABASE_URL="${DATABASE_URL:-}" \
+            docker compose -f "$gw_compose" -p "httparena-validate-gw-${FRAMEWORK}" down --remove-orphans 2>/dev/null || true
+    fi
     docker rm -f "$PG_CONTAINER" 2>/dev/null || true
     docker network rm "$PG_NETWORK" 2>/dev/null || true
 }
@@ -46,17 +52,24 @@ has_test() {
     echo "$TESTS" | grep -qw "$1"
 }
 
-# Build
-echo "[build] Building Docker image..."
-if [ -x "frameworks/$FRAMEWORK/build.sh" ]; then
-    "frameworks/$FRAMEWORK/build.sh" || { echo "FAIL: Docker build failed"; exit 1; }
-else
-    docker build -t "$IMAGE_NAME" "frameworks/$FRAMEWORK" || { echo "FAIL: Docker build failed"; exit 1; }
+# Build — skip standalone build if framework only subscribes to gateway-64
+GATEWAY_ONLY=false
+if [ "$TESTS" = "gateway-64" ]; then
+    GATEWAY_ONLY=true
+fi
+
+if [ "$GATEWAY_ONLY" = "false" ]; then
+    echo "[build] Building Docker image..."
+    if [ -x "frameworks/$FRAMEWORK/build.sh" ]; then
+        "frameworks/$FRAMEWORK/build.sh" || { echo "FAIL: Docker build failed"; exit 1; }
+    else
+        docker build -t "$IMAGE_NAME" "frameworks/$FRAMEWORK" || { echo "FAIL: Docker build failed"; exit 1; }
+    fi
 fi
 
 # Mount volumes based on subscribed tests
 HARD_NOFILE=$(ulimit -Hn)
-if has_test "async-db" || has_test "api-4" || has_test "api-16"; then
+if has_test "async-db" || has_test "api-4" || has_test "api-16" || has_test "gateway-64"; then
     docker_args=(-d --name "$CONTAINER_NAME" --network host --security-opt seccomp=unconfined
         --ulimit memlock=-1:-1 --ulimit nofile="$HARD_NOFILE:$HARD_NOFILE")
 else
@@ -66,7 +79,7 @@ fi
 docker_args+=(-v "$DATA_DIR/dataset.json:/data/dataset.json:ro")
 
 needs_h2=false
-if has_test "baseline-h2" || has_test "static-h2" || has_test "baseline-h3" || has_test "static-h3"; then
+if has_test "baseline-h2" || has_test "static-h2" || has_test "baseline-h3" || has_test "static-h3" || has_test "gateway-64"; then
     needs_h2=true
 fi
 
@@ -74,7 +87,7 @@ if $needs_h2 && [ -d "$CERTS_DIR" ]; then
     docker_args+=(-p "$H2PORT:8443" -v "$CERTS_DIR:/certs:ro")
 fi
 
-if has_test "compression" || has_test "assets-4" || has_test "assets-16"; then
+if has_test "compression" || has_test "assets-4" || has_test "assets-16" || has_test "gateway-64"; then
     docker_args+=(-v "$DATA_DIR/dataset-large.json:/data/dataset-large.json:ro")
 fi
 
@@ -87,7 +100,7 @@ if has_test "sync-db"; then
     docker_args+=(-v "$DB_FILE:/data/benchmark.db:ro")
 fi
 
-if has_test "static" || has_test "static-h2" || has_test "static-h3" || has_test "assets-4" || has_test "assets-16"; then
+if has_test "static" || has_test "static-h2" || has_test "static-h3" || has_test "assets-4" || has_test "assets-16" || has_test "gateway-64"; then
     docker_args+=(-v "$DATA_DIR/static:/data/static:ro")
 fi
 
@@ -99,7 +112,7 @@ if [ "$ENGINE" = "io_uring" ]; then
 fi
 
 # Start Postgres sidecar if async-db is needed
-if has_test "async-db" || has_test "api-4" || has_test "api-16"; then
+if has_test "async-db" || has_test "api-4" || has_test "api-16" || has_test "gateway-64"; then
     echo "[postgres] Starting Postgres sidecar for validation..."
     docker rm -f "$PG_CONTAINER" 2>/dev/null || true
     docker run -d --name "$PG_CONTAINER" --network host \
@@ -124,24 +137,25 @@ if has_test "async-db" || has_test "api-4" || has_test "api-16"; then
     docker_args+=(-e "DATABASE_MAX_CONN=512")
 fi
 
-# Remove any stale container from a previous run
-docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+# Start container (skip for gateway-only — compose handles it later)
+if [ "$GATEWAY_ONLY" = "false" ]; then
+    docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+    docker run "${docker_args[@]}" "$IMAGE_NAME"
 
-docker run "${docker_args[@]}" "$IMAGE_NAME"
-
-# Wait for server to start
-echo "[wait] Waiting for server..."
-for i in $(seq 1 30); do
-    if curl -s --max-time 2 -o /dev/null -w '' "http://localhost:$PORT/baseline11?a=1&b=1" 2>/dev/null; then
-        break
-    fi
-    if [ "$i" -eq 30 ]; then
-        echo "FAIL: Server did not start within 30s"
-        exit 1
-    fi
-    sleep 1
-done
-echo "[ready] Server is up"
+    # Wait for server to start
+    echo "[wait] Waiting for server..."
+    for i in $(seq 1 30); do
+        if curl -s --max-time 2 -o /dev/null -w '' "http://localhost:$PORT/baseline11?a=1&b=1" 2>/dev/null; then
+            break
+        fi
+        if [ "$i" -eq 30 ]; then
+            echo "FAIL: Server did not start within 30s"
+            exit 1
+        fi
+        sleep 1
+    done
+    echo "[ready] Server is up"
+fi
 
 # ───── Helpers ─────
 
@@ -788,6 +802,154 @@ if has_test "echo-ws"; then
     FAIL=$((FAIL + ${WS_FAIL:-0}))
     if [ "${WS_FAIL:-0}" -gt 0 ]; then
         echo "        → $WS_DOCS"
+    fi
+fi
+
+# ───── Gateway H2 (reverse proxy + server over HTTP/2 + TLS) ─────
+
+if has_test "gateway-64"; then
+    GATEWAY_DOCS="$DOCS_BASE/h2-gateway/gateway-64/validation"
+    echo "[test] gateway-64 endpoints"
+
+    # Start gateway compose stack
+    GW_COMPOSE="$ROOT_DIR/frameworks/$FRAMEWORK/compose.gateway.yml"
+    GW_PROJECT="httparena-validate-gw-${FRAMEWORK}"
+    if [ -f "$GW_COMPOSE" ]; then
+        echo "[gateway] Building and starting compose stack..."
+        CERTS_DIR="$CERTS_DIR" DATA_DIR="$DATA_DIR" DATABASE_URL="postgres://bench:bench@localhost:5432/benchmark" \
+            docker compose -f "$GW_COMPOSE" -p "$GW_PROJECT" up --build -d || { echo "FAIL: gateway compose up"; FAIL=$((FAIL + 1)); }
+    else
+        echo "  FAIL [gateway-64]: compose.gateway.yml not found"
+        FAIL=$((FAIL + 1))
+    fi
+
+    GW_PORT=$H2PORT
+
+    # Wait for gateway to respond
+    echo "[wait] Waiting for gateway HTTPS port..."
+    gw_ready=false
+    for i in $(seq 1 30); do
+        if curl -sk --max-time 2 --http2 -o /dev/null "https://localhost:$GW_PORT/static/reset.css" 2>/dev/null; then
+            gw_ready=true
+            break
+        fi
+        sleep 1
+    done
+
+    if [ "$gw_ready" = "true" ]; then
+        # 1. HTTP/2 protocol negotiation
+        gw_proto=$(curl -sk --max-time 30 --http2 -o /dev/null -w '%{http_version}' "https://localhost:$GW_PORT/static/reset.css")
+        if [ "$gw_proto" = "2" ]; then
+            echo "  PASS [gateway HTTP/2 negotiation] (HTTP/$gw_proto)"
+            PASS=$((PASS + 1))
+        else
+            fail_with_link "[gateway HTTP/2 negotiation]: got HTTP/$gw_proto" "$GATEWAY_DOCS"
+        fi
+
+        # 2. Static file — correct Content-Type
+        check_header "gateway /static/reset.css Content-Type" "Content-Type" "text/css" "$GATEWAY_DOCS" \
+            -sk --http2 "https://localhost:$GW_PORT/static/reset.css"
+
+        check_header "gateway /static/app.js Content-Type" "Content-Type" "application/javascript" "$GATEWAY_DOCS" \
+            -sk --http2 "https://localhost:$GW_PORT/static/app.js"
+
+        # 3. Static file — non-zero size
+        gw_static_size=$(curl -sk --max-time 30 --http2 -o /dev/null -w '%{size_download}' "https://localhost:$GW_PORT/static/app.js")
+        if [ "$gw_static_size" -gt 0 ]; then
+            echo "  PASS [gateway static file size] ($gw_static_size bytes)"
+            PASS=$((PASS + 1))
+        else
+            fail_with_link "[gateway static file size]: empty response for /static/app.js" "$GATEWAY_DOCS"
+        fi
+
+        # 4. Static file — 404 for missing files
+        check_status "gateway /static/nonexistent.txt" "404" "$GATEWAY_DOCS" \
+            -sk --http2 "https://localhost:$GW_PORT/static/nonexistent.txt"
+
+        # 5. JSON endpoint — valid JSON with computed totals
+        gw_json_response=$(curl -sk --max-time 30 --http2 "https://localhost:$GW_PORT/json")
+        gw_json_result=$(echo "$gw_json_response" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+count = d.get('count', 0)
+items = d.get('items', [])
+has_total = all('total' in item for item in items) if items else False
+correct_totals = True
+for item in items:
+    expected = round(item['price'] * item['quantity'], 2)
+    if abs(item.get('total', 0) - expected) > 0.01:
+        correct_totals = False
+        break
+print(f'{count} {has_total} {correct_totals}')
+" 2>/dev/null || echo "0 False False")
+        gw_json_count=$(echo "$gw_json_result" | cut -d' ' -f1)
+        gw_json_total=$(echo "$gw_json_result" | cut -d' ' -f2)
+        gw_json_correct=$(echo "$gw_json_result" | cut -d' ' -f3)
+
+        if [ "$gw_json_count" = "50" ] && [ "$gw_json_total" = "True" ] && [ "$gw_json_correct" = "True" ]; then
+            echo "  PASS [gateway /json] (50 items, totals correct)"
+            PASS=$((PASS + 1))
+        else
+            fail_with_link "[gateway /json]: count=$gw_json_count, has_total=$gw_json_total, correct=$gw_json_correct" "$GATEWAY_DOCS"
+        fi
+
+        check_header "gateway /json Content-Type" "Content-Type" "application/json" "$GATEWAY_DOCS" \
+            -sk --http2 "https://localhost:$GW_PORT/json"
+
+        # 6. Async database endpoint — valid result set
+        gw_db_response=$(curl -sk --max-time 30 --http2 "https://localhost:$GW_PORT/async-db?min=10&max=50")
+        gw_db_result=$(echo "$gw_db_response" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+count = d.get('count', 0)
+items = d.get('items', [])
+has_rating = all('rating' in item and 'score' in item['rating'] for item in items) if items else False
+has_tags = all(isinstance(item.get('tags'), list) for item in items) if items else False
+has_active_bool = all(isinstance(item.get('active'), bool) for item in items) if items else False
+print(f'{count} {has_rating} {has_tags} {has_active_bool}')
+" 2>/dev/null || echo "0 False False False")
+        gw_db_count=$(echo "$gw_db_result" | cut -d' ' -f1)
+        gw_db_rating=$(echo "$gw_db_result" | cut -d' ' -f2)
+        gw_db_tags=$(echo "$gw_db_result" | cut -d' ' -f3)
+        gw_db_active=$(echo "$gw_db_result" | cut -d' ' -f4)
+
+        if [ "$gw_db_count" -gt 0 ] && [ "$gw_db_count" -le 50 ] && [ "$gw_db_rating" = "True" ] && [ "$gw_db_tags" = "True" ] && [ "$gw_db_active" = "True" ]; then
+            echo "  PASS [gateway /async-db] ($gw_db_count items, correct structure)"
+            PASS=$((PASS + 1))
+        else
+            fail_with_link "[gateway /async-db]: count=$gw_db_count, rating=$gw_db_rating, tags=$gw_db_tags, active=$gw_db_active" "$GATEWAY_DOCS"
+        fi
+
+        check_header "gateway /async-db Content-Type" "Content-Type" "application/json" "$GATEWAY_DOCS" \
+            -sk --http2 "https://localhost:$GW_PORT/async-db?min=10&max=50"
+
+        # 7. Async-db anti-cheat: empty range
+        gw_db_empty=$(curl -sk --max-time 30 --http2 "https://localhost:$GW_PORT/async-db?min=9999&max=9999" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count','-1'))" 2>/dev/null || echo "-1")
+        if [ "$gw_db_empty" = "0" ]; then
+            echo "  PASS [gateway /async-db empty range] (count=0)"
+            PASS=$((PASS + 1))
+        else
+            fail_with_link "[gateway /async-db empty range]: expected count=0, got $gw_db_empty" "$GATEWAY_DOCS"
+        fi
+
+        # 8. Baseline2 endpoint
+        check "gateway /baseline2?a=13&b=42" "55" "$GATEWAY_DOCS" \
+            -sk --http2 "https://localhost:$GW_PORT/baseline2?a=13&b=42"
+
+        # 9. Baseline2 anti-cheat: randomized inputs
+        GW_A=$((RANDOM % 900 + 100))
+        GW_B=$((RANDOM % 900 + 100))
+        check "gateway /baseline2?a=$GW_A&b=$GW_B (random)" "$((GW_A + GW_B))" "$GATEWAY_DOCS" \
+            -sk --http2 "https://localhost:$GW_PORT/baseline2?a=$GW_A&b=$GW_B"
+    else
+        echo "  FAIL: Gateway HTTPS port $GW_PORT not responding after 30s"
+        FAIL=$((FAIL + 1))
+    fi
+
+    # Cleanup gateway compose stack
+    if [ -f "$GW_COMPOSE" ]; then
+        CERTS_DIR="$CERTS_DIR" DATA_DIR="$DATA_DIR" DATABASE_URL="postgres://bench:bench@localhost:5432/benchmark" \
+            docker compose -f "$GW_COMPOSE" -p "$GW_PROJECT" down --remove-orphans 2>/dev/null || true
     fi
 fi
 

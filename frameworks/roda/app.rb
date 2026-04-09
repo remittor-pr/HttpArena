@@ -119,8 +119,8 @@ class App < Roda
       min_val = (request.params['min'] || 10).to_i
       max_val = (request.params['max'] || 50).to_i
 
-      rows = self.class.get_db&.with do |connection|
-        connection.execute(DB_QUERY, [min_val, max_val])
+      rows = self.class.get_db_statement&.with do |statement|
+        statement.execute([min_val, max_val])
       end || []
 
       items = rows.map do |row|
@@ -181,15 +181,15 @@ class App < Roda
 
   private
 
-  def self.get_db
-    @db ||= begin
+  def self.get_db_statement
+    @db_statement ||= begin
       return unless opts[:database_path]
       max_connections = ENV.fetch('MAX_THREADS', 4).to_i
       ConnectionPool.new(size: max_connections, timeout: 5) do
         db = SQLite3::Database.new(opts[:database_path], readonly: true)
         db.execute('PRAGMA mmap_size=268435456')
         db.results_as_hash = true
-        db
+        db.prepare(DB_QUERY)
       end
     end
   end

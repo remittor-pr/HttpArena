@@ -68,7 +68,7 @@ html.dark .test-card-endpoint { color: #64748b; }
 </style>
 
 <div class="tests-section">
-<h2>23 Test Profiles Across H/1.1, H/2, H/3, gRPC and WebSocket</h2>
+<h2>24 Test Profiles Across H/1.1, H/2, H/3, gRPC and WebSocket</h2>
 <p class="tests-sub">Every framework is tested under diverse, realistic workloads — from raw throughput to compression, gRPC unary calls, and WebSocket echo.</p>
 
 <div class="tests-proto">
@@ -170,6 +170,17 @@ html.dark .test-card-endpoint { color: #64748b; }
     <div class="test-card-title">Static Files</div>
     <div class="test-card-desc">Round-robin across 20 static files — CSS, JS, HTML, fonts, images.</div>
     <div class="test-card-endpoint">GET /static/* (h2)</div>
+  </a>
+</div>
+</div>
+
+<div class="tests-proto">
+<span class="tests-proto-label tests-proto-h2">H/2 Gateway</span>
+<div class="tests-grid">
+  <a class="test-card" href="docs/test-profiles/h2-gateway/gateway-64">
+    <div class="test-card-title">Gateway-64</div>
+    <div class="test-card-desc">Reverse proxy + application server — mixed static, JSON, and async-db workload over HTTP/2 with TLS. 64 CPUs split between proxy and server.</div>
+    <div class="test-card-endpoint">proxy:8443 → server (h2)</div>
   </a>
 </div>
 </div>
