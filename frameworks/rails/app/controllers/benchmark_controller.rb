@@ -48,7 +48,7 @@ class BenchmarkController < ActionController::API
       self.static_files[name] = { path: path, content_type: ct }
     end
   end
-  self.static_files_cache.freeze
+  self.static_files.freeze
 
   DB_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50'.freeze
   PG_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50'.freeze
@@ -63,7 +63,7 @@ class BenchmarkController < ActionController::API
       total += v.to_i
     end
     if request.post?
-      body_str = request.body.read.to_s.strip
+      body_str = request.body.read
       total += body_str.to_i
     end
     render plain: total.to_s
@@ -81,7 +81,7 @@ class BenchmarkController < ActionController::API
     if dataset
       items = dataset.map { |d| d.merge('total' => (d['price'] * d['quantity'] * 100).round / 100.0) }
       body = JSON.generate({ 'items' => items, 'count' => items.length })
-      response.headers['Content-Type'] = 'application/json'
+      response.headers['content-type'] = 'application/json'
       render plain: body
     else
       head 500
@@ -95,8 +95,8 @@ class BenchmarkController < ActionController::API
       gz = Zlib::GzipWriter.new(sio, 1)
       gz.write(self.class.dataset_large)
       gz.close
-      response.headers['Content-Type'] = 'application/json'
-      response.headers['Content-Encoding'] = 'gzip'
+      response.headers['content-type'] = 'application/json'
+      response.headers['content-encoding'] = 'gzip'
       send_data sio.string, disposition: :inline
     else
       render json: self.class.dataset_large

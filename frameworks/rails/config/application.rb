@@ -37,7 +37,7 @@ class BenchmarkApp < Rails::Application
 
     def call(env)
       unless VALID_METHODS.include?(env['REQUEST_METHOD'])
-        return [405, { 'Content-Type' => 'text/plain' }, ['Method Not Allowed']]
+        return [405, { 'content-type' => 'text/plain' }, ['Method Not Allowed']]
       end
       # Mark /upload as binary so Rack skips form parameter parsing
       if env['PATH_INFO'] == '/upload'
@@ -46,7 +46,7 @@ class BenchmarkApp < Rails::Application
       @app.call(env)
     rescue => e
       if e.class.name.include?('UnknownHttpMethod') || e.class.name.include?('RoutingError')
-        [400, { 'Content-Type' => 'text/plain' }, ['Bad Request']]
+        [400, { 'content-type' => 'text/plain' }, ['Bad Request']]
       else
         raise
       end
