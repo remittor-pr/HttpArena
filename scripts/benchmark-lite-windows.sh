@@ -364,13 +364,8 @@ docker network create "$DOCKER_NETWORK" 2>/dev/null || true
 
 # Ensure load generator images exist
 if ! docker image inspect "$GCANNON_IMAGE" >/dev/null 2>&1; then
-    echo "[build] Building gcannon Docker image..."
-    GCANNON_SRC="${GCANNON_SRC:-$ROOT_DIR/../gcannon}"
-    if [ ! -d "$GCANNON_SRC" ]; then
-        echo "FAIL: gcannon source not found at $GCANNON_SRC — clone it or set GCANNON_SRC"
-        exit 1
-    fi
-    docker build -t "$GCANNON_IMAGE" -f "$ROOT_DIR/docker/gcannon.Dockerfile" "$GCANNON_SRC"
+    echo "[build] Building gcannon Docker image (clones source from github)..."
+    docker build -t "$GCANNON_IMAGE" -f "$ROOT_DIR/docker/gcannon.Dockerfile" "$ROOT_DIR/docker"
 fi
 if ! docker image inspect "$H2LOAD_IMAGE" >/dev/null 2>&1; then
     echo "[build] Building h2load Docker image..."
