@@ -1,5 +1,4 @@
 import { Elysia } from "elysia";
-import { SQL } from "bun";
 import { readFileSync } from "fs";
 import cluster from "cluster";
 import { availableParallelism } from "os";
@@ -39,11 +38,17 @@ const datasetItems: any[] = JSON.parse(
 
 const STATIC_DIR = "/data/static";
 
-// Postgres client for /async-db (Bun native SQL)
-const databaseURL = process.env.DATABASE_URL;
-// Bun.SQL auto-connects on first query — don't call .connect() explicitly,
-// it isn't reliably exposed on the base client and throws in some versions.
-const pg: SQL | undefined = databaseURL ? new SQL(databaseURL) : undefined;
+// PostgreSQL pool for /async-db (node-postgres via Bun's node_modules resolver).
+let pgPool: any = null;
+{
+	const dbUrl = process.env.DATABASE_URL;
+	if (dbUrl) {
+		try {
+			const { Pool } = require("pg");
+			pgPool = new Pool({ connectionString: dbUrl, max: 4 });
+		} catch (_) {}
+	}
+}
 
 const EMPTY_DB_JSON = '{"items":[],"count":0}';
 
@@ -113,7 +118,7 @@ new Elysia()
 		});
 	})
 	.get("/async-db", async ({ query }) => {
-		if (!pg) {
+		if (!pgPool) {
 			return new Response(EMPTY_DB_JSON, {
 				headers: { "content-type": "application/json" },
 			});
@@ -122,8 +127,11 @@ new Elysia()
 		const max = parseInt((query.max as string) ?? "", 10) || 50;
 		const limit = Math.max(1, Math.min(parseInt((query.limit as string) ?? "", 10) || 50, 50));
 		try {
-			const rows = (await pg`SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ${min} AND ${max} LIMIT ${limit}`) as any[];
-			const items = rows.map((r: any) => ({
+			const result = await pgPool.query(
+				"SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT $3",
+				[min, max, limit],
+			);
+			const items = result.rows.map((r: any) => ({
 				id: r.id,
 				name: r.name,
 				category: r.category,
