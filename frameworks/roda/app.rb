@@ -15,16 +15,6 @@ class App < Roda
     opts[:dataset_items] = JSON.parse(File.read(dataset_path))
   end
 
-  # Large dataset for compression
-  dataset_large_path = File.join DATA_DIR, 'dataset-large.json'
-  if File.exist?(dataset_large_path)
-    raw = JSON.parse(File.read(dataset_large_path))
-    items = raw.map do |d|
-      d.merge('total' => (d['price'] * d['quantity'] * 100).round / 100.0)
-    end
-    opts[:large_json_payload] = JSON.generate({ 'items' => items, 'count' => items.length })
-  end
-
   # Load static files into memory
   MIME_TYPES = {
     '.css'   => 'text/css',
@@ -50,11 +40,7 @@ class App < Roda
   end
   opts[:static_files].freeze
 
-  # SQLite
-  opts[:database_path] = File.join(DATA_DIR, 'benchmark.db').freeze
-
-  DB_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN ? AND ? LIMIT 50'.freeze
-  PG_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50'.freeze
+  PG_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT $3'.freeze
 
   plugin :default_headers, 'Server' => SERVER_NAME
   plugin :halt
@@ -74,8 +60,7 @@ class App < Roda
         total += v.to_i
       end
       if request.post?
-        body_str = request.body.read
-        total += body_str.to_i
+        total += request.body.read.to_i
       end
       render_plain total.to_s
     end
@@ -88,30 +73,28 @@ class App < Roda
       render_plain total.to_s
     end
 
-    r.is 'json' do
+    r.is 'json', Integer do |count|
       dataset = opts[:dataset_items]
       r.halt 500, 'No dataset' unless dataset
-      items = dataset.map do |d|
-        d.merge('total' => (d['price'] * d['quantity'] * 100).round / 100.0)
+      m = (request.params['m'] || 1).to_i
+      items = dataset.slice(0, count).map do |d|
+        d.merge('total' => (d['price'] * d['quantity'] * m))
       end
-      render_json JSON.generate({ 'items' => items, 'count' => items.length })
-    end
 
-    r.is 'compression' do
-      payload = opts[:large_json_payload]
-      r.halt 500, 'No dataset' unless payload
-      accept_encodings = r.headers['Accept-Encoding'].split(',').map(&:strip)
-      if accept_encodings.include? 'gzip'
-        sio = StringIO.new
-        gz = Zlib::GzipWriter.new(sio, 1)
-        gz.write(payload)
-        gz.close
-        response[RodaResponseHeaders::CONTENT_TYPE] = 'application/json'
-        response[RodaResponseHeaders::CONTENT_ENCODING] = 'gzip'
-        sio.string
-      else
-        payload
+      result = JSON.generate({ 'items' => items, 'count' => count })
+
+      if accept_encodings = r.headers['Accept-Encoding']
+        type = accept_encodings.split(',').map(&:strip)
+        if type.include? 'gzip'
+          sio = StringIO.new
+          gz = Zlib::GzipWriter.new(sio, 1)
+          gz.write(result)
+          gz.close
+          response[RodaResponseHeaders::CONTENT_ENCODING] = 'gzip'
+          result = sio.string
+        end
       end
+      render_json result
     end
 
     r.is 'upload' do
@@ -123,37 +106,23 @@ class App < Roda
       size.to_s
     end
 
-    r.is 'db' do
-      min_val = (request.params['min'] || 10).to_i
-      max_val = (request.params['max'] || 50).to_i
-
-      rows = self.class.get_db_statement&.with do |statement|
-        statement.execute([min_val, max_val])
-      end || []
-
-      items = rows.map do |row|
-        {
-          'id' => row['id'], 'name' => row['name'], 'category' => row['category'],
-          'price' => row['price'], 'quantity' => row['quantity'], 'active' => row['active'] == 1,
-          'tags' => JSON.parse(row['tags']),
-          'rating' => { 'score' => row['rating_score'], 'count' => row['rating_count'] }
-        }
-      end
-      render_json JSON.generate({ 'items' => items, 'count' => items.length })
-    end
-
     r.is 'async-db' do
       min_val = (request.params['min'] || 10).to_i
       max_val = (request.params['max'] || 50).to_i
+      limit = (request.params['limit'] || 50).to_i.clamp(1, 50)
 
       rows = self.class.get_async_db&.with do |connection|
-        connection.exec_prepared('select', [min_val, max_val])
+        connection.exec_prepared('select', [min_val, max_val, limit])
       end || []
 
       items = rows.map do |row|
         {
-          'id' => row['id'], 'name' => row['name'], 'category' => row['category'],
-          'price' => row['price'], 'quantity' => row['quantity'], 'active' => row['active'] == 1,
+          'id' => row['id'],
+          'name' => row['name'],
+          'category' => row['category'],
+          'price' => row['price'],
+          'quantity' => row['quantity'],
+          'active' => row['active'] == 1,
           'tags' => JSON.parse(row['tags']),
           'rating' => { 'score' => row['rating_score'], 'count' => row['rating_count'] }
         }
@@ -181,19 +150,6 @@ class App < Roda
   def render_plain(plain)
     response[RodaResponseHeaders::CONTENT_TYPE] = 'text/plain'
     plain
-  end
-
-  def self.get_db_statement
-    @db_statement ||= begin
-      return unless opts[:database_path]
-      max_connections = ENV.fetch('MAX_THREADS', 4).to_i
-      ConnectionPool.new(size: max_connections, timeout: 5) do
-        db = SQLite3::Database.new(opts[:database_path], readonly: true)
-        db.execute('PRAGMA mmap_size=268435456')
-        db.results_as_hash = true
-        db.prepare(DB_QUERY)
-      end
-    end
   end
 
   def self.get_async_db
