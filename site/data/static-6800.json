@@ -119,6 +119,26 @@
     "status_5xx": 0
   },
   {
+    "framework": "Fletch",
+    "language": "Dart",
+    "rps": 476494,
+    "avg_latency": "14.66ms",
+    "p99_latency": "14.66ms",
+    "cpu": "6397.7%",
+    "memory": "3.2GiB",
+    "connections": 6800,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "7.31GB",
+    "input_bw": "",
+    "reconnects": 0,
+    "status_2xx": 2430677,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "frankenphp-trueasync",
     "language": "PHP",
     "rps": 169384,

@@ -19,6 +19,26 @@
     "status_5xx": 0
   },
   {
+    "framework": "Fletch",
+    "language": "Dart",
+    "rps": 232457,
+    "avg_latency": "17.70ms",
+    "p99_latency": "17.70ms",
+    "cpu": "6218.0%",
+    "memory": "3.8GiB",
+    "connections": 4096,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "817.43MB",
+    "input_bw": "",
+    "reconnects": 0,
+    "status_2xx": 1185645,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "helidon-production",
     "language": "Java",
     "rps": 249863,

@@ -370,5 +370,12 @@
     "repo": "https://github.com/walkor/Workerman",
     "type": "production",
     "engine": "workerman"
+  },
+  "Fletch": {
+    "dir": "fletch",
+    "description": "Express-inspired HTTP framework for Dart with radix-tree routing, middleware chains, signed sessions, and built-in DI.",
+    "repo": "https://github.com/kartikey321/fletch",
+    "type": "tuned",
+    "engine": "dart:io"
   }
 }
