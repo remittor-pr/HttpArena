@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 
 gem 'rage-rb', '~> 1.22'
-gem 'sqlite3', '~> 2.6'
 gem 'pg', '~> 1.5'
 gem 'concurrent-ruby'
 gem 'connection_pool'
