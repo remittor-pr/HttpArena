@@ -29,7 +29,7 @@ declare -A PROFILES=(
     [unary-grpc-tls]="1|0|0-31,64-95|256,1024|grpc-tls"
     [stream-grpc]="1|0|0-31,64-95|64|grpc-stream"
     [stream-grpc-tls]="1|0|0-31,64-95|64|grpc-stream-tls"
-    [gateway-64]="1|0|0-31,64-95|256,1024|gateway-64"
+    [gateway-64]="1|0|0-31,64-95|512,1024|gateway-64"
     [echo-ws]="1|0|0-31,64-95|512,4096,16384|ws-echo"
 )
 

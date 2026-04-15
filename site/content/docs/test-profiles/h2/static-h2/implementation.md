@@ -7,7 +7,7 @@ title: Implementation Guidelines
 Serves 20 static files of various types and sizes over HTTP/2 with TLS, simulating a realistic browser page load with multiplexed streams.
 
 **Connections:** 256, 1,024
-**Concurrent streams per connection:** 100
+**Concurrent streams per connection:** 32
 
 ## Workload
 
@@ -73,7 +73,7 @@ Content-Type: application/javascript
 |-----------|-------|
 | Endpoint | 20 URIs under `/static/*` |
 | Connections | 256, 1,024 |
-| Streams per connection | 100 (`-m 100`) |
+| Streams per connection | 32 (`-m 32`) |
 | Duration | 5s |
 | Runs | 3 (best taken) |
 | Load generator | h2load with `-i` (multi-URI) |

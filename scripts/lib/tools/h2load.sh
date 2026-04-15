@@ -31,12 +31,12 @@ h2load_build_args() {
         static-h2)
             cmd+=(-i "$REQUESTS_DIR/static-h2-uris.txt"
                   -H "Accept-Encoding: br;q=1, gzip;q=0.8"
-                  -c "$conns" -m 100 -t "$H2THREADS" -D "$duration")
+                  -c "$conns" -m 32 -t "$H2THREADS" -D "$duration")
             ;;
         gateway-64)
             cmd+=(-i "$REQUESTS_DIR/gateway-64-uris.txt"
                   -H "Accept-Encoding: br;q=1, gzip;q=0.8"
-                  -c "$conns" -m 100 -t "$H2THREADS" -D "$duration")
+                  -c "$conns" -m 32 -t "$H2THREADS" -D "$duration")
             ;;
         grpc)
             cmd+=("http://localhost:$PORT/benchmark.BenchmarkService/GetSum"
@@ -71,10 +71,18 @@ h2load_run() {
 h2load_parse() {
     local output="$2"  # $1 = endpoint (unused for h2load, shape is uniform)
 
-    # "finished in 5.00s, 123456.78 req/s, 45.67MB/s" — the line we want.
-    local rps
-    rps=$(echo "$output" | grep -oP 'finished in [\d.]+s, \K[\d.]+' | cut -d. -f1 || echo 0)
-    echo "rps=${rps:-0}"
+    # rps = successful 2xx responses divided by wall duration. h2load's
+    # own "finished in Xs, Y req/s" number counts all completed requests
+    # including 4xx/5xx, which silently inflates rps when the server is
+    # broken — a stale image serving 404s would look like a throughput win.
+    # Computing from 2xx + the reported duration makes that impossible.
+    local duration_secs ok
+    duration_secs=$(echo "$output" | grep -oP 'finished in \K[\d.]+' | head -1)
+    duration_secs=${duration_secs:-1}
+    ok=$(echo "$output" | grep -oP '\d+(?= 2xx)' | head -1)
+    ok=${ok:-0}
+    echo "rps=$(awk -v ok="$ok" -v dur="$duration_secs" \
+        'BEGIN { if (dur+0 > 0) printf "%d", ok/dur; else print 0 }' 2>/dev/null || echo 0)"
 
     # Latency — h2 mode uses "time for request:" one-liner,
     # h3 (not used here) uses a tabular "request :" row.

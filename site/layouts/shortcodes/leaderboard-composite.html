@@ -12,7 +12,7 @@
   (dict "id" "async-db" "label" "Async DB" "sublabel" "H/1.1 Isolated" "proto" "h1iso" "conns" (slice 1024) "scored" true "engineScored" false)
   (dict "id" "baseline-h2" "label" "Baseline" "sublabel" "H/2" "proto" "h2" "conns" (slice 256 1024) "scored" true "engineScored" true)
   (dict "id" "static-h2" "label" "Static" "sublabel" "H/2" "proto" "h2" "conns" (slice 256 1024) "scored" true "engineScored" true)
-  (dict "id" "gateway-64" "label" "Gateway-64" "sublabel" "H/2 Gateway" "proto" "h2gw" "conns" (slice 256 1024) "scored" true "engineScored" true)
+  (dict "id" "gateway-64" "label" "Gateway-64" "sublabel" "H/2 Gateway" "proto" "h2gw" "conns" (slice 512 1024) "scored" true "engineScored" true)
   (dict "id" "unary-grpc" "label" "Unary" "sublabel" "gRPC" "proto" "grpc" "conns" (slice 256 1024) "scored" true "engineScored" true)
   (dict "id" "unary-grpc-tls" "label" "Unary TLS" "sublabel" "gRPC" "proto" "grpc" "conns" (slice 256 1024) "scored" true "engineScored" true)
   (dict "id" "stream-grpc" "label" "Stream" "sublabel" "gRPC" "proto" "grpc" "conns" (slice 64) "scored" true "engineScored" true)

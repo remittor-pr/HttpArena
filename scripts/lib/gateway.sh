@@ -27,7 +27,10 @@ gateway_up() {
         down --remove-orphans 2>/dev/null || true
 
     info "starting gateway compose stack: $framework"
-    _gateway_env docker compose -f "$compose_file" -p "$GATEWAY_PROJECT" up -d \
+    # --build forces compose to rebuild from source if any file in the
+    # build context changed. Without this, an edit to a service Dockerfile
+    # or Program.cs silently falls back to a stale image from the last run.
+    _gateway_env docker compose -f "$compose_file" -p "$GATEWAY_PROJECT" up --build -d \
         || fail "gateway compose up failed"
 
     # Discover running container IDs for stats collection.
@@ -36,8 +39,8 @@ gateway_up() {
     GATEWAY_CONTAINER_COUNT=$(echo "$GATEWAY_CONTAINERS" | wc -w)
     info "gateway containers: $GATEWAY_CONTAINER_COUNT ($GATEWAY_CONTAINERS)"
 
-    if [ "$GATEWAY_CONTAINER_COUNT" -lt 2 ]; then
-        warn "expected ≥2 containers, found $GATEWAY_CONTAINER_COUNT — stats may not sum correctly"
+    if [ "$GATEWAY_CONTAINER_COUNT" -ne 2 ]; then
+        warn "gateway-64 expects exactly 2 containers (proxy + server), found $GATEWAY_CONTAINER_COUNT — stats may not sum correctly"
     fi
 }
 

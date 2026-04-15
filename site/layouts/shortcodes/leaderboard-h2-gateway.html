@@ -1,5 +1,5 @@
 {{ $profiles := slice
-  (dict "id" "gateway-64" "label" "Gateway-64" "conns" (slice 256 1024) "desc" "Multi-container stack via Docker Compose over HTTP/2 + TLS. Mixed workload: static (60%), JSON (15%), async-db (15%), baseline (10%). 64 CPUs split across services. <a href='/docs/test-profiles/h2-gateway/gateway-64/' class='lb-desc-link'>Learn more &rarr;</a>")
+  (dict "id" "gateway-64" "label" "Gateway-64" "conns" (slice 512 1024) "desc" "Two-service Docker Compose stack (proxy + server) over HTTP/2 + TLS. Mixed workload: static 30% (proxy), JSON 35%, baseline 20%, async-db 15% (server). 64 CPUs split freely between proxy and server. <a href='/docs/test-profiles/h2-gateway/gateway-64/' class='lb-desc-link'>Learn more &rarr;</a>")
 }}
 
 {{/* Build JSON data blob for round switching */}}

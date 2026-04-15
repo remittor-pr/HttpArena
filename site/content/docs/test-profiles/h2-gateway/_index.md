@@ -3,12 +3,10 @@ weight: 3
 title: H/2 Gateway
 ---
 
-H/2 Gateway test profiles benchmark complete application stacks — not just a single server, but a full deployment with a reverse proxy, application server, and potentially additional services like caches or connection poolers. The load generator sends TLS-encrypted HTTP/2 requests to the entry point (typically a reverse proxy), which handles TLS termination and forwards requests to backend services.
+The H/2 Gateway test benchmarks a two-service production stack: a reverse proxy terminating TLS and serving static files, plus an application server handling dynamic endpoints. The load generator sends TLS-encrypted HTTP/2 requests to port 8443, which must be handled by the proxy.
 
-Each entry defines its entire stack via **Docker Compose**, giving full control over architecture, service count, internal protocols, and CPU allocation. This mirrors how production applications are actually deployed — behind Nginx, Caddy, Envoy, or similar reverse proxies — and measures the end-to-end throughput of the whole system.
-
-Entries without a proxy are also welcome: a single server handling TLS directly competes on the same 64-CPU budget.
+Each entry defines the stack via **Docker Compose** with exactly two services — `proxy` and `server` — and is free to split the 64-CPU budget between them however it wants. This mirrors how real applications deploy behind Nginx, Caddy, Envoy, or HAProxy and measures the end-to-end throughput of the pair as a unit.
 
 {{< cards >}}
-  {{< card link="gateway-64" title="Gateway-64" subtitle="Docker Compose-orchestrated stack with 64 CPUs — mixed workload of static files, JSON, async database, and baseline over HTTP/2 with TLS." icon="server" >}}
+  {{< card link="gateway-64" title="Gateway-64" subtitle="Proxy + server combination with 64 CPUs split freely — mixed workload of static files (served by proxy) and dynamic endpoints (served by server) over HTTP/2 with TLS." icon="server" >}}
 {{< /cards >}}

@@ -49,9 +49,15 @@ h2load_h3_run() {
 h2load_h3_parse() {
     local output="$2"  # $1 = endpoint unused
 
-    local rps
-    rps=$(echo "$output" | grep -oP 'finished in [\d.]+s, \K[\d.]+' | cut -d. -f1 || echo 0)
-    echo "rps=${rps:-0}"
+    # rps from 2xx/duration — see h2load.sh for rationale (avoid inflating
+    # rps when the server is serving 4xx/5xx responses).
+    local duration_secs ok
+    duration_secs=$(echo "$output" | grep -oP 'finished in \K[\d.]+' | head -1)
+    duration_secs=${duration_secs:-1}
+    ok=$(echo "$output" | grep -oP '\d+(?= 2xx)' | head -1)
+    ok=${ok:-0}
+    echo "rps=$(awk -v ok="$ok" -v dur="$duration_secs" \
+        'BEGIN { if (dur+0 > 0) printf "%d", ok/dur; else print 0 }' 2>/dev/null || echo 0)"
 
     # h3 emits a tabular "request :" line with mean at column 8 and p99 at col 7.
     echo "avg_lat=$(echo "$output" | awk '/^\s*request\s*:/ { print $8; exit }')"

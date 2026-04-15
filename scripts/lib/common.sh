@@ -21,7 +21,7 @@ H1TLS_PORT=8081   # h1 + TLS (json-tls profile)
 DURATION="${DURATION:-5s}"
 RUNS="${RUNS:-3}"
 THREADS="${THREADS:-64}"
-H2THREADS="${H2THREADS:-128}"
+H2THREADS="${H2THREADS:-64}"
 H3THREADS="${H3THREADS:-64}"
 
 # Load generator binaries + docker images.

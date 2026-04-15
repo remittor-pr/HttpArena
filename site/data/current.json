@@ -8,11 +8,9 @@
   "os": "Ubuntu 24.04.4 LTS",
   "kernel": "6.17.0-20-generic",
   "docker": "29.3.0",
-  "commit": "1ff3fe68",
-  "governor": "performance",
   "docker_runtime": "runc",
   "governor": "performance",
-  "commit": "9fce676a",
+  "commit": "279c447c",
   "tcp": {
     "lo_mtu": "1500",
     "congestion": "cubic",

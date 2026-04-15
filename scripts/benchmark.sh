@@ -193,15 +193,10 @@ run_one() {
         output=$("${tool//-/_}_run" "${gc_args[@]}")
         stats_stop
 
-        # Persist raw load-generator output next to the container logs so
-        # broken parsers / weird tool outputs can be investigated later.
-        local _raw_log_dir="$ROOT_DIR/site/static/logs/$profile/$CONNS"
-        mkdir -p "$_raw_log_dir"
-        printf '%s\n' "$output" > "$_raw_log_dir/${FRAMEWORK}.${tool}.run${run}.txt"
-
-        # Print trimmed output (drop ghz/h2load-h3 warm-up noise).
-        echo "$output" | grep -Ev '^(Warm-up|Main benchmark duration|Stopped all clients|progress: [0-9]+% of clients started)' || true
+        # Print trimmed output (drop ghz/h2load-h3 per-thread spawn chatter).
+        echo "$output" | grep -Ev '^(Warm-up|Main benchmark duration|Stopped all clients|progress: [0-9]+% of clients started|spawning thread #[0-9]+|[0-9]*Warm-up phase is over for thread #[0-9]+)' || true
         info "CPU $STATS_AVG_CPU | Mem $STATS_PEAK_MEM"
+        [ -n "$STATS_BREAKDOWN" ] && info "  $STATS_BREAKDOWN"
 
         # Parse into an associative array.
         declare -A m=()
@@ -264,12 +259,14 @@ save_result() {
   \"tpl_static\": 0,
   \"tpl_async_db\": ${BEST_M[tpl_async_db]:-0}"
     elif [ "$profile" = "gateway-64" ] && [ "${BEST_M[status_2xx]:-0}" -gt 0 ] 2>/dev/null; then
+        # Gateway mix: 6 static / 4 baseline / 7 json / 3 async-db = 30 / 20 / 35 / 15 %.
+        # Must stay in sync with requests/gateway-64-uris.txt.
         local total=${BEST_M[status_2xx]}
         tpl_extra=",
-  \"tpl_static\": $(( total * 12 / 20 )),
-  \"tpl_json\": $(( total * 3 / 20 )),
-  \"tpl_async_db\": $(( total * 3 / 20 )),
-  \"tpl_baseline\": $(( total * 2 / 20 ))"
+  \"tpl_static\": $(( total * 6 / 20 )),
+  \"tpl_baseline\": $(( total * 4 / 20 )),
+  \"tpl_json\": $(( total * 7 / 20 )),
+  \"tpl_async_db\": $(( total * 3 / 20 ))"
     fi
 
     cat > "$dir/${FRAMEWORK}.json" <<EOF

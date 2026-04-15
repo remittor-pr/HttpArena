@@ -16,7 +16,7 @@ var app = builder.Build();
 AppData.Load();
 
 app.MapGet("/baseline2", Handlers.Sum);
-app.MapGet("/json", Handlers.Json);
+app.MapGet("/json/{count}", Handlers.Json);
 app.MapGet("/async-db", Handlers.AsyncDatabase);
 
 app.Run();
