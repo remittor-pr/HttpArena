@@ -11,8 +11,6 @@
   "commit": "6eef1b4f",
   "governor": "performance",
   "docker_runtime": "runc",
-  "governor": "performance",
-  "commit": "9798fc93",
   "tcp": {
     "lo_mtu": "1500",
     "congestion": "cubic",
