@@ -173,7 +173,5 @@ async def upload_endpoint(request: Request):
     return PlainTextResponse(str(size))
 
 
-try:
-    app.mount("/static", StaticFiles(directory="/data/static/"), name="static")
-except Exception:
-    pass
+app.mount("/static", StaticFiles(directory="/data/static/"), name="static")
+
