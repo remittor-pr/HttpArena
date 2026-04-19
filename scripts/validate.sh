@@ -218,6 +218,84 @@ check_status() {
     fi
 }
 
+check_fragmented() {
+    # Send an HTTP request in multiple TCP writes with small pauses between
+    # them so the server's read loop sees partial, incomplete buffers and
+    # must reassemble across recv() calls. Exercises HTTP parser correctness
+    # under realistic network fragmentation (slow clients, small MTU, etc.).
+    #
+    # Usage: check_fragmented <label> <expected_body> <docs_url> <frag1> <frag2> [frag3...]
+    # Use $'...' literal form in the caller to embed CR/LF inside fragments.
+    local label="$1"
+    local expected_body="$2"
+    local docs_url="$3"
+    shift 3
+    local body
+    body=$(PORT="$PORT" python3 -c '
+import os, socket, sys, time
+port = int(os.environ["PORT"])
+frags = sys.argv[1:]
+s = socket.create_connection(("localhost", port), timeout=5)
+s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)  # no Nagle coalescing
+for i, f in enumerate(frags):
+    s.sendall(f.encode("latin-1"))
+    if i < len(frags) - 1:
+        time.sleep(0.03)
+buf = b""
+while True:
+    chunk = s.recv(4096)
+    if not chunk: break
+    buf += chunk
+s.close()
+resp = buf.decode("latin-1", errors="replace")
+try:
+    head, raw = resp.split("\r\n\r\n", 1)
+except ValueError:
+    sys.stdout.write("")
+    sys.exit(0)
+
+# Parse headers (case-insensitive)
+hdrs = {}
+for line in head.split("\r\n")[1:]:
+    if ":" in line:
+        k, v = line.split(":", 1)
+        hdrs[k.strip().lower()] = v.strip()
+
+# If the response is chunked, decode the frames; otherwise honor Content-Length
+# when present, else just return the raw remaining bytes.
+if hdrs.get("transfer-encoding", "").lower() == "chunked":
+    parts, rest = [], raw
+    while rest:
+        nl = rest.find("\r\n")
+        if nl < 0: break
+        try:
+            size = int(rest[:nl].split(";", 1)[0], 16)  # ignore chunk extensions
+        except ValueError:
+            break
+        rest = rest[nl+2:]
+        if size == 0: break
+        parts.append(rest[:size])
+        rest = rest[size+2:]  # skip trailing CRLF
+    body = "".join(parts)
+elif "content-length" in hdrs:
+    try:
+        body = raw[:int(hdrs["content-length"])]
+    except ValueError:
+        body = raw
+else:
+    body = raw
+
+sys.stdout.write(body.strip())
+' "$@" 2>/dev/null || echo "")
+
+    if [ "$body" = "$expected_body" ]; then
+        echo "  PASS [$label]"
+        PASS=$((PASS + 1))
+    else
+        fail_with_link "[$label]: expected body '$expected_body', got '$body'" "$docs_url"
+    fi
+}
+
 check_header() {
     local label="$1"
     local header_name="$2"
@@ -288,6 +366,35 @@ if has_test "baseline" || has_test "limited-conn" || has_test "api-4" || has_tes
     check "POST body=$BODY2 (cache check 2)" "$((13 + 42 + BODY2))" "$BASELINE_DOCS" \
         -X POST -H "Content-Type: text/plain" -d "$BODY2" \
         "http://localhost:$PORT/baseline11?a=13&b=42"
+
+    # TCP fragmentation: send each request in multiple small writes with a
+    # short pause between, so the server's HTTP parser sees partial buffers
+    # and must reassemble across recv() calls. Exercises parser correctness
+    # under realistic network conditions (slow clients, small MTU).
+    echo "[test] baseline TCP fragmentation"
+    # Split 1: break the request line mid-path
+    check_fragmented "GET /baseline11 — split request line" "55" "$BASELINE_DOCS" \
+        "GET /baseli" \
+        $'ne11?a=13&b=42 HTTP/1.1\r\n' \
+        $'Host: localhost\r\nConnection: close\r\n\r\n'
+
+    # Split 2: break between request line and headers
+    check_fragmented "GET /baseline11 — split before headers" "55" "$BASELINE_DOCS" \
+        $'GET /baseline11?a=13&b=42 HTTP/1.1\r\n' \
+        $'Host: localhost\r\n' \
+        $'User-Agent: arena-frag/1.0\r\n' \
+        $'Connection: close\r\n\r\n'
+
+    # Split 3: POST with headers and body in separate writes
+    check_fragmented "POST /baseline11 — split headers/body" "75" "$BASELINE_DOCS" \
+        $'POST /baseline11?a=13&b=42 HTTP/1.1\r\nHost: localhost\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\n' \
+        "20"
+
+    # Split 4: POST with body split across two writes (body = "20", split to "2" + "0")
+    check_fragmented "POST /baseline11 — split body bytes" "75" "$BASELINE_DOCS" \
+        $'POST /baseline11?a=13&b=42 HTTP/1.1\r\nHost: localhost\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\n' \
+        "2" \
+        "0"
 fi
 
 # ───── Pipelined (GET /pipeline) ─────
