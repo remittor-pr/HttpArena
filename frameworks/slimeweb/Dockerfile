@@ -1,0 +1,19 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+RUN pip install uv slimeweb
+
+RUN slime new arena
+
+WORKDIR /app/arena
+
+RUN slime add asyncpg
+
+COPY main.py /app/arena/main.py
+COPY /data/static/ /app/arena/static/
+
+
+EXPOSE 8080
+
+CMD ["slime","run","main.py"]
