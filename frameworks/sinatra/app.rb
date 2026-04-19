@@ -6,6 +6,16 @@ Bundler.require(:default)
 require 'zlib'
 require 'pg'
 
+module Sinatra
+  class Request < Rack::Request
+    # Rack::Request sees the body of a POST request without content-type set as form data.
+    # This breaks the upload test.
+    def form_data?
+      FORM_DATA_MEDIA_TYPES.include?(media_type)
+    end
+  end
+end
+
 class App < Sinatra::Base
   SERVER_NAME = 'sinatra'.freeze
 
@@ -84,6 +94,15 @@ class App < Sinatra::Base
     render_json result
   end
 
+  post '/upload' do
+    size = 0
+    buf = request.body
+    while (chunk = buf.read(65536))
+      size += chunk.bytesize
+    end
+    render_plain size.to_s
+  end
+
   get '/async-db' do
     min_val = (params['min'] || 10).to_i
     max_val = (params['max'] || 50).to_i
@@ -131,8 +150,4 @@ class App < Sinatra::Base
       end
     end
   end
-
-  # POST /upload is handled by UploadHandler middleware in config.ru
-  # to bypass Rack's body param parsing (binary data with no Content-Type
-  # causes "invalid %-encoding" errors in Rack's URL decoder)
 end
