@@ -370,6 +370,26 @@
     "status_5xx": 0
   },
   {
+    "framework": "h2o-mruby",
+    "language": "Ruby",
+    "rps": 832217,
+    "avg_latency": "599us",
+    "p99_latency": "2.46ms",
+    "cpu": "6059.9%",
+    "memory": "145MiB",
+    "connections": 512,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "125.33MB/s",
+    "input_bw": "64.29MB/s",
+    "reconnects": 415918,
+    "status_2xx": 4161088,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "helidon-production",
     "language": "Java",
     "rps": 587778,
@@ -703,6 +723,26 @@
     "status_2xx": 7112110,
     "status_3xx": 0,
     "status_4xx": 147,
+    "status_5xx": 0
+  },
+  {
+    "framework": "robyn",
+    "language": "Python",
+    "rps": 284472,
+    "avg_latency": "1.75ms",
+    "p99_latency": "14.00ms",
+    "cpu": "5854.5%",
+    "memory": "894MiB",
+    "connections": 512,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "32.00MB/s",
+    "input_bw": "21.97MB/s",
+    "reconnects": 142300,
+    "status_2xx": 1422363,
+    "status_3xx": 0,
+    "status_4xx": 0,
     "status_5xx": 0
   },
   {

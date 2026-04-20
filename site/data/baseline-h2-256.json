@@ -137,6 +137,25 @@
     "status_5xx": 0
   },
   {
+    "framework": "h2o-mruby",
+    "language": "Ruby",
+    "rps": 3961009,
+    "avg_latency": "6.64ms",
+    "p99_latency": "6.64ms",
+    "cpu": "6255.8%",
+    "memory": "167MiB",
+    "connections": 256,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "103.02MB/s",
+    "reconnects": 0,
+    "status_2xx": 20003100,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "helidon-production",
     "language": "Java",
     "rps": 2066462,
