@@ -58,6 +58,25 @@
     "status_5xx": 0
   },
   {
+    "framework": "h2o-mruby",
+    "language": "Ruby",
+    "rps": 252307,
+    "avg_latency": "17.85ms",
+    "p99_latency": "39.47ms",
+    "cpu": "4067.8%",
+    "memory": "368MiB",
+    "connections": 64,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "15.06GB/s",
+    "reconnects": 0,
+    "status_2xx": 1269106,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "nginx",
     "language": "C",
     "rps": 306492,

@@ -348,6 +348,13 @@
     "type": "tuned",
     "engine": "sisk"
   },
+  "SlimeWeb": {
+    "dir": "slimeweb",
+    "description": "SlimeWeb is a fast lightweight framework for python powered by rust",
+    "repo": "https://github.com/ATOMMAX-2001/Slime/",
+    "type": "tuned",
+    "engine": "hyper"
+  },
   "spring-boot": {
     "dir": "spring-boot",
     "description": "Spring Boot with embedded Tomcat on JDK 25 with virtual threads.",

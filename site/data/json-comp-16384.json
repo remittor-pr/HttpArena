@@ -493,6 +493,26 @@
     "status_5xx": 0
   },
   {
+    "framework": "SlimeWeb",
+    "language": "Python",
+    "rps": 47876,
+    "avg_latency": "136.15ms",
+    "p99_latency": "611.70ms",
+    "cpu": "2144.0%",
+    "memory": "313MiB",
+    "connections": 16384,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "53.27MB/s",
+    "input_bw": "3.52MB/s",
+    "reconnects": 5751,
+    "status_2xx": 239380,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "spring-boot",
     "language": "Java",
     "rps": 180061,
