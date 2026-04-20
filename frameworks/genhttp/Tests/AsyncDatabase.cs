@@ -26,7 +26,7 @@ public class AsyncDatabase
     }
 
     [ResourceMethod]
-    public async Task<ListWithCount<object>> Compute(int min = 10, int max = 50)
+    public async Task<ListWithCount<object>> Compute(int min = 10, int max = 50, int limit = 50)
     {
         if (PgDataSource == null)
         {
@@ -34,15 +34,16 @@ public class AsyncDatabase
         }
 
         await using var cmd = PgDataSource.CreateCommand(
-            "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT 50");
-        
+            "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT $3");
+
         cmd.Parameters.AddWithValue(min);
         cmd.Parameters.AddWithValue(max);
-        
+        cmd.Parameters.AddWithValue(limit);
+
         await using var reader = await cmd.ExecuteReaderAsync();
 
-        var items = new List<object>();
-        
+        var items = new List<object>(limit);
+
         while (await reader.ReadAsync())
         {
             items.Add(new
@@ -57,8 +58,8 @@ public class AsyncDatabase
                 rating = new { score = reader.GetInt32(7), count = reader.GetInt32(8) },
             });
         }
-        
+
         return new ListWithCount<object>(items);
     }
-    
+
 }

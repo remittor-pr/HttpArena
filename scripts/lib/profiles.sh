@@ -21,6 +21,7 @@ declare -A PROFILES=(
     [api-16]="1|5|0-7,64-71|1024|api-16"
     [static]="1|200|0-31,64-95|1024,4096,6800|static"
     [async-db]="1|0|0-31,64-95|1024|async-db"
+    [crud]="1|200|1-31,65-95|4096|crud"
     [baseline-h2]="1|0|0-31,64-95|256,1024|h2"
     [static-h2]="1|0|0-31,64-95|256,1024|static-h2"
     [baseline-h3]="1|0|0-31,64-95|64|h3"
@@ -30,6 +31,8 @@ declare -A PROFILES=(
     [stream-grpc]="1|0|0-31,64-95|64|grpc-stream"
     [stream-grpc-tls]="1|0|0-31,64-95|64|grpc-stream-tls"
     [gateway-64]="1|0|0-31,64-95|512,1024|gateway-64"
+    [gateway-h3]="1|0|0-31,64-95|64,256|gateway-h3"
+    [production-stack]="1|0|0-31,64-95|256,1024|production-stack"
     [echo-ws]="1|0|0-31,64-95|512,4096,16384|ws-echo"
 )
 
@@ -37,10 +40,11 @@ PROFILE_ORDER=(
     baseline pipelined limited-conn
     json json-comp json-tls
     upload api-4 api-16
-    static async-db
+    static async-db crud
     baseline-h2 static-h2
     baseline-h3 static-h3
-    gateway-64
+    gateway-64 gateway-h3
+    production-stack
     unary-grpc unary-grpc-tls
     stream-grpc stream-grpc-tls
     echo-ws
@@ -67,9 +71,9 @@ endpoint_tool() {
         # wrk (lua script rotation)
         static|json-tls)                    echo "wrk" ;;
         # h2load for all HTTP/2 variants
-        h2|static-h2|gateway-64|grpc|grpc-tls)  echo "h2load" ;;
+        h2|static-h2|gateway-64|grpc|grpc-tls|production-stack)  echo "h2load" ;;
         # h2load built with ngtcp2 for HTTP/3
-        h3|static-h3)                       echo "h2load-h3" ;;
+        h3|static-h3|gateway-h3)            echo "h2load-h3" ;;
         # ghz for real gRPC (streaming especially)
         grpc-stream|grpc-stream-tls)        echo "ghz" ;;
         # gcannon for everything else (h1, upload, api-4, api-16, async-db, ws, ...)

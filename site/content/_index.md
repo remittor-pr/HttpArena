@@ -68,7 +68,7 @@ html.dark .test-card-endpoint { color: #64748b; }
 </style>
 
 <div class="tests-section">
-<h2>19 Test Profiles Across H/1.1, H/2, H/3, gRPC and WebSocket</h2>
+<h2>20 Test Profiles Across H/1.1, H/2, H/3, gRPC and WebSocket</h2>
 <p class="tests-sub">Every framework is tested under diverse, realistic workloads — from raw throughput to JSON processing, gRPC unary calls, and WebSocket echo.</p>
 
 <div class="tests-proto">
@@ -119,6 +119,11 @@ html.dark .test-card-endpoint { color: #64748b; }
     <div class="test-card-desc">16 requests sent back-to-back per connection. Tests pipeline batching.</div>
     <div class="test-card-endpoint">GET /pipeline</div>
   </a>
+  <a class="test-card" href="docs/test-profiles/h1/isolated/crud">
+    <div class="test-card-title">CRUD (REST API)</div>
+    <div class="test-card-desc">Realistic REST API with paginated list, cached reads, create, and update against Postgres.</div>
+    <div class="test-card-endpoint">GET/POST/PUT /crud/items</div>
+  </a>
 </div>
 </div>
 
@@ -155,12 +160,22 @@ html.dark .test-card-endpoint { color: #64748b; }
 </div>
 
 <div class="tests-proto">
-<span class="tests-proto-label tests-proto-h2">H/2 Gateway</span>
+<span class="tests-proto-label tests-proto-h2">Gateway</span>
 <div class="tests-grid">
-  <a class="test-card" href="docs/test-profiles/h2-gateway/gateway-64">
-    <div class="test-card-title">Gateway-64</div>
-    <div class="test-card-desc">Reverse proxy + application server — mixed static, JSON, and async-db workload over HTTP/2 with TLS. 64 CPUs split between proxy and server.</div>
+  <a class="test-card" href="docs/test-profiles/gateway/gateway-h2">
+    <div class="test-card-title">Gateway H2</div>
+    <div class="test-card-desc">Two-service proxy + server stack over HTTP/2 + TLS. Mixed workload: static, JSON, baseline, async-db.</div>
     <div class="test-card-endpoint">proxy:8443 → server (h2)</div>
+  </a>
+  <a class="test-card" href="docs/test-profiles/gateway/gateway-h3">
+    <div class="test-card-title">Gateway H3</div>
+    <div class="test-card-desc">Same two-service stack as Gateway H2 but with HTTP/3 + QUIC at the edge.</div>
+    <div class="test-card-endpoint">proxy:8443 → server (h3/quic)</div>
+  </a>
+  <a class="test-card" href="docs/test-profiles/gateway/production-stack">
+    <div class="test-card-title">Production Stack H2</div>
+    <div class="test-card-desc">Four-service CRUD API: edge + Redis + JWT auth sidecar + server. 10K-item cache-aside, concurrent reads + writes.</div>
+    <div class="test-card-endpoint">edge:8443 → authsvc → server → redis/postgres</div>
   </a>
 </div>
 </div>
@@ -193,6 +208,16 @@ html.dark .test-card-endpoint { color: #64748b; }
     <div class="test-card-title">Unary (TLS)</div>
     <div class="test-card-desc">Same unary gRPC call over encrypted HTTP/2 with TLS 1.3.</div>
     <div class="test-card-endpoint">BenchmarkService/GetSum (TLS)</div>
+  </a>
+  <a class="test-card" href="docs/test-profiles/grpc/stream">
+    <div class="test-card-title">Stream (h2c)</div>
+    <div class="test-card-desc">Server-streaming gRPC over cleartext HTTP/2 — sustained message throughput over a single long-lived call.</div>
+    <div class="test-card-endpoint">BenchmarkService/StreamSums (h2c)</div>
+  </a>
+  <a class="test-card" href="docs/test-profiles/grpc/stream">
+    <div class="test-card-title">Stream (TLS)</div>
+    <div class="test-card-desc">Same server-streaming gRPC call over encrypted HTTP/2 with TLS 1.3.</div>
+    <div class="test-card-endpoint">BenchmarkService/StreamSums (TLS)</div>
   </a>
 </div>
 </div>

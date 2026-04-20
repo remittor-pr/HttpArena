@@ -43,6 +43,7 @@ html.dark .lb-type-note-h2gw { color: #e2e8f0 !important; background: linear-gra
     <div class="lb-type-filter lb-type-all" data-type="all">All</div>
     <div class="lb-type-filter lb-type-production active" data-type="production">Production</div>
     <div class="lb-type-filter lb-type-tuned active" data-type="tuned">Tuned</div>
+    <div class="lb-type-filter lb-type-infrastructure" data-type="infrastructure">Infrastructure</div>
     <div class="lb-type-filter lb-type-engine" data-type="engine">Engine</div>
   </div>
   <div class="lb-filters" style="margin:0 0 0 0;">
@@ -114,7 +115,7 @@ html.dark .lb-type-note-h2gw { color: #e2e8f0 !important; background: linear-gra
     {{ $pct := mul (div (float $r.rps) (float $maxRps)) 100.0 }}
     {{ $meta := index site.Data.frameworks $r.framework }}
     {{ $s2xx := int ($r.status_2xx | default 0) }}{{ $s3xx := int ($r.status_3xx | default 0) }}{{ $s4xx := int ($r.status_4xx | default 0) }}{{ $s5xx := int ($r.status_5xx | default 0) }}{{ $errs := add $s4xx $s5xx }}
-    <div class="lb-row" data-lang="{{ $r.language | default "" }}" data-name="{{ $r.framework }}" data-rps="{{ printf "%.0f" $r.rps }}" data-type="{{ with $meta }}{{ .type | default "production" }}{{ end }}" data-engine="{{ with $meta }}{{ .engine | default "" }}{{ end }}" data-desc="{{ with $meta }}{{ .description }}{{ end }}" data-repo="{{ with $meta }}{{ .repo }}{{ end }}" data-s2xx="{{ $s2xx }}" data-s3xx="{{ $s3xx }}" data-s4xx="{{ $s4xx }}" data-s5xx="{{ $s5xx }}" {{ if $r.tpl_static }}data-tpl-static="{{ int $r.tpl_static }}" data-tpl-json="{{ int ($r.tpl_json | default 0) }}" data-tpl-async-db="{{ int ($r.tpl_async_db | default 0) }}" data-tpl-baseline="{{ int ($r.tpl_baseline | default 0) }}"{{ end }}>
+    <div class="lb-row" data-lang="{{ $r.language | default "" }}" data-name="{{ $r.framework }}" data-rps="{{ printf "%.0f" $r.rps }}" data-type="{{ with $meta }}{{ .type | default "production" }}{{ end }}" data-engine="{{ with $meta }}{{ .engine | default "" }}{{ end }}" data-desc="{{ with $meta }}{{ .description }}{{ end }}" data-repo="{{ with $meta }}{{ .repo }}{{ end }}" data-s2xx="{{ $s2xx }}" data-s3xx="{{ $s3xx }}" data-s4xx="{{ $s4xx }}" data-s5xx="{{ $s5xx }}" {{ if $r.tpl_static }}data-tpl-static="{{ int $r.tpl_static }}" data-tpl-json="{{ int ($r.tpl_json | default 0) }}" data-tpl-async-db="{{ int ($r.tpl_async_db | default 0) }}" data-tpl-baseline="{{ int ($r.tpl_baseline | default 0) }}"{{ end }} data-cpu-breakdown="{{ $r.cpu_breakdown | default "" }}">
       {{ $ftype := "framework" }}{{ with $meta }}{{ $ftype = .type | default "production" }}{{ end }}
       <div class="lb-rank">{{ add $j 1 }}</div>
       <div class="lb-name">{{ $r.framework }}</div>
@@ -139,7 +140,7 @@ html.dark .lb-type-note-h2gw { color: #e2e8f0 !important; background: linear-gra
         <div class="lb-bar lb-bar-{{ add $j 1 }}" style="width: {{ printf "%.1f" $pct }}%"></div>
         {{ end }}
       </div>
-      <div class="lb-stat">{{ $r.cpu | default "—" }}</div>
+      <div class="lb-stat"{{ with $r.cpu_breakdown }} title="{{ . }}" style="cursor:help;text-decoration:underline dotted;text-underline-offset:3px;"{{ end }}>{{ $r.cpu | default "—" }}</div>
       <div class="lb-stat">{{ $r.memory | default "—" }}</div>
       <div class="lb-stat">{{ $r.avg_latency }}</div>
       <div class="lb-stat">{{ $r.p99_latency }}</div>
@@ -158,6 +159,8 @@ html.dark .lb-type-note-h2gw { color: #e2e8f0 !important; background: linear-gra
 <style>
 .lb-panel-h2gw { display: none; }
 .lb-panel-h2gw.active { display: block; margin-top: 1rem; }
+.lb-conn-panel-h2gw { display: none; }
+.lb-conn-panel-h2gw.active { display: block; }
 /* Gateway grid: # Name Conn Req/s BW Err Bar CPU Mem AvgLat P99 */
 .lb-panel-h2gw .lb-row {
   grid-template-columns: 2.5rem 14rem 3.5rem 7rem 7rem 3rem 1fr 5.5rem 5rem 5.5rem 4.5rem;
@@ -265,6 +268,7 @@ function applyFilters_h2gw(activePanel) {
 
   var showAll = activePanel.querySelector('.lb-type-filter[data-type="all"]').classList.contains('active');
   var showEngine = showAll || activePanel.querySelector('.lb-type-filter[data-type="engine"]').classList.contains('active');
+  var showInfrastructure = showAll || activePanel.querySelector('.lb-type-filter[data-type="infrastructure"]').classList.contains('active');
   var showTuned = showAll || activePanel.querySelector('.lb-type-filter[data-type="tuned"]').classList.contains('active');
   var showProduction = showAll || activePanel.querySelector('.lb-type-filter[data-type="production"]').classList.contains('active');
 
@@ -275,6 +279,7 @@ function applyFilters_h2gw(activePanel) {
     var defs = [];
     if (showProduction) defs.push('<span class="lb-type-badge lb-type-badge-production"><span class="lb-type-square" style="background:#22c55e;"></span> Production</span> Standard framework configuration. Must follow production-specific implementation rules for each test.');
     if (showTuned) defs.push('<span class="lb-type-badge lb-type-badge-tuned"><span class="lb-type-square" style="background:#eab308;"></span> Tuned</span> May use experimental flags and non-default optimizations. Not bound by production implementation rules.');
+    if (showInfrastructure) defs.push('<span class="lb-type-badge lb-type-badge-infrastructure"><span class="lb-type-square" style="background:#0891b2;"></span> Infrastructure</span> Reverse proxies, static-file servers, and their scripting extensions (nginx, h2o). Scored on baseline, pipelined, short-lived, and static only.');
     if (showEngine) defs.push('<span class="lb-type-badge lb-type-badge-engine"><span class="lb-type-square" style="background:#dc2626;"></span> Engine</span> Bare-metal HTTP servers — not frameworks. A different breed entirely.');
     typeNote.innerHTML = defs.join('<br>');
   }
@@ -296,7 +301,7 @@ function applyFilters_h2gw(activePanel) {
       var engine = (row.dataset.engine || '').toLowerCase();
       var langMatch = allLangs || langState.selected.has(lang);
       var engineMatch = allEngines || engineState.selected.has(engine);
-      var typeMatch = (type === 'engine' && showEngine) || (type === 'tuned' && showTuned) || (type === 'production' && showProduction) || (type !== 'engine' && type !== 'tuned' && showProduction);
+      var typeMatch = (type === 'engine' && showEngine) || (type === 'infrastructure' && showInfrastructure) || (type === 'tuned' && showTuned) || (type === 'production' && showProduction) || (type !== 'engine' && type !== 'infrastructure' && type !== 'tuned' && showProduction);
       var textMatch = terms.length === 0 || terms.some(function(t) {
         return name.indexOf(t) !== -1 || lang.toLowerCase().indexOf(t) !== -1 || engine.indexOf(t) !== -1;
       });
@@ -560,6 +565,7 @@ w.addEventListener('click', function(e) {
   var s3xx = Number(row.dataset.s3xx || 0);
   var s4xx = Number(row.dataset.s4xx || 0);
   var s5xx = Number(row.dataset.s5xx || 0);
+  var cpuBreakdown = row.dataset.cpuBreakdown || '';
   var connPanel = row.closest('.lb-conn-panel-h2gw');
   var profile = connPanel ? connPanel.dataset.profile : '';
   var connCount = connPanel ? connPanel.dataset.conns : '';
@@ -586,6 +592,7 @@ w.addEventListener('click', function(e) {
         '<div><div class="lb-popup-stat-label">P99 Latency</div><div class="lb-popup-stat-value">' + p99 + '</div></div>' +
         '<div><div class="lb-popup-stat-label">CPU</div><div class="lb-popup-stat-value">' + cpu + '</div></div>' +
         '<div><div class="lb-popup-stat-label">Memory</div><div class="lb-popup-stat-value">' + mem + '</div></div>' +
+        (cpuBreakdown ? '<div style="grid-column:1/-1"><div class="lb-popup-stat-label">Per-service CPU</div><div class="lb-popup-stat-value" style="font-size:0.85rem;">' + cpuBreakdown.replace(/\|/g, '&nbsp;&nbsp;|&nbsp;&nbsp;') + '</div></div>' : '') +
         '<div style="grid-column:1/-1"><div class="lb-popup-stat-label">Status Codes</div><div class="lb-popup-stat-value">' + statusHtml + '</div></div>' +
       '</div>' +
       '<div class="lb-popup-links">' + repoHtml + benchHtml + logHtml + '</div>' +
@@ -663,7 +670,7 @@ window.addEventListener('roundChanged', function(ev) {
           }
           return '<div class="lb-bar-cell"><div class="lb-bar lb-bar-' + (j + 1) + '" style="width:' + pct + '%"></div></div>';
         })() +
-        '<div class="lb-stat">' + (r.cpu || '\u2014') + '</div>' +
+        '<div class="lb-stat"' + (r.cpu_breakdown ? ' title="' + r.cpu_breakdown + '" style="cursor:help;text-decoration:underline dotted;text-underline-offset:3px;"' : '') + '>' + (r.cpu || '\u2014') + '</div>' +
         '<div class="lb-stat">' + (r.memory || '\u2014') + '</div>' +
         '<div class="lb-stat">' + (r.avg_latency || '\u2014') + '</div>' +
         '<div class="lb-stat">' + (r.p99_latency || '\u2014') + '</div>';

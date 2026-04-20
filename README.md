@@ -30,12 +30,16 @@ Always specify `-f <framework>`. Results are automatically compared against the 
 
 | Category | Profiles | Description |
 |----------|----------|-------------|
-| Connection | Baseline (512-4K), Pipelined, Limited | Performance scaling with connection count |
-| Workload | JSON, Compression, Upload, Sync DB (SQLite), Async DB (Postgres) | Serialization, gzip, streaming I/O, database queries |
-| Multi-endpoint | Mixed, API-4, API-16, Assets-4, Assets-16 | Concurrent endpoints, resource-constrained, asset serving with conditional compression |
-| Resilience | Noisy, TCP Fragmentation | Malformed requests, MTU 69 fragmentation stress |
-| H/2 Gateway | Gateway-64 | Reverse proxy + server stack over HTTP/2 with TLS, mixed workload (64 CPUs) |
-| Protocol | HTTP/2, HTTP/3, gRPC, WebSocket | Multi-protocol support |
+| Connection | `baseline`, `pipelined`, `limited-conn` | Mixed GET/POST with query parsing (512/4K conns), 16× batched pipelining, short-lived connections that close after 10 requests |
+| Workload | `json`, `json-comp`, `json-tls`, `upload`, `static` | JSON serialization, gzip/brotli compression, HTTP/1.1 over TLS, 20 MB body ingestion, 20-file static asset serving |
+| Database | `async-db`, `crud` | Async Postgres sequential scan; realistic REST API with cached reads, list, upsert, update, and optional Redis cache |
+| Multi-endpoint | `api-4`, `api-16` | Mixed baseline + JSON + async-db at CPU-budget cliffs (4 and 16 CPUs) |
+| H/2 | `baseline-h2`, `static-h2` | Baseline and static over TLS with HTTP/2 stream multiplexing |
+| H/3 | `baseline-h3`, `static-h3` | Baseline and static over QUIC with TLS 1.3 |
+| gRPC | `unary-grpc`, `unary-grpc-tls`, `stream-grpc`, `stream-grpc-tls` | Unary and server-streaming gRPC over plaintext HTTP/2 and TLS |
+| Gateway | `gateway-64`, `gateway-h3` | Reverse proxy + server stack over HTTP/2 and HTTP/3 with mixed workload |
+| Production Stack | `production-stack` | Four-service architecture: edge + Redis + JWT auth sidecar + server, 10K-item cache-aside, concurrent reads + writes |
+| WebSocket | `echo-ws` | WebSocket echo throughput across connection counts |
 
 ## Run Locally
 

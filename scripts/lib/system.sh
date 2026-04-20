@@ -37,6 +37,17 @@ system_tune() {
     sudo sysctl -w net.ipv4.tcp_max_syn_backlog=65535 >/dev/null 2>&1 || true
     sudo sysctl -w net.core.netdev_max_backlog=65535  >/dev/null 2>&1 || true
 
+    # Widen the ephemeral port range and cap TIME_WAIT bucket count so
+    # profiles that churn connections (crud with -r 25 does ~40K reconnects
+    # per iteration at 4096c) don't exhaust the default 28K-port range and
+    # silently stall gcannon after the first iteration. TIME_WAIT duration
+    # itself is hardcoded in the kernel (~60s) and cannot be shortened via
+    # sysctl, so we rely on port-range + tw_reuse + between-iteration sleep
+    # to recycle. Loopback-bench only — not settings for a public server.
+    sudo sysctl -w net.ipv4.ip_local_port_range='1024 65535' >/dev/null 2>&1 || true
+    sudo sysctl -w net.ipv4.tcp_max_tw_buckets=131072        >/dev/null 2>&1 || true
+    sudo sysctl -w net.ipv4.tcp_tw_reuse=1                   >/dev/null 2>&1 || true
+
     info "setting UDP buffer sizes for QUIC"
     sudo sysctl -w net.core.rmem_max=7500000 >/dev/null 2>&1 || true
     sudo sysctl -w net.core.wmem_max=7500000 >/dev/null 2>&1 || true

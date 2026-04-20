@@ -1,9 +1,9 @@
 {
   "actix": {
     "dir": "actix",
-    "description": "Actix-web 4 with rustls for HTTP/2 support. Tuned: static assets preloaded in-memory with precompressed .br/.gz neighbors, JSON responses precomputed per (count, m) pair with gzip+brotli cached at startup, Compress middleware bypassed. Compiled with -O3 and thin LTO.",
+    "description": "Actix-web 4 with rustls for HTTP/2 support. Standard configuration: actix-files serves static content from disk per request, Compress middleware handles Accept-Encoding negotiation with gzip/brotli on-the-fly, deadpool-postgres for async DB pooling (sized from DATABASE_MAX_CONN), serde_json per request. Compiled with -O3 and thin LTO.",
     "repo": "https://github.com/actix/actix-web",
-    "type": "tuned",
+    "type": "production",
     "engine": "actix",
     "variants": [
       {
@@ -14,6 +14,20 @@
         "engine": "actix"
       }
     ]
+  },
+  "aleph": {
+    "dir": "aleph",
+    "description": "",
+    "repo": "https://github.com/clj-commons/aleph",
+    "type": "production",
+    "engine": "netty"
+  },
+  "apache": {
+    "dir": "apache",
+    "description": "Apache HTTPD 2.4 with event MPM and mod_lua for the dynamic /baseline11 handler. Native file serving for /static/.",
+    "repo": "https://github.com/apache/httpd",
+    "type": "infrastructure",
+    "engine": "apache"
   },
   "aspnet-minimal": {
     "dir": "aspnet-minimal",
@@ -52,6 +66,13 @@
     "type": "tuned",
     "engine": "io_uring"
   },
+  "aspnet-minimal + caddy": {
+    "dir": "aspnet-minimal_caddy",
+    "description": "ASP.NET minimal API behind Caddy, serving HTTP/3 (QUIC) at the edge with h1 forwarding to Kestrel.",
+    "repo": "https://github.com/dotnet/aspnetcore",
+    "type": "production",
+    "engine": "kestrel"
+  },
   "aspnet-minimal + nginx": {
     "dir": "aspnet-minimal_nginx",
     "description": "ASP.NET Core minimal API behind an Nginx reverse proxy. Nginx handles TLS termination and static files, proxying dynamic endpoints to Kestrel over HTTP/1.1.",
@@ -73,6 +94,13 @@
     "type": "tuned",
     "engine": "bun"
   },
+  "caddy": {
+    "dir": "caddy",
+    "description": "Caddy with a custom Go handler module for /baseline11, compiled via xcaddy. Native file_server for /static.",
+    "repo": "https://github.com/caddyserver/caddy",
+    "type": "infrastructure",
+    "engine": "caddy"
+  },
   "deno-websocket": {
     "dir": "deno-websocket",
     "description": "Deno WebSocket echo server",
@@ -87,6 +115,20 @@
     "type": "production",
     "engine": "jsc"
   },
+  "envoy": {
+    "dir": "envoy",
+    "description": "Envoy proxy with an inline Lua HTTP filter for /baseline11 and direct_response routes for /static files.",
+    "repo": "https://github.com/envoyproxy/envoy",
+    "type": "infrastructure",
+    "engine": "envoy"
+  },
+  "fastapi": {
+    "dir": "fastapi",
+    "description": "FastAPI async web framework on Uvicorn (uvloop)",
+    "repo": "https://github.com/fastapi/fastapi",
+    "type": "production",
+    "engine": "uvicorn"
+  },
   "fastpysgi-asgi": {
     "dir": "fastpysgi-asgi",
     "description": "An ultra fast WSGI/ASGI server for Python",
@@ -100,6 +142,13 @@
     "repo": "https://github.com/remittor/fastpysgi",
     "type": "engine",
     "engine": "libuv"
+  },
+  "flask": {
+    "dir": "flask",
+    "description": "Flask web framework on Gunicorn with sync workers",
+    "repo": "https://github.com/pallets/flask",
+    "type": "production",
+    "engine": "gunicorn"
   },
   "Fletch": {
     "dir": "fletch",
@@ -154,7 +203,7 @@
     "dir": "h2o",
     "description": "High-performance C HTTP server using libh2o with multi-threaded event loops and native HTTP/2 support.",
     "repo": "https://github.com/h2o/h2o",
-    "type": "engine",
+    "type": "infrastructure",
     "engine": "h2o"
   },
   "helidon-production": {
@@ -192,12 +241,26 @@
     "type": "engine",
     "engine": "hyper"
   },
+  "hyperf": {
+    "dir": "hyperf",
+    "description": "A coroutine framework that focuses on hyperspeed and flexibility. Building microservice or middleware with ease.",
+    "repo": "https://github.com/hyperf/hyperf",
+    "type": "production",
+    "engine": "Swoole"
+  },
   "ktor": {
     "dir": "ktor",
     "description": "JetBrains Ktor 3.x on Netty with Kotlin coroutines, kotlinx.serialization, JDK 21.",
     "repo": "https://github.com/ktorio/ktor",
     "type": "tuned",
     "engine": "netty"
+  },
+  "mark": {
+    "dir": "mark",
+    "description": "Mark is a high performance API micro framework based on workerman, helps you quickly write APIs with PHP.",
+    "repo": "https://github.com/passwalls/mark",
+    "type": "production",
+    "engine": "workerman"
   },
   "may-minihttp": {
     "dir": "may-minihttp",
@@ -210,14 +273,14 @@
     "dir": "nginx",
     "description": "Nginx with a custom C handler module, compiled with -O3 -march=native.",
     "repo": "https://github.com/nginx/nginx",
-    "type": "engine",
+    "type": "infrastructure",
     "engine": "nginx"
   },
   "ngx-php": {
     "dir": "ngx-php",
     "description": "Embedded PHP scripting language module for nginx.",
     "repo": "https://github.com/rryqszq4/ngx-php",
-    "type": "production",
+    "type": "tuned",
     "engine": "nginx"
   },
   "node-websocket": {
@@ -233,6 +296,13 @@
     "repo": "https://github.com/php/php-src",
     "type": "production",
     "engine": "nginx"
+  },
+  "pingora": {
+    "dir": "pingora",
+    "description": "Pingora, Cloudflare's Rust HTTP framework, used as a standalone server with custom handlers for /baseline11 and preloaded /static files.",
+    "repo": "https://github.com/cloudflare/pingora",
+    "type": "infrastructure",
+    "engine": "pingora"
   },
   "quarkus-jvm": {
     "dir": "quarkus-jvm",
@@ -264,12 +334,26 @@
     "type": "tuned",
     "engine": "puma"
   },
+  "ring-http-exchange": {
+    "dir": "ring-http-exchange",
+    "description": "",
+    "repo": "https://github.com/ruroru/ring-http-exchange",
+    "type": "production",
+    "engine": "robaho-httpserver"
+  },
   "ringzero": {
     "dir": "ringzero",
     "description": "Custom C HTTP server built on io_uring with a multi-reactor architecture. No epoll, no thread-per-connection.",
     "repo": "https://github.com/MDA2AV/ringzero",
     "type": "engine",
     "engine": "io_uring"
+  },
+  "robyn": {
+    "dir": "robyn",
+    "description": "Robyn is a High-Performance Web Framework with a Rust runtime",
+    "repo": "https://github.com/sparckles/Robyn",
+    "type": "production",
+    "engine": "uvloop"
   },
   "roda": {
     "dir": "roda",
@@ -357,12 +441,26 @@
     "type": "tuned",
     "engine": "tonic"
   },
+  "traefik": {
+    "dir": "traefik",
+    "description": "Traefik with a Yaegi-interpreted local plugin handling /baseline11 computation and /static file serving. Plugin code is interpreted, so throughput is modest by design.",
+    "repo": "https://github.com/traefik/traefik",
+    "type": "infrastructure",
+    "engine": "traefik"
+  },
   "ultimate-express": {
     "dir": "ultimate-express",
     "description": "ultimate-express (Express API on uWebSockets.js) with single-process threading.",
     "repo": "https://github.com/dimdenGD/ultimate-express",
     "type": "tuned",
     "engine": "uwebsockets"
+  },
+  "uvicorn": {
+    "dir": "uvicorn",
+    "description": "An ASGI web server implementation for Python (uvloop)",
+    "repo": "https://github.com/Kludex/uvicorn",
+    "type": "engine",
+    "engine": "uvloop"
   },
   "workerman-websocket": {
     "dir": "workerman-websocket",

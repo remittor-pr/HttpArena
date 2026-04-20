@@ -32,7 +32,7 @@ The driver itself is small (~320 lines of orchestration) — all of the real wor
    - `ip link set lo mtu 1500` — realistic Ethernet MTU, not the kernel's default 65536.
    - `systemctl restart docker` — guarantees every subsequent container starts from a fresh daemon state.
    - `echo 3 > /proc/sys/vm/drop_caches`.
-5. **Postgres sidecar** — started if the framework subscribes to any of `async-db`, `api-4`, `api-16`, `gateway-64`. Uses `postgres:17-alpine`, seeded from `data/pgdb-seed.sql`, `max_connections=256`, host network.
+5. **Postgres sidecar** — started if the framework subscribes to any of `async-db`, `api-4`, `api-16`, `crud`, `gateway-64`, `gateway-h3`, `production-stack`. Uses `postgres:18` (Debian, glibc), tmpfs-backed, seeded from `data/pgdb-seed.sql`, `max_connections=256`, host network.
 6. **Profile loop** — for each subscribed profile × each connection count:
    - Starts the framework container (or `docker compose up` for gateway profiles).
    - Waits up to 30s for the right endpoint to respond.

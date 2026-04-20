@@ -22,4 +22,7 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+ENV THRUSTER_TARGET_PORT=8080
+ENV THRUSTER_LOG_REQUESTS=false
+
+CMD ["thrust", "bin/rails", "s"]

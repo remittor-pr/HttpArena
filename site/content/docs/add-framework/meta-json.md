@@ -88,4 +88,4 @@ The `gateway-64` profile tests your framework as part of a complete deployment s
 - The proxy, caching layer, and internal protocol choices are all part of the benchmark
 - Static files can be served directly by the proxy (e.g., Nginx) instead of the application server
 
-See the [Gateway-64 implementation guide](/docs/test-profiles/h2-gateway/gateway-64/implementation) for detailed documentation, three complete compose examples (two-tier, three-tier, and single-tier), CPU topology rules, and proxy configuration options.
+See the [Gateway-64 implementation guide](/docs/test-profiles/gateway/gateway-h2/implementation) for detailed documentation, three complete compose examples (two-tier, three-tier, and single-tier), CPU topology rules, and proxy configuration options.

@@ -11,7 +11,7 @@ class BenchmarkController < ActionController::API
   static_dir = File.join(DATA_DIR, 'static')
 
   if File.exist?(dataset_path)
-    self.dataset = JSON.parse(File.read(dataset_path)).freeze
+    self.dataset = JSON.parse(File.read(dataset_path)).map(&:deep_symbolize_keys).freeze
   end
 
   FileUtils.cp_r(File.join(DATA_DIR, 'static'), Rails.root.join('public', 'static'))
@@ -23,10 +23,7 @@ class BenchmarkController < ActionController::API
   end
 
   def baseline11
-    total = 0
-    request.query_parameters.each_value do |v|
-      total += v.to_i
-    end
+    total = params[:a].to_i + params[:b].to_i
     if request.post?
       total += request.body.read.to_i
     end
@@ -34,23 +31,20 @@ class BenchmarkController < ActionController::API
   end
 
   def baseline2
-    total = 0
-    request.query_parameters.each_value do |v|
-      total += v.to_i
-    end
+    total = params[:a].to_i + params[:b].to_i
     render plain: total.to_s
   end
 
   def json_endpoint
     return head(500) unless dataset
 
-    m = (params['m'] || 1).to_i
-    count = params['count'].to_i
+    m = (params[:m] || 1).to_i
+    count = params[:count].to_i
     items = dataset.slice(0, count).map do |d|
-      d.merge('total' => d['price'] * d['quantity'] * m)
+      d.merge(total: d[:price] * d[:quantity] * m)
     end
 
-    result = JSON.generate({ 'items' => items, 'count' => items.length })
+    result = JSON.generate(items: items, count: items.length)
 
     if accept_encodings = request.headers['Accept-Encoding']
       types = accept_encodings.split(',').map(&:strip)
@@ -63,19 +57,17 @@ class BenchmarkController < ActionController::API
         response.headers['content-encoding'] = 'gzip'
         send_data sio.string, disposition: :inline
       else
-        response.headers['content-type'] = 'application/json'
-        render plain: result
+        render json: result
       end
     else
-      response.headers['content-type'] = 'application/json'
-      render plain: result
+      render json: result
     end
   end
 
   def async_db
     min_val = (params[:min] || 10).to_i
     max_val = (params[:max] || 50).to_i
-    limit = (params['limit'] || 50).to_i.clamp(1, 50)
+    limit = (params[:limit] || 50).to_i.clamp(1, 50)
 
     rows = self.class.get_async_db&.with do |connection|
       connection.exec_prepared('select', [min_val, max_val, limit])
@@ -83,14 +75,14 @@ class BenchmarkController < ActionController::API
 
     items = rows.map do |r|
       {
-        'id' => r['id'],
-        'name' => r['name'],
-        'category' => r['category'],
-        'price' => r['price'],
-        'quantity' => r['quantity'],
-        'active' => r['active'] == 't',
-        'tags' => JSON.parse(r['tags']),
-        'rating' => { 'score' => r['rating_score'], 'count' => r['rating_count'] }
+        id: r['id'],
+        name: r['name'],
+        category: r['category'],
+        price: r['price'],
+        quantity: r['quantity'],
+        active: r['active'] == 't',
+        tags: JSON.parse(r['tags']),
+        rating: { score: r['rating_score'], count: r['rating_count'] }
       }
     end
     render json: { items: items, count: items.length }

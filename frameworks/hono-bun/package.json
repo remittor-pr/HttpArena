@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "hono": "^4.7.0",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "ioredis": "^5.4.1"
   }
 }

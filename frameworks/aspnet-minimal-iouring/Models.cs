@@ -43,3 +43,20 @@ sealed class RatingInfo
     public int Score { get; set; }
     public int Count { get; set; }
 }
+
+sealed class CrudListResponse
+{
+    public List<DbResponseItemDto> Items { get; set; } = [];
+    public long Total { get; set; }
+    public int Page { get; set; }
+    public int Limit { get; set; }
+}
+
+sealed class CrudWriteResponse
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public string? Category { get; set; }
+    public int Price { get; set; }
+    public int Quantity { get; set; }
+}

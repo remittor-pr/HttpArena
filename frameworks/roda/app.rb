@@ -5,6 +5,12 @@ Bundler.require(:default)
 
 require 'zlib'
 
+class Hash
+  def symbolize_keys!
+    transform_keys! { |key| key.to_sym }
+  end
+end
+
 class App < Roda
   SERVER_NAME = 'roda'.freeze
 
@@ -12,53 +18,35 @@ class App < Roda
   # Load dataset
   dataset_path = File.join DATA_DIR, 'dataset.json'
   if File.exist?(dataset_path)
-    opts[:dataset_items] = JSON.parse(File.read(dataset_path))
-  end
-
-  # Load static files into memory
-  MIME_TYPES = {
-    '.css'   => 'text/css',
-    '.js'    => 'application/javascript',
-    '.html'  => 'text/html',
-    '.woff2' => 'font/woff2',
-    '.svg'   => 'image/svg+xml',
-    '.webp'  => 'image/webp',
-    '.json'  => 'application/json'
-  }.freeze
-
-  static_dir = File.join DATA_DIR, 'static'
-  opts[:static_files] = {}
-  if Dir.exist?(static_dir)
-    Dir.foreach(static_dir) do |name|
-      next if name == '.' || name == '..'
-      path = File.join(static_dir, name)
-      next unless File.file?(path)
-      ext = File.extname(name)
-      ct = MIME_TYPES.fetch(ext, 'application/octet-stream')
-      opts[:static_files][name] = { path: path, content_type: ct }
+    items = JSON.parse(File.read(dataset_path)).map do |item|
+      item.symbolize_keys!
+      item[:rating].symbolize_keys!
+      item
     end
+    opts[:dataset_items] = items
   end
-  opts[:static_files].freeze
+
+  plugin :public, root: DATA_DIR, gzip: true, brotli: true
 
   PG_QUERY = 'SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT $3'.freeze
 
   plugin :default_headers, 'Server' => SERVER_NAME
-  plugin :halt
   plugin :request_headers
+  plugin :plain_hash_response_headers
+  plugin :halt
   plugin :send_file
 
   route do |r|
     r.root { 'ok' }
+
+    r.public
 
     r.is 'pipeline' do
       render_plain 'ok'
     end
 
     r.is('baseline11') do
-      total = 0
-      request.GET.each do |_k, v|
-        total += v.to_i
-      end
+      total = request.params['a'].to_i + request.params['b'].to_i
       if request.post?
         total += request.body.read.to_i
       end
@@ -66,10 +54,7 @@ class App < Roda
     end
 
     r.is 'baseline2' do
-      total = 0
-      request.GET.each do |_k, v|
-        total += v.to_i
-      end
+      total = request.params['a'].to_i + request.params['b'].to_i
       render_plain total.to_s
     end
 
@@ -78,7 +63,7 @@ class App < Roda
       r.halt 500, 'No dataset' unless dataset
       m = (request.params['m'] || 1).to_i
       items = dataset.slice(0, count).map do |d|
-        d.merge('total' => (d['price'] * d['quantity'] * m))
+        d.merge(total: (d[:price] * d[:quantity] * m))
       end
 
       result = JSON.generate({ 'items' => items, 'count' => count })
@@ -117,26 +102,17 @@ class App < Roda
 
       items = rows.map do |row|
         {
-          'id' => row['id'],
-          'name' => row['name'],
-          'category' => row['category'],
-          'price' => row['price'],
-          'quantity' => row['quantity'],
-          'active' => row['active'] == 1,
-          'tags' => JSON.parse(row['tags']),
-          'rating' => { 'score' => row['rating_score'], 'count' => row['rating_count'] }
+          id: row['id'],
+          name: row['name'],
+          category: row['category'],
+          price: row['price'],
+          quantity: row['quantity'],
+          active: row['active'] == 1,
+          tags: JSON.parse(row['tags']),
+          rating: { score: row['rating_score'], count: row['rating_count'] }
         }
       end
-      render_json JSON.generate({ 'items' => items, 'count' => items.length })
-    end
-
-    r.on 'static', String do |filename|
-      if static_file = opts[:static_files][filename]
-        response[RodaResponseHeaders::CONTENT_TYPE] = static_file[:content_type]
-        send_file static_file[:path]
-      else
-        r.halt 404
-      end
+      render_json JSON.generate({ items: items, count: items.length })
     end
   end
 

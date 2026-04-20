@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-require 'bundler/setup'
-Bundler.require(:default)
-
 require 'rails'
 require 'action_controller/railtie'
+
+Bundler.require(*Rails.groups)
 
 class BenchmarkApp < Rails::Application
   config.load_defaults Rails::VERSION::STRING.to_f

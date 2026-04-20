@@ -144,4 +144,4 @@ on_request /async-db:
 | Pipeline | 1 |
 | Duration | 10s |
 | Runs | 3 (best taken) |
-| Database | Postgres 17, 100,000 rows, no index on `price` |
+| Database | Postgres 18 (Debian, glibc), 100,000 rows, no index on `price` |

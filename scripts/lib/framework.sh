@@ -75,9 +75,15 @@ framework_start() {
 
     # Profiles that exercise the database get DATABASE_URL + per-profile conn cap.
     case "$endpoint" in
-        async-db|api-4|api-16)
+        async-db|crud|api-4|api-16)
             args+=(-e "DATABASE_URL=$DATABASE_URL" -e "DATABASE_MAX_CONN=256")
             ;;
+    esac
+
+    # crud also gets REDIS_URL so multi-process frameworks can use Redis as
+    # their shared cross-process cache. Single-heap frameworks ignore it.
+    case "$endpoint" in
+        crud) args+=(-e "REDIS_URL=$REDIS_URL") ;;
     esac
 
     # api-4 / api-16 additionally cap memory.
@@ -105,8 +111,11 @@ framework_start() {
 }
 
 framework_stop() {
-    docker stop -t 5 "$CONTAINER_NAME" 2>/dev/null || true
-    docker rm   -f  "$CONTAINER_NAME" 2>/dev/null || true
+    docker stop -t 5  "$CONTAINER_NAME" 2>/dev/null || true
+    # -v nukes any anonymous volumes the framework image declared (e.g.
+    # postgres-style VOLUME directives in a Dockerfile). Without it the
+    # volume lingers on every benchmark cycle and silently fills disk.
+    docker rm   -f -v "$CONTAINER_NAME" 2>/dev/null || true
 }
 
 # ── Readiness probe ─────────────────────────────────────────────────────────

@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liblttng-ust-dev libunwind-dev \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /runtime
-COPY patch-iouring.py /tmp/patch-iouring.py
+COPY frameworks/aspnet-minimal-iouring/patch-iouring.py /tmp/patch-iouring.py
 RUN git clone --depth 1 --branch io_uring https://github.com/benaadams/runtime.git . \
     && python3 /tmp/patch-iouring.py \
     && ./build.sh -subset clr+libs -c Release -bl \
@@ -18,9 +18,13 @@ RUN git clone --depth 1 --branch io_uring https://github.com/benaadams/runtime.g
 # Stage 2: Build the app using the official SDK
 FROM mcr.microsoft.com/dotnet/sdk:11.0-preview AS app-build
 WORKDIR /app
-COPY *.csproj ./
+COPY frameworks/aspnet-minimal-iouring/*.csproj ./
 RUN dotnet restore
-COPY . .
+COPY frameworks/aspnet-minimal-iouring/ .
+# MapStaticAssets() bakes files from wwwroot/ into a manifest at publish time.
+# aspnet-minimal serves /static/{filename} from there, so data/static/ must be
+# staged into wwwroot/static/ before `dotnet publish` runs.
+COPY data/static/ wwwroot/static/
 RUN dotnet publish -c Release -o out
 
 # Stage 3: Final image — patch the runtime with io_uring binaries

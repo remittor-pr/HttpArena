@@ -58,7 +58,7 @@ Started automatically when the framework subscribes to `async-db`, `api-4`, `api
 | `PG_CONTAINER` | `httparena-postgres` | Container name. |
 | `DATABASE_URL` | `postgres://bench:bench@localhost:5432/benchmark` | Exported into the framework container so the app can connect. |
 
-The sidecar uses `postgres:17-alpine` with `-c max_connections=256` and is seeded from `data/pgdb-seed.sql`.
+The sidecar uses `postgres:18` (Debian, glibc) with `-c max_connections=256` and is seeded from `data/pgdb-seed.sql`.
 
 ## Profile definitions
 

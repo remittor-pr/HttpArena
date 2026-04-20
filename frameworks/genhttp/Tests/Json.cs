@@ -28,18 +28,23 @@ public class Json
         return null;
     }
 
-    [ResourceMethod]
-    public ListWithCount<ProcessedItem> Compute(int m = 1)
+    [ResourceMethod(":count")]
+    public ListWithCount<ProcessedItem> Compute(int count, int m = 1)
     {
         if (DatasetItems == null)
         {
             throw new ProviderException(ResponseStatus.InternalServerError, "No dataset");
         }
 
-        var processed = new List<ProcessedItem>(DatasetItems.Count);
+        if (count > DatasetItems.Count) count = DatasetItems.Count;
+        if (count < 0) count = 0;
 
-        foreach (var d in DatasetItems)
+        var processed = new List<ProcessedItem>(count);
+
+        for (var i = 0; i < count; i++)
         {
+            var d = DatasetItems[i];
+
             processed.Add(new ProcessedItem
             {
                 Id = d.Id, Name = d.Name, Category = d.Category,
