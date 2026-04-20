@@ -26,3 +26,5 @@ A coroutine framework that focuses on hyperspeed and flexibility. Building micro
 
 
 ## Notes
+
+When running the container, add the `--security-opt seccomp:unconfined` option to allow the Docker container to use io_uring features.
