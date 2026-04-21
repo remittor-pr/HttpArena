@@ -59,7 +59,11 @@ TESTS=$(python3 -c "import json; print(' '.join(json.load(open('$META_FILE'))['t
 echo "[info] Subscribed tests: $TESTS"
 
 has_test() {
-    echo "$TESTS" | grep -qw "$1"
+    # Exact whole-token match. `grep -qw` treats "-" as a word boundary
+    # and matches "baseline" against "baseline-h2c" / "baseline-h2", and
+    # "json" against "json-h2c" / "json-tls" / "json-comp" — all false
+    # positives. Bash pattern match on the space-padded string is exact.
+    [[ " $TESTS " == *" $1 "* ]]
 }
 
 # Build — skip standalone build if framework only subscribes to compose profiles
