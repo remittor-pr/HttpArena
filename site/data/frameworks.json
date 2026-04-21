@@ -496,5 +496,12 @@
     "repo": "https://github.com/walkor/Workerman",
     "type": "production",
     "engine": "workerman"
+  },
+  "wtx": {
+    "dir": "wtx-http2",
+    "description": "WTX - HTTP/2 Framework Server",
+    "repo": "https://github.com/c410-f3r/wtx",
+    "type": "production",
+    "engine": "wtx"
   }
 }

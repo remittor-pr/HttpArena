@@ -17,5 +17,24 @@
     "status_3xx": 0,
     "status_4xx": 0,
     "status_5xx": 0
+  },
+  {
+    "framework": "wtx",
+    "language": "Rust",
+    "rps": 724160,
+    "avg_latency": "34.47ms",
+    "p99_latency": "34.47ms",
+    "cpu": "4468.5%",
+    "memory": "703MiB",
+    "connections": 256,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "25.01MB/s",
+    "reconnects": 0,
+    "status_2xx": 3642528,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
   }
 ]
