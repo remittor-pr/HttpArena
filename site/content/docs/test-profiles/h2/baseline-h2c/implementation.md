@@ -6,7 +6,7 @@ title: Implementation Guidelines
 Same `/baseline2?a=…&b=…` sum endpoint as the HTTP/2-TLS baseline, served as HTTP/2 **cleartext** — no TLS, h2 framing from the first byte. This matches the deployment pattern behind TLS-terminating load balancers (ALB → backend, nginx → app server) and inside service meshes where mTLS is handled by sidecars.
 
 **Port:** 8082
-**Connections:** 256, 1,024
+**Connections:** 256, 1,024, 4,096
 **Concurrent streams per connection:** 100
 **Negotiation:** prior-knowledge (`h2load -p h2c`)
 
@@ -52,7 +52,7 @@ Content-Type: text/plain
 | Parameter | Value |
 |-----------|-------|
 | Endpoint | `GET /baseline2?a=1&b=1` |
-| Connections | 256, 1,024 |
+| Connections | 256, 1,024, 4,096 |
 | Streams per connection | 100 (`-m 100`) |
 | Duration | 5s |
 | Runs | 3 (best taken) |

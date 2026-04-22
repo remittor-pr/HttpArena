@@ -6,7 +6,7 @@ title: Implementation Guidelines
 Same [JSON Processing](../../../h1/isolated/json-processing/) workload (dataset slice + per-item derived field + JSON serialization) served over HTTP/2 cleartext. Exercises the JSON pipeline under multiplexed h2 streams without the TLS CPU tax the `baseline-h2` profile carries.
 
 **Port:** 8082
-**Connections:** 4,096
+**Connections:** 1,024, 4,096
 **Concurrent streams per connection:** 32
 **Negotiation:** prior-knowledge (`h2load -p h2c`)
 
@@ -42,7 +42,7 @@ Content-Type: application/json
 | Parameter | Value |
 |-----------|-------|
 | Endpoint | `GET /json/{count}?m={multiplier}` |
-| Connections | 4,096 |
+| Connections | 1,024, 4,096 |
 | Streams per connection | 32 (`-m 32`) |
 | Duration | 5s |
 | Runs | 3 (best taken) |
