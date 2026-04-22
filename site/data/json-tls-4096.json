@@ -38,6 +38,25 @@
     "status_5xx": 0
   },
   {
+    "framework": "bottle",
+    "language": "Python",
+    "rps": 7150,
+    "avg_latency": "6.65ms",
+    "p99_latency": "6.65ms",
+    "cpu": "1873.0%",
+    "memory": "2.5GiB",
+    "connections": 4096,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "28.40MB",
+    "reconnects": 0,
+    "status_2xx": 36462,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "fastapi",
     "language": "Python",
     "rps": 76025,

@@ -140,6 +140,26 @@
     "status_5xx": 0
   },
   {
+    "framework": "bottle",
+    "language": "Python",
+    "rps": 874,
+    "avg_latency": "35.05ms",
+    "p99_latency": "103.50ms",
+    "cpu": "3312.9%",
+    "memory": "3.9GiB",
+    "connections": 32,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "136.84KB/s",
+    "input_bw": "6.93GB/s",
+    "reconnects": 4374,
+    "status_2xx": 4374,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "elysia",
     "language": "TS",
     "rps": 1502,

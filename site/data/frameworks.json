@@ -101,6 +101,13 @@
     "type": "engine",
     "engine": "libev"
   },
+  "bottle": {
+    "dir": "bottle",
+    "description": "Fast, simple and lightweight WSGI micro web-framework for Python",
+    "repo": "https://github.com/bottlepy/bottle",
+    "type": "tuned",
+    "engine": "gunicorn"
+  },
   "bun-websocket": {
     "dir": "bun-websocket",
     "description": "Bun WebSocket echo server",

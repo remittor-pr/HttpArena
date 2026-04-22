@@ -156,6 +156,26 @@
     "status_5xx": 0
   },
   {
+    "framework": "bottle",
+    "language": "Python",
+    "rps": 154226,
+    "avg_latency": "3.20ms",
+    "p99_latency": "3.71ms",
+    "cpu": "5727.4%",
+    "memory": "2.5GiB",
+    "connections": 512,
+    "threads": 64,
+    "duration": "5s",
+    "pipeline": 1,
+    "bandwidth": "22.79MB/s",
+    "input_bw": "11.91MB/s",
+    "reconnects": 771135,
+    "status_2xx": 771132,
+    "status_3xx": 0,
+    "status_4xx": 0,
+    "status_5xx": 0
+  },
+  {
     "framework": "caddy",
     "language": "Go",
     "rps": 403783,
