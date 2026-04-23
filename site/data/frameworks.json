@@ -359,7 +359,7 @@
     "dir": "roda",
     "description": "Roda routing tree web toolkit",
     "repo": "https://github.com/jeremyevans/roda",
-    "type": "tuned",
+    "type": "production",
     "engine": "puma"
   },
   "rust-epoll": {
