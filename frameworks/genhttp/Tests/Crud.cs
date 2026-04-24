@@ -4,17 +4,16 @@ using GenHTTP.Api.Content.Caching;
 using GenHTTP.Api.Protocol;
 using genhttp.Infrastructure;
 using GenHTTP.Modules.Caching;
+using GenHTTP.Modules.IO;
 using GenHTTP.Modules.Reflection;
 using GenHTTP.Modules.Webservices;
-using Npgsql;
+using StringContent = GenHTTP.Modules.IO.Strings.StringContent;
 
 namespace genhttp.Tests;
 
 public class Crud
 {
-    private static readonly NpgsqlDataSource? PgDataSource = Postgres.OpenPool();
-
-    private static readonly ICache<ProcessedItem> ItemCache = Cache.Memory<ProcessedItem>().Build();
+    private static readonly ICache<string> ItemCache = Cache.Memory<string>().Build();
 
     [ResourceMethod]
     public async Task<CrudListResponse> List(string category = "electronics", int page = 1, int limit = 10)
@@ -24,7 +23,7 @@ public class Crud
 
         var offset = (page - 1) * limit;
 
-        await using var cmd = PgDataSource.CreateCommand(
+        await using var cmd = Postgres.Pool.CreateCommand(
             "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count " +
             "FROM items WHERE category = $1 ORDER BY id LIMIT $2 OFFSET $3");
 
@@ -56,7 +55,7 @@ public class Crud
     }
 
     [ResourceMethod(":id")]
-    public async ValueTask<Result<ProcessedItem>> Get(int id)
+    public async ValueTask<IResponse> Get(int id, IRequest request)
     {
         var cacheKey = id.ToString();
 
@@ -64,7 +63,11 @@ public class Crud
 
         if (cached != null)
         {
-            return new Result<ProcessedItem>(cached).Header("X-Cache", "HIT");
+            return request.Respond()
+                          .Content(cached)
+                          .Type(ContentType.ApplicationJson)
+                          .Header("X-Cache", "HIT")
+                          .Build();
         }
 
         var item = await FetchItemByIdAsync(id);
@@ -74,15 +77,21 @@ public class Crud
             throw new ProviderException(ResponseStatus.NotFound, $"Item with ID {id} does not exist");
         }
 
-        await ItemCache.StoreAsync(cacheKey, string.Empty, item);
+        var json = JsonSerializer.Serialize(item);
 
-        return new Result<ProcessedItem>(item).Header("X-Cache", "MISS");
+        await ItemCache.StoreAsync(cacheKey, string.Empty, json);
+
+        return request.Respond()
+                      .Content(json)
+                      .Type(ContentType.ApplicationJson)
+                      .Header("X-Cache", "MISS")
+                      .Build();
     }
 
     [ResourceMethod(RequestMethod.Post)]
     public async Task<Result<CrudItem>> Create(CrudItem item)
     {
-        await using var cmd = PgDataSource.CreateCommand(
+        await using var cmd = Postgres.Pool.CreateCommand(
             "INSERT INTO items (id, name, category, price, quantity, active, tags, rating_score, rating_count) " +
             "VALUES ($1, $2, $3, $4, $5, true, '[\"bench\"]', 0, 0) " +
             "ON CONFLICT (id) DO UPDATE SET name = $2, price = $4, quantity = $5 " +
@@ -103,7 +112,7 @@ public class Crud
     [ResourceMethod(RequestMethod.Put, ":id")]
     public async Task<CrudItem> Update(int id, CrudItem item)
     {
-        await using var cmd = PgDataSource.CreateCommand(
+        await using var cmd = Postgres.Pool.CreateCommand(
             "UPDATE items SET name = $1, price = $2, quantity = $3 WHERE id = $4");
 
         cmd.Parameters.AddWithValue(item.Name ?? "Updated");
@@ -126,7 +135,7 @@ public class Crud
 
     private static async Task<ProcessedItem?> FetchItemByIdAsync(int id)
     {
-        await using var cmd = PgDataSource!.CreateCommand(
+        await using var cmd = Postgres.Pool!.CreateCommand(
             "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count " +
             "FROM items WHERE id = $1 LIMIT 1");
 

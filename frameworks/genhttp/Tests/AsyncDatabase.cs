@@ -2,23 +2,22 @@ using System.Text.Json;
 using genhttp.Infrastructure;
 using GenHTTP.Modules.Webservices;
 
-using Npgsql;
-
 namespace genhttp.Tests;
 
 public class AsyncDatabase
 {
-    private static readonly NpgsqlDataSource? PgDataSource = Postgres.OpenPool();
 
     [ResourceMethod]
     public async Task<ListWithCount<object>> Compute(int min = 10, int max = 50, int limit = 50)
     {
-        if (PgDataSource == null)
+        var pool = Postgres.Pool;
+
+        if (pool == null)
         {
             return new ListWithCount<object>(new List<object>());
         }
 
-        await using var cmd = PgDataSource.CreateCommand(
+        await using var cmd = pool.CreateCommand(
             "SELECT id, name, category, price, quantity, active, tags, rating_score, rating_count FROM items WHERE price BETWEEN $1 AND $2 LIMIT $3");
 
         cmd.Parameters.AddWithValue(min);

@@ -4,8 +4,11 @@ namespace genhttp.Infrastructure;
 
 public static class Postgres
 {
+    private static readonly NpgsqlDataSource? _pool = OpenPool();
 
-    public static NpgsqlDataSource? OpenPool()
+    public static NpgsqlDataSource? Pool { get => _pool; }
+
+    private static NpgsqlDataSource? OpenPool()
     {
         var dbUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
