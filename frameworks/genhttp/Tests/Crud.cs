@@ -31,6 +31,7 @@ public class Crud
         cmd.Parameters.AddWithValue(category);
         cmd.Parameters.AddWithValue(limit);
         cmd.Parameters.AddWithValue(offset);
+        cmd.CommandTimeout = 2;
 
         await using var reader = await cmd.ExecuteReaderAsync();
 
@@ -92,6 +93,7 @@ public class Crud
         cmd.Parameters.AddWithValue(item.Category ?? "test");
         cmd.Parameters.AddWithValue(item.Price);
         cmd.Parameters.AddWithValue(item.Quantity);
+        cmd.CommandTimeout = 2;
 
         item.Id = (int)(await cmd.ExecuteScalarAsync())!;
 
@@ -108,6 +110,7 @@ public class Crud
         cmd.Parameters.AddWithValue(item.Price);
         cmd.Parameters.AddWithValue(item.Quantity);
         cmd.Parameters.AddWithValue(id);
+        cmd.CommandTimeout = 2;
 
         var affected = await cmd.ExecuteNonQueryAsync();
 
@@ -128,6 +131,7 @@ public class Crud
             "FROM items WHERE id = $1 LIMIT 1");
 
         cmd.Parameters.AddWithValue(id);
+        cmd.CommandTimeout = 2;
 
         await using var reader = await cmd.ExecuteReaderAsync();
         if (!await reader.ReadAsync()) return null;
