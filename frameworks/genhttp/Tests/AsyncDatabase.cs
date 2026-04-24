@@ -1,5 +1,5 @@
 using System.Text.Json;
-
+using genhttp.Infrastructure;
 using GenHTTP.Modules.Webservices;
 
 using Npgsql;
@@ -8,22 +8,7 @@ namespace genhttp.Tests;
 
 public class AsyncDatabase
 {
-    private static readonly NpgsqlDataSource? PgDataSource = OpenPgPool();
-
-    private static NpgsqlDataSource? OpenPgPool()
-    {
-        var dbUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-        if (string.IsNullOrEmpty(dbUrl)) return null;
-        try
-        {
-            var uri = new Uri(dbUrl);
-            var userInfo = uri.UserInfo.Split(':');
-            var connStr = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.AbsolutePath.TrimStart('/')};Maximum Pool Size=256;Minimum Pool Size=64;Multiplexing=true;No Reset On Close=true;Max Auto Prepare=4;Auto Prepare Min Usages=1";
-            var builder = new NpgsqlDataSourceBuilder(connStr);
-            return builder.Build();
-        }
-        catch { return null; }
-    }
+    private static readonly NpgsqlDataSource? PgDataSource = Postgres.OpenPool();
 
     [ResourceMethod]
     public async Task<ListWithCount<object>> Compute(int min = 10, int max = 50, int limit = 50)
