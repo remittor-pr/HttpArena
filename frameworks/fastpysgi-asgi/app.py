@@ -298,12 +298,12 @@ if __name__ == "__main__":
     certfile = os.environ.get("TLS_CERT", "/certs/server.crt")
     keyfile  = os.environ.get("TLS_KEY" , "/certs/server.key")
 
-    #fastpysgi.server.delete_all_binds()
-    #fastpysgi.server.add_bind('0.0.0.0', 8080)
-    #fastpysgi.server.add_bind('0.0.0.0', 8081, (certfile, keyfile, None))
+    fastpysgi.server.delete_all_binds()
+    fastpysgi.server.add_bind('0.0.0.0', 8080)
+    fastpysgi.server.add_bind('0.0.0.0', 8081, (certfile, keyfile, None))
 
     fastpysgi.server.read_buffer_size = 256*1024
     fastpysgi.server.max_content_length = 31_000_000
     fastpysgi.server.backlog = 16*1024
     fastpysgi.server.loop_timeout = 1
-    fastpysgi.run(app, '0.0.0.0', 8080, workers = WRK_COUNT, loglevel = 0)
+    fastpysgi.run(app, workers = WRK_COUNT, loglevel = 0)
