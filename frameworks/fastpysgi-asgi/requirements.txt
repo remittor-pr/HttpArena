@@ -1,4 +1,5 @@
 #fastpysgi==0.7
-git+https://github.com/remittor/fastpysgi.git@4b4268517a503f51d9e90ecf8a9e47bff79b491f#egg=fastpysgi
+git+https://github.com/remittor/fastpysgi.git@439dbfb6e034812422d7000983552aa560f794b5#egg=fastpysgi
+uvloop==0.22.1
 orjson==3.11.8
 asyncpg==0.31.0
